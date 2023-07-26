@@ -10,6 +10,12 @@
 // action once that script tag has finished loading its script
 import { loadScript } from './utilities.js'
 
+// This is for testing purposes only; it puts some stuff in the window object
+// so that we can poke at it from the browser console.  This code will go away.
+import { Settings } from './settings.js'
+import { appSettingsMetadata } from './settings-metadata.js'
+window.settings = new Settings( 'Lurch app settings', appSettingsMetadata )
+
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
 
