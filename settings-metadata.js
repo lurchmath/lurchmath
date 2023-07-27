@@ -66,7 +66,7 @@ class SettingMetadata {
 /**
  * A subclass of `SettingMetadata` for boolean values
  */
-class BoolSettingMetadata extends SettingMetadata {
+export class BoolSettingMetadata extends SettingMetadata {
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -91,7 +91,7 @@ class BoolSettingMetadata extends SettingMetadata {
 /**
  * A subclass of `SettingMetadata` for color values
  */
-class ColorSettingMetadata extends SettingMetadata {
+export class ColorSettingMetadata extends SettingMetadata {
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -108,7 +108,7 @@ class ColorSettingMetadata extends SettingMetadata {
 /**
  * A subclass of `SettingMetadata` for short text values
  */
-class TextSettingMetadata extends SettingMetadata {
+export class TextSettingMetadata extends SettingMetadata {
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -124,8 +124,13 @@ class TextSettingMetadata extends SettingMetadata {
 
 /**
  * A subclass of `SettingMetadata` for categorical values
+ * 
+ * (Not to be confused with `SettingsCategoryMetadata`, which groups a list of
+ * settings into a category of settings.  This is a single setting that lets the
+ * user choose one value from a finite list of options, a "categorical" data
+ * type.)
  */
-class CategorySettingMetadata extends SettingMetadata {
+export class CategorySettingMetadata extends SettingMetadata {
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -146,6 +151,18 @@ class CategorySettingMetadata extends SettingMetadata {
             return { value : `${option}`, text : `${option}` }
         } )
     }
+    /**
+     * Ensures that the value given is on the list of valid values.  If it is
+     * not, it replaces it with the first value on the list of valid values.
+     * 
+     * @param {any} data - the data to cast to an item in this category
+     * @returns {String} the same data, if it is a valid element in this
+     *   category, or the first valid element in this category otherwise
+     */
+    cast ( data ) {
+        return this.items.some( item => item.value === `${data}` ) ?
+            `${data}` : this.items[0].value
+    }
 }
 
 // Possible other subclasses of SettingMetadata we could create later:
@@ -156,7 +173,7 @@ class CategorySettingMetadata extends SettingMetadata {
  * setting, but can be useful to include in metadata to insert notes in between
  * controls when the settings are edited in the user interface.
  */
-class NoteMetadata extends SettingMetadata {
+export class NoteMetadata extends SettingMetadata {
     // For internal use only
     // Converts TinyMCE alert banner types into appropriate icon names
     static styleToIcon = {
@@ -198,7 +215,7 @@ class NoteMetadata extends SettingMetadata {
  * category.  This is useful for presenting settings to the user with a sensible
  * organization into tabs/pages with appropriate names/headings.
  */
-class SettingsCategoryMetadata extends SettingMetadata {
+export class SettingsCategoryMetadata extends SettingMetadata {
     /**
      * Create a new metadata item for a category of settings
      * 
@@ -283,7 +300,7 @@ class SettingsCategoryMetadata extends SettingMetadata {
  * presented to the user as a dialog with one or more tabs, one for each
  * category contained in this collection.
  */
-class SettingsMetadata extends SettingMetadata {
+export class SettingsMetadata extends SettingMetadata {
     /**
      * Create a collection of settings categories
      * 
@@ -353,46 +370,3 @@ class SettingsMetadata extends SettingMetadata {
         }
     }
 }
-
-/**
- * This is a silly example of app setting metadata for now, because we have not
- * yet defined what the actual settings for this app will be.  However, this
- * collection of settings includes one from each type of setting, and two
- * different categories, so that we can test settings dialogs now, even before
- * we have the full collection of settings we will actually show to users in the
- * Lurch app.
- */
-export const appSettingsMetadata = new SettingsMetadata(
-    new SettingsCategoryMetadata(
-        'Test category 1',
-        new NoteMetadata(
-            'I do not think we should put full paragraphs here.',
-            'warn'
-        ),
-        new BoolSettingMetadata(
-            'example checkbox',
-            'Frizzles enabled',
-            false
-        ),
-        new ColorSettingMetadata(
-            'example color',
-            'Color of frizzle borders',
-            'red'
-        )
-    ),
-    new SettingsCategoryMetadata(
-        'Test category 2',
-        new NoteMetadata( 'You can do <strong>strong</strong> here.' ),
-        new TextSettingMetadata(
-            'example text input',
-            'Name your favorite frizzle',
-            'Henry'
-        ),
-        new CategorySettingMetadata(
-            'example categorical input',
-            'Hours per day to work the frizzles',
-            [ 2, 4, 6, 8, 10 ],
-            8
-        )
-    )
-)

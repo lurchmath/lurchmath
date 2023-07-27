@@ -6,15 +6,8 @@
  * which to install TinyMCE, and then doing that installation.
  */
 
-// The loadScript function lets us add a script tag to the page, then take some
-// action once that script tag has finished loading its script
 import { loadScript } from './utilities.js'
-
-// This is for testing purposes only; it puts some stuff in the window object
-// so that we can poke at it from the browser console.  This code will go away.
-import { Settings } from './settings.js'
-import { appSettingsMetadata } from './settings-metadata.js'
-window.settings = new Settings( 'Lurch app settings', appSettingsMetadata )
+import { installSettings } from './settings-install.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -24,18 +17,23 @@ const textarea = document.createElement( 'textarea' )
 textarea.setAttribute( 'id', 'editor' )
 document.body.appendChild( textarea )
 
-// Load TinyMCE from its CDN
+// Load TinyMCE from its CDN...
 loadScript( TinyMCEURL ).then( () => {
-    // Set up the editor in the textarea we created above
+    // ...then set up the editor in the textarea we created above
     tinymce.init( {
         selector : '#editor',
         promotion : false, // disable premium features advertisement
-        toolbar : 'undo redo | styles bold italic | alignleft aligncenter alignright outdent indent',
+        toolbar : 'undo redo | '
+                + 'styles bold italic | '
+                + 'alignleft aligncenter alignright outdent indent | '
+                + 'settings',
         plugins : 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {
             // Activate full screen mode as soon as the editor is ready
             editor.on( 'init', () => editor.execCommand( 'mceFullScreen' ) )
+            // Install settings-related UI
+            installSettings( editor )
         }
     } )
 } )
