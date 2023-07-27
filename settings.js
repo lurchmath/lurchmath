@@ -100,6 +100,7 @@ export class Settings extends Map {
         return new Promise( ( resolve, reject ) => {
             const dialog = editor.windowManager.open( {
                 title : this.name,
+                size : 'medium',
                 body : this.metadata.control(),
                 buttons : [
                     { text : 'OK', type : 'submit' },
