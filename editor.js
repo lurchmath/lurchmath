@@ -8,6 +8,7 @@
 
 import { loadScript } from './utilities.js'
 import { installSettings } from './settings-install.js'
+import { installDrive } from './google-drive.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -27,6 +28,24 @@ loadScript( TinyMCEURL ).then( () => {
                 + 'styles bold italic | '
                 + 'alignleft aligncenter alignright outdent indent | '
                 + 'settings',
+        menu: {
+            file: {
+                title: 'File',
+                items: 'newdocument opendocument savedocument savedocumentas | print' },
+            edit: {
+                title: 'Edit',
+                items: 'undo redo | cut copy paste pastetext | selectall | searchreplace'
+            },
+            insert: {
+                title: 'Insert',
+                items: 'link emoticons hr | insertdatetime'
+            },
+            format: {
+                title: 'Format',
+                items: 'bold italic underline strikethrough superscript subscript | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat'
+            },
+            help: { title: 'Help', items: 'help' }
+        },
         plugins : 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {
@@ -34,6 +53,8 @@ loadScript( TinyMCEURL ).then( () => {
             editor.on( 'init', () => editor.execCommand( 'mceFullScreen' ) )
             // Install settings-related UI
             installSettings( editor )
+            // Install Google Drive-related UI
+            installDrive( editor )
         }
     } )
 } )
