@@ -46,8 +46,7 @@ loadScript( GoogleDriveAPI ).then( () => {
  * Just a shortcut to simplify multiple pieces of code later that need to get
  * the current user from a chain of Google API calls.
  */
-const currentUser = () =>
-    gapi.auth2.getAuthInstance().currentUser.get()
+const currentUser = () => gapi.auth2.getAuthInstance().currentUser.get()
 
 /**
  * Ensure the user has logged in by looking up their existing login information
@@ -95,8 +94,8 @@ export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
  * with the same name in the same folder, so this function always creates a new
  * file.  To get a folder ID, use a function such as `showSaveFolderPicker()`.
  * 
- * If you want to update/overwrite an existing file, you need another method
- * that I have not yet coded; that is an important TO-DO here.
+ * If you want to update/overwrite an existing file, use `updateFileInDrive()`
+ * instead.
  * 
  * This function always creates files with MIME type text/html, because that is
  * the MIME type we are currently using for files created by the Lurch app.
@@ -108,12 +107,12 @@ export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
  *   rejects with an error message if the write attempt fails
  */
 export const writeNewFileToDrive = ( filename, folderId, content ) => {
-    var metadata = {
+    const metadata = {
         name : filename,
         mimeType : lurchMimeType,
         parents : [ folderId ]
     }
-    var formData = new FormData()
+    const formData = new FormData()
     formData.append( 'metadata', new Blob(
         [ JSON.stringify( metadata ) ],
         { type : 'application/json' }
@@ -125,6 +124,34 @@ export const writeNewFileToDrive = ( filename, folderId, content ) => {
             'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
         } ),
         body : formData
+    } )
+}
+
+/**
+ * Update an existing file in the user's Google Drive by replacing its old
+ * content with new content.  The client must pass a file ID plus the new
+ * content to put into the file.  To get a file ID, use a function such as
+ * `showOpenFilePicker()`.
+ * 
+ * If you want to create a new file, use `writeNewFileToDrive()` instead.
+ * 
+ * This function always creates files with MIME type text/html, because that is
+ * the MIME type we are currently using for files created by the Lurch app.
+ * 
+ * @param {string} filename the name of the new file to create
+ * @param {string} folderId a folder ID from Google Drive
+ * @param {string} content the data to write into the new file
+ * @returns {Promise} a promise that resolves once the file is created, or
+ *   rejects with an error message if the write attempt fails
+ */
+export const updateFileInDrive = ( fileId, newContent ) => {
+    const URL = uploadEndpoint.replace( 'files?', `files/${fileId}?` )
+    return fetch( URL, {   
+        method : 'PATCH',
+        headers : new Headers( {
+            'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
+        } ),
+        body: new Blob( [ newContent ], { type : lurchMimeType } )
     } )
 }
 

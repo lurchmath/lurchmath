@@ -6,9 +6,15 @@
  */
 
 import {
-    ensureLoggedIn, readFileFromDrive, writeNewFileToDrive,
+    ensureLoggedIn, readFileFromDrive, writeNewFileToDrive, updateFileInDrive,
     showOpenFilePicker, showSaveFolderPicker
 } from './google-drive-utilities.js'
+
+// Global variable for tracking the unique Google Drive ID of the last loaded
+// file, so we can save back into its location if the user asks us to.
+// This variable is updated when we open a file, and is reset to null when we
+// execute File > New.
+let lastUsedFileId = null
 
 /**
  * Show a Google Drive file open dialog box, and if the user picks a file from
@@ -20,6 +26,7 @@ import {
  */
 const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
     showOpenFilePicker().then( pickedFileId => {
+        lastUsedFileId = pickedFileId
         readFileFromDrive( pickedFileId ).then( response =>
             editor.setContent( response.body )
         ).catch( error => editor.notificationManager.open( {
@@ -69,11 +76,13 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
                 dialog.close()
                 writeNewFileToDrive(
                     filename, folder.id, content
-                ).then( () => editor.notificationManager.open( {
-                    type : 'success',
-                    text : 'File saved.',
-                    timeout : 2000
-                } ) )
+                ).then( _ => {
+                    editor.notificationManager.open( {
+                        type : 'success',
+                        text : 'File saved.',
+                        timeout : 2000
+                    } )
+                } )
                 .catch( error => editor.notificationManager.open( {
                     type : 'error',
                     text : `Error saving file: ${error}`
@@ -83,14 +92,32 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
     } )
 } )
 
-// The following code is incorrect and needs to be rewritten to correctly
-// distinguish Save from Save As.  This is a TO-DO.  I will document this code
-// once it is fixed.
-let lastUsedFilename = null
-let lastUsedFolder = null
-export const clearSaveLocation = () =>
-    lastUsedFilename = lastUsedFolder = null
-export const hasSaveLocation = () => lastUsedFilename !== null
+/**
+ * Silently (i.e., without asking the user anything in a dialog box) save the
+ * given new content into the existing Google Drive file with the given ID.
+ * If it succeeds, pop up a brief success notification.  If it fails, show a
+ * failure notification containing the error and wait for the user to dismiss
+ * it.
+ * 
+ * @param {tinymce.Editor} editor the editor to use for any notifications
+ * @param {string} fileId the Google Drive file ID whose content should be
+ *   updated
+ * @param {string} content the new content to save into the file
+ */
+const silentFileSave = ( editor, fileId, content ) => {
+    updateFileInDrive( fileId, content )
+    .then( () => {
+        editor.notificationManager.open( {
+            type : 'success',
+            text : 'File saved.',
+            timeout : 2000
+        } )
+    } )
+    .catch( error => editor.notificationManager.open( {
+        type : 'error',
+        text : `Error saving file: ${error}`
+    } ) )
+}
 
 /**
  * Install into a TinyMCE editor instance three new menu items: Open, Save, and
@@ -104,6 +131,16 @@ export const hasSaveLocation = () => lastUsedFilename !== null
  *   should be installed
  */
 export const installDrive = editor => {
+    editor.ui.registry.addMenuItem( 'newlurchdocument', {
+        text : 'New',
+        icon : 'new-document',
+        tooltip : 'New document',
+        shortcut : 'meta+N',
+        onAction : () => {
+            lastUsedFileId = null
+            editor.setContent( '' )
+        }
+    } )
     editor.ui.registry.addMenuItem( 'opendocument', {
         text : 'Open',
         tooltip : 'Open file from Google Drive',
@@ -121,8 +158,8 @@ export const installDrive = editor => {
         icon : 'save',
         tooltip : 'Save file to Google Drive',
         shortcut : 'meta+S',
-        onAction : () => hasSaveLocation() ?
-            writeFileToDrive( lastUsedFilename, lastUsedFolder, editor.getContent() ) :
+        onAction : () => lastUsedFileId !== null ?
+            silentFileSave( editor, lastUsedFileId, editor.getContent() ) :
             showSaveAsDialog( editor )
     } )
 }

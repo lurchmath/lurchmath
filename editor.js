@@ -31,7 +31,7 @@ loadScript( TinyMCEURL ).then( () => {
         menu: {
             file: {
                 title: 'File',
-                items: 'newdocument opendocument savedocument savedocumentas | print' },
+                items: 'newlurchdocument opendocument savedocument savedocumentas | print' },
             edit: {
                 title: 'Edit',
                 items: 'undo redo | cut copy paste pastetext | selectall | searchreplace'
