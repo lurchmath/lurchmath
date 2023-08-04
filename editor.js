@@ -8,7 +8,7 @@
 
 import { loadScript } from './utilities.js'
 import { installSettings } from './settings-install.js'
-import { installDrive } from './google-drive.js'
+import { installDrive } from './google-drive-ui.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
