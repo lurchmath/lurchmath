@@ -1,6 +1,14 @@
 
+/**
+ * Functions for communicating with the Google Drive API.  This file abstracts
+ * just the few key ways that Lurch wants to talk to a user's Google Drive, plus
+ * the few Google-owned popup windows that may need to be presented, and exposes
+ * them in a small API that makes it easier than making raw gapi calls.
+ */
+
 import { loadScript } from './utilities.js'
 
+// Bring several constants to the top for better organization
 const GoogleDriveAPI = 'https://apis.google.com/js/api.js'
 const GoogleSignInAPI = 'https://apis.google.com/js/platform.js'
 const discoveryDoc = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
@@ -9,6 +17,16 @@ const uploadEndpoint = 'https://www.googleapis.com/upload/drive/v3/files?uploadT
 const googleFolderMIMEType = 'application/vnd.google-apps.folder'
 const lurchMimeType = 'text/html'
 
+// Ensure that we have loaded
+//   (a) our API and Client keys,
+//   (b) the Google sign-in API, and
+//   (c) the Google Drive API.
+// Note that we load one API key if we are developing on localhost (a secret key
+// we do not share with anyone or publish in our repo, because it could be
+// misused by anyone who launches our app on their own machine) but we load a
+// different API key if we are deploying the app on lurchmath.github.io (a public
+// key we can share with anyone, because it will not function except on that one
+// domain, which we control).
 loadScript( window.location.hostname == 'localhost' ?
             'google-api-key-secret.js' :
             'google-api-key-public.js' ).then( () => {
@@ -24,9 +42,21 @@ loadScript( GoogleDriveAPI ).then( () => {
     } )
 } ) } ) } )
 
+/**
+ * Just a shortcut to simplify multiple pieces of code later that need to get
+ * the current user from a chain of Google API calls.
+ */
 const currentUser = () =>
     gapi.auth2.getAuthInstance().currentUser.get()
 
+/**
+ * Ensure the user has logged in by looking up their existing login information
+ * if they've already logged in, or forcing them to log in so that we can get
+ * their information thereafter.
+ * 
+ * @returns {Promise} a promise that resolves with the user as parameter upon
+ *   success, or rejects if the user does not/cannot log in
+ */
 export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
     const authInstance = gapi.auth2.getAuthInstance()
     const authorizeUser = () => {
@@ -43,12 +73,41 @@ export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
     }
 } )
 
+/**
+ * Read a file from the current user's Google Drive.  The client must pass a
+ * file ID, which can be obtained by allowing the user to select a file from
+ * their drive, using a function such as `showOpenFilePicker()`.
+ * 
+ * @param {string} fileId a file ID from Google Drive
+ * @returns {Promise} a promise that resolves if the file can be read, passing a
+ *   response object whose `body` field contains the file's contents, or that
+ *    rejects if the file cannot be read
+ */
 export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
     fileId : fileId,
     alt : 'media'
 } )
 
-export const writeFileToDrive = ( filename, folderId, content ) => {
+/**
+ * Write a new file to the current user's Google Drive.  The client must pass a
+ * filename and folder ID, along with the content they want in the file.  Note
+ * that in Google Drive, unlike many filesystems, you can have multiple files
+ * with the same name in the same folder, so this function always creates a new
+ * file.  To get a folder ID, use a function such as `showSaveFolderPicker()`.
+ * 
+ * If you want to update/overwrite an existing file, you need another method
+ * that I have not yet coded; that is an important TO-DO here.
+ * 
+ * This function always creates files with MIME type text/html, because that is
+ * the MIME type we are currently using for files created by the Lurch app.
+ * 
+ * @param {string} filename the name of the new file to create
+ * @param {string} folderId a folder ID from Google Drive
+ * @param {string} content the data to write into the new file
+ * @returns {Promise} a promise that resolves once the file is created, or
+ *   rejects with an error message if the write attempt fails
+ */
+export const writeNewFileToDrive = ( filename, folderId, content ) => {
     var metadata = {
         name : filename,
         mimeType : lurchMimeType,
@@ -69,6 +128,17 @@ export const writeFileToDrive = ( filename, folderId, content ) => {
     } )
 }
 
+/**
+ * This function retrieves a list of all files in a given Google Drive folder
+ * that are of the MIME type used by this app (text/html).  The files may be
+ * fetched in multiple pages, but this function fetches all necessary pages and
+ * passes the concatenated files list to its promise resolution function.
+ * 
+ * @param {string} folderId the folder whose contents should be listed
+ * @returns {Promise} a promise that resolves when the full list of files has
+ *   been fetched, passing the array of filenames to the resolve function, or
+ *   rejects if an error occurs during the reading process
+ */
 export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resolve, reject ) => {
     const parameters = {
         pageSize : 10,
@@ -85,6 +155,14 @@ export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resol
     gapi.client.drive.files.list( parameters ).then( collect ).catch( reject )
 } )
 
+/**
+ * Show the user a file picker designed by Google, showing all text/html files
+ * in their Google Drive.  The user may navigate among folders to choose files.
+ * If they select one, the resulting promise resolves with that file's ID.
+ * 
+ * @returns {Promise} a promise that resolves with the selected file ID if the
+ *   user chooses one, or never resolves if they cancel
+ */
 export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
     gapi.load( 'picker', () => {
         const view = new google.picker.DocsView()
@@ -110,6 +188,13 @@ export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
     } )
 } )
 
+/**
+ * Show the user a folder picker designed by Google, allowing the user to pick
+ * a folder (other than the root folder) from their Google Drive.
+ * 
+ * @returns {Promise} a promise that resolves with the selected folder ID if the
+ *   user chooses one, or never resolves if they cancel
+ */
 export const showSaveFolderPicker = () => new Promise( ( resolve, reject ) => {
     gapi.load( 'picker', () => {
         const view = new google.picker.DocsView( google.picker.ViewId.FOLDERS )
