@@ -11,6 +11,7 @@ import {
     ensureLoggedIn, readFileFromDrive, writeNewFileToDrive, updateFileInDrive,
     showOpenFilePicker, showSaveFolderPicker
 } from './google-drive-utilities.js'
+import { LurchDocument } from './lurch-document.js'
 
 // Global variable for tracking the unique Google Drive ID of the last loaded
 // file, so we can save back into its location if the user asks us to.
@@ -31,7 +32,7 @@ const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
     showOpenFilePicker().then( pickedFileId => {
         lastUsedFileId = pickedFileId
         readFileFromDrive( pickedFileId ).then( response =>
-            editor.setContent( response.body )
+            new LurchDocument( editor ).setDocument( response.body )
         ).catch( error => editor.notificationManager.open( {
             type : 'error',
             text : `Error opening file: ${error}`
@@ -76,7 +77,7 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
             ],
             onSubmit : () => {
                 const filename = dialog.getData()['filename']
-                const content = editor.getContent()
+                const content = new LurchDocument( editor ).getDocument()
                 dialog.close()
                 writeNewFileToDrive(
                     filename, folder.id, content
@@ -144,7 +145,7 @@ export const installDrive = editor => {
         shortcut : 'meta+N',
         onAction : () => {
             lastUsedFileId = null
-            editor.setContent( '' )
+            new LurchDocument( editor ).newDocument()
         }
     } )
     editor.ui.registry.addMenuItem( 'opendocument', {
@@ -165,7 +166,8 @@ export const installDrive = editor => {
         tooltip : 'Save file to Google Drive',
         shortcut : 'meta+S',
         onAction : () => lastUsedFileId !== null ?
-            silentFileSave( editor, lastUsedFileId, editor.getContent() ) :
+            silentFileSave( editor, lastUsedFileId,
+                new LurchDocument( editor ).getDocument() ) :
             showSaveAsDialog( editor )
     } )
 }
