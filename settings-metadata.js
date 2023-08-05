@@ -54,13 +54,13 @@ class SettingMetadata {
     /**
      * When a new value for this setting is provided, it may be of the wrong
      * type (e.g., because it was loaded from `localStorage`, which can only
-     * store strings).  This function can be used to cast the data back into the
-     * appropriate type for this setting.
+     * store strings).  This function can be used to convert the data back into
+     * the appropriate type for this setting.
      * 
-     * @param {any} data - the data to cast to the appropriate type
+     * @param {any} data - the data to convert to the appropriate type
      * @returns {any} the same data, possibly converted to a new type
      */
-    cast ( data ) { return data }
+    convert ( data ) { return data }
 }
 
 /**
@@ -82,10 +82,10 @@ export class BoolSettingMetadata extends SettingMetadata {
      * Treats `true` as true and `"true"` as true, but all other values as
      * false.
      * 
-     * @param {any} data - the data to cast to boolean
+     * @param {any} data - the data to convert to boolean
      * @returns {bool} the same data, now as a boolean
      */
-    cast ( data ) { return data === true || data === 'true' }
+    convert ( data ) { return data === true || data === 'true' }
 }
 
 /**
@@ -155,11 +155,11 @@ export class CategorySettingMetadata extends SettingMetadata {
      * Ensures that the value given is on the list of valid values.  If it is
      * not, it replaces it with the first value on the list of valid values.
      * 
-     * @param {any} data - the data to cast to an item in this category
+     * @param {any} data - the data to convert to an item in this category
      * @returns {String} the same data, if it is a valid element in this
      *   category, or the first valid element in this category otherwise
      */
-    cast ( data ) {
+    convert ( data ) {
         return this.items.some( item => item.value === `${data}` ) ?
             `${data}` : this.items[0].value
     }

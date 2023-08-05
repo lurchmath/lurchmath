@@ -40,7 +40,7 @@ export class Settings extends Map {
     keys () { return this.metadata.keys() }
     /**
      * Load from the browser's `localStorage` all settings whose names show up
-     * in this object's metadata, and cast them to the appropriate types using
+     * in this object's metadata, and convert them to the appropriate types using
      * that metadata.  For any value not in `localStorage`, fill this object
      * with its default value instead (as given by the metadata).
      */
@@ -53,7 +53,7 @@ export class Settings extends Map {
             if ( allowedKeys.includes( subkey ) ) {
                 const metadata = this.metadata.metadataFor( subkey )
                 const loaded = localStorage.getItem( key )
-                this.set( subkey, metadata ? metadata.cast( loaded ) : loaded )
+                this.set( subkey, metadata ? metadata.convert( loaded ) : loaded )
             }
         }
         allowedKeys.forEach( key => {
