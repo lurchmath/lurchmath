@@ -3,6 +3,8 @@
  * This module exports one function that installs in a TinyMCE editor features
  * for editing application settings, and it also exports the settings object
  * itself, for reading/writing specific settings.
+ * 
+ * @module SettingsInstaller
  */
 
 import { Settings } from './settings.js'
@@ -18,7 +20,8 @@ import {
  * collection of settings includes one from each type of setting, and two
  * different categories, so that we can test settings dialogs now, even before
  * we have the full collection of settings we will actually show to users in the
- * Lurch app.
+ * Lurch app.  Later, we can replace this with the actual definition of the
+ * metadata for the app's settings.
  */
 export const appSettings = new Settings(
     'Application settings',
@@ -68,6 +71,7 @@ export const appSettings = new Settings(
  * 
  * @param {tinymce.Editor} editor - the editor into which to install the
  *   features
+ * @function
  */
 export const installSettings = editor => {
     editor.ui.registry.addButton( 'settings', {

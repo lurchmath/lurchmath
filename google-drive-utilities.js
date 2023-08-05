@@ -4,6 +4,12 @@
  * just the few key ways that Lurch wants to talk to a user's Google Drive, plus
  * the few Google-owned popup windows that may need to be presented, and exposes
  * them in a small API that makes it easier than making raw gapi calls.
+ * 
+ * The app will not import this module directly, but will instead import the
+ * {@link module:GoogleDriveUI Google Drive UI module}, which uses this one
+ * under the hood.
+ * 
+ * @module GoogleDriveUtilities
  */
 
 import { loadScript } from './utilities.js'
@@ -45,6 +51,8 @@ loadScript( GoogleDriveAPI ).then( () => {
 /**
  * Just a shortcut to simplify multiple pieces of code later that need to get
  * the current user from a chain of Google API calls.
+ * 
+ * @function
  */
 const currentUser = () => gapi.auth2.getAuthInstance().currentUser.get()
 
@@ -55,6 +63,7 @@ const currentUser = () => gapi.auth2.getAuthInstance().currentUser.get()
  * 
  * @returns {Promise} a promise that resolves with the user as parameter upon
  *   success, or rejects if the user does not/cannot log in
+ * @function
  */
 export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
     const authInstance = gapi.auth2.getAuthInstance()
@@ -75,12 +84,14 @@ export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
 /**
  * Read a file from the current user's Google Drive.  The client must pass a
  * file ID, which can be obtained by allowing the user to select a file from
- * their drive, using a function such as `showOpenFilePicker()`.
+ * their drive, using a function such as
+ * {@link module:GoogleDriveUtilities.showOpenFilePicker showOpenFilePicker()}.
  * 
  * @param {string} fileId a file ID from Google Drive
  * @returns {Promise} a promise that resolves if the file can be read, passing a
  *   response object whose `body` field contains the file's contents, or that
- *    rejects if the file cannot be read
+ *   rejects if the file cannot be read
+ * @function
  */
 export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
     fileId : fileId,
@@ -92,9 +103,11 @@ export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
  * filename and folder ID, along with the content they want in the file.  Note
  * that in Google Drive, unlike many filesystems, you can have multiple files
  * with the same name in the same folder, so this function always creates a new
- * file.  To get a folder ID, use a function such as `showSaveFolderPicker()`.
+ * file.  To get a folder ID, use a function such as
+ * {@link module:GoogleDriveUtilities.showSaveFolderPicker showSaveFolderPicker()}
  * 
- * If you want to update/overwrite an existing file, use `updateFileInDrive()`
+ * If you want to update/overwrite an existing file, use
+ * {@link module:GoogleDriveUtilities.updateFileInDrive updateFileInDrive()}
  * instead.
  * 
  * This function always creates files with MIME type text/html, because that is
@@ -105,6 +118,7 @@ export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
  * @param {string} content the data to write into the new file
  * @returns {Promise} a promise that resolves once the file is created, or
  *   rejects with an error message if the write attempt fails
+ * @function
  */
 export const writeNewFileToDrive = ( filename, folderId, content ) => {
     const metadata = {
@@ -131,9 +145,11 @@ export const writeNewFileToDrive = ( filename, folderId, content ) => {
  * Update an existing file in the user's Google Drive by replacing its old
  * content with new content.  The client must pass a file ID plus the new
  * content to put into the file.  To get a file ID, use a function such as
- * `showOpenFilePicker()`.
+ * {@link module:GoogleDriveUtilities.showOpenFilePicker showOpenFilePicker()}.
  * 
- * If you want to create a new file, use `writeNewFileToDrive()` instead.
+ * If you want to create a new file, use
+ * {@link module:GoogleDriveUtilities.writeNewFileToDrive writeNewFileToDrive()}
+ * instead.
  * 
  * This function always creates files with MIME type text/html, because that is
  * the MIME type we are currently using for files created by the Lurch app.
@@ -143,6 +159,7 @@ export const writeNewFileToDrive = ( filename, folderId, content ) => {
  * @param {string} content the data to write into the new file
  * @returns {Promise} a promise that resolves once the file is created, or
  *   rejects with an error message if the write attempt fails
+ * @function
  */
 export const updateFileInDrive = ( fileId, newContent ) => {
     const URL = uploadEndpoint.replace( 'files?', `files/${fileId}?` )
@@ -165,6 +182,7 @@ export const updateFileInDrive = ( fileId, newContent ) => {
  * @returns {Promise} a promise that resolves when the full list of files has
  *   been fetched, passing the array of filenames to the resolve function, or
  *   rejects if an error occurs during the reading process
+ * @function
  */
 export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resolve, reject ) => {
     const parameters = {
@@ -189,6 +207,7 @@ export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resol
  * 
  * @returns {Promise} a promise that resolves with the selected file ID if the
  *   user chooses one, or never resolves if they cancel
+ * @function
  */
 export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
     gapi.load( 'picker', () => {
@@ -221,6 +240,7 @@ export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
  * 
  * @returns {Promise} a promise that resolves with the selected folder ID if the
  *   user chooses one, or never resolves if they cancel
+ * @function
  */
 export const showSaveFolderPicker = () => new Promise( ( resolve, reject ) => {
     gapi.load( 'picker', () => {

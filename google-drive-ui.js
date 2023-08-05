@@ -3,6 +3,8 @@
  * This file creates simple TinyMCE dialog boxes and simple functions to access
  * them, to make it easy to provide file open, save, and save-as functionality
  * that can access the user's Google Drive.
+ * 
+ * @module GoogleDriveUI
  */
 
 import {
@@ -23,6 +25,7 @@ let lastUsedFileId = null
  * 
  * @param {tinymce.editor} editor the TinyMCE editor instance into which the
  *   file will be loaded, if the user chooses one
+ * @function
  */
 const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
     showOpenFilePicker().then( pickedFileId => {
@@ -46,6 +49,7 @@ const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
  * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance whose content
  *   should be saved into the file the user chooses
+ * @function
  */
 const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
     showSaveFolderPicker().then( folder => {
@@ -103,6 +107,7 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
  * @param {string} fileId the Google Drive file ID whose content should be
  *   updated
  * @param {string} content the new content to save into the file
+ * @function
  */
 const silentFileSave = ( editor, fileId, content ) => {
     updateFileInDrive( fileId, content )
@@ -129,6 +134,7 @@ const silentFileSave = ( editor, fileId, content ) => {
  * 
  * @param {tinymce.Editor} editor the editor instance into which the new actions
  *   should be installed
+ * @function
  */
 export const installDrive = editor => {
     editor.ui.registry.addMenuItem( 'newlurchdocument', {

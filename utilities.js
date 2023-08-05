@@ -1,6 +1,8 @@
 
 /**
  * A set of generic utility functions used in this project.
+ * 
+ * @module Utilities
  */
 
 /**
@@ -18,6 +20,7 @@
  * @param {String} url - URL of the script to load
  * @returns {Promise} a promise that is resolved if the script finishes loading
  *   or rejected if the script encounters an error
+ * @function
  */
 export const loadScript = url => new Promise( ( resolve, reject ) => {
     const scriptTag = document.createElement( 'script' )
@@ -39,6 +42,7 @@ export const loadScript = url => new Promise( ( resolve, reject ) => {
  * @param {Object} object - any JavaScript object
  * @returns {Object} a shallow copy of the original object, but without copying
  *   its prototype information
+ * @function
  */
 export const copyWithoutPrototype = object => {
     const result = new Object()

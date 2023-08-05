@@ -1,0 +1,11 @@
+{
+    "plugins": ["plugins/markdown"],
+    "metadata": {
+        "title": "Lurch Web User Interface"
+    },
+    "source": {
+        "exclude": [
+            "./google-api-key-secret.js"
+        ]
+    }
+}

@@ -19,9 +19,9 @@ import { copyWithoutPrototype } from "./utilities.js"
  * anything useful with them yet, except provide generic functionality factored
  * out of most subclasses.
  * 
- * This is not to be confused with `SettingsMetadata` (note the plural), which
- * is for an entire collection of settings.  This one (the singular) is the
- * metadata for just one setting.
+ * This is not to be confused with {@link SettingsMetadata} (note the plural),
+ * which is for an entire collection of settings.  This one (the singular) is
+ * the metadata for just one setting.
  */
 class SettingMetadata {
     /**
@@ -64,7 +64,7 @@ class SettingMetadata {
 }
 
 /**
- * A subclass of `SettingMetadata` for boolean values
+ * A subclass of {@link SettingMetadata} for boolean values
  */
 export class BoolSettingMetadata extends SettingMetadata {
     /**
@@ -89,7 +89,7 @@ export class BoolSettingMetadata extends SettingMetadata {
 }
 
 /**
- * A subclass of `SettingMetadata` for color values
+ * A subclass of {@link SettingMetadata} for color values
  */
 export class ColorSettingMetadata extends SettingMetadata {
     /**
@@ -106,7 +106,7 @@ export class ColorSettingMetadata extends SettingMetadata {
 }
 
 /**
- * A subclass of `SettingMetadata` for short text values
+ * A subclass of {@link SettingMetadata} for short text values
  */
 export class TextSettingMetadata extends SettingMetadata {
     /**
@@ -123,12 +123,12 @@ export class TextSettingMetadata extends SettingMetadata {
 }
 
 /**
- * A subclass of `SettingMetadata` for categorical values
+ * A subclass of {@link SettingMetadata} for categorical values
  * 
- * (Not to be confused with `SettingsCategoryMetadata`, which groups a list of
- * settings into a category of settings.  This is a single setting that lets the
- * user choose one value from a finite list of options, a "categorical" data
- * type.)
+ * (Not to be confused with {@link SettingsCategoryMetadata}, which groups a
+ * list of settings into a category of settings.  This is a single setting that
+ * lets the user choose one value from a finite list of options, a "categorical"
+ * data type.)
  */
 export class CategorySettingMetadata extends SettingMetadata {
     /**
@@ -169,9 +169,9 @@ export class CategorySettingMetadata extends SettingMetadata {
 // Slider, Textarea, maybe 1-2 more
 
 /**
- * A subclass of `SettingMetadata` that does not actually correspond to any
- * setting, but can be useful to include in metadata to insert notes in between
- * controls when the settings are edited in the user interface.
+ * A subclass of {@link SettingMetadata} that does not actually correspond to
+ * any setting, but can be useful to include in metadata to insert notes in
+ * between controls when the settings are edited in the user interface.
  */
 export class NoteMetadata extends SettingMetadata {
     // For internal use only
@@ -210,10 +210,10 @@ export class NoteMetadata extends SettingMetadata {
 }
 
 /**
- * A subclass of `SettingMetadata` that does not actually correspond to just one
- * setting, but to a sequence of settings collected together into a named
- * category.  This is useful for presenting settings to the user with a sensible
- * organization into tabs/pages with appropriate names/headings.
+ * A subclass of {@link SettingMetadata} that does not actually correspond to
+ * just one setting, but to a sequence of settings collected together into a
+ * named category.  This is useful for presenting settings to the user with a
+ * sensible organization into tabs/pages with appropriate names/headings.
  */
 export class SettingsCategoryMetadata extends SettingMetadata {
     /**
@@ -234,7 +234,7 @@ export class SettingsCategoryMetadata extends SettingMetadata {
      * Whenever this category needs to be presented to the user in the UI, this
      * function will be called to create JSON data representing the category,
      * which will be a tab for use in a tabbed dialog, as documented here:
-     * https://www.tiny.cloud/docs/tinymce/6/dialog-components/#tabpanel
+     * {@link https://www.tiny.cloud/docs/tinymce/6/dialog-components/#tabpanel}
      * 
      * @returns {Object} an object representing the UI tab for this category of
      *   settings
@@ -274,8 +274,8 @@ export class SettingsCategoryMetadata extends SettingMetadata {
     }
     /**
      * Given a setting's name, we can look up its metadata and return the
-     * appropriate `SettingMetadata` instance, if one with that name exists in
-     * this category.  Otherwise, we return undefined.
+     * appropriate {@link SettingMetadata} instance, if one with that name
+     * exists in this category.  Otherwise, we return undefined.
      * 
      * @param {String} key the name of the setting whose metadata we should look
      *   up
@@ -288,15 +288,16 @@ export class SettingsCategoryMetadata extends SettingMetadata {
 }
 
 /**
- * A subclass of `SettingMetadata` that does not actually correspond to just one
- * setting, but to an entire collection of settings, organized into categories.
- * So the singular `SettingMetadata` is for just one, and those are collected
- * into categories using `SettingsCategoryMetadata`, and those categories are
- * collected into the full set of settings for an app using this class,
- * `SettingsMetadata` (the plural of `SettingMetadata`).
+ * A subclass of {@link SettingMetadata} that does not actually correspond to
+ * just one setting, but to an entire collection of settings, organized into
+ * categories.  So the singular {@link SettingMetadata} is for just one, and
+ * those are collected into categories using {@link SettingsCategoryMetadata},
+ * and those categories are collected into the full set of settings for an app
+ * using this class, {@link SettingsMetadata} (the plural of
+ * {@link SettingMetadata}).
  * 
- * Because each `SettingsCategoryMetadata` will be presented to the user as a
- * tab on a dialog, and this class represents several categories, it is
+ * Because each {@link SettingsCategoryMetadata} will be presented to the user
+ * as a tab on a dialog, and this class represents several categories, it is
  * presented to the user as a dialog with one or more tabs, one for each
  * category contained in this collection.
  */
@@ -316,7 +317,7 @@ export class SettingsMetadata extends SettingMetadata {
      * Whenever this collection needs to be presented to the user in the UI,
      * this function will be called to create JSON data representing the
      * collection, which will be the body of a dialog, as exemplified here:
-     * https://www.tiny.cloud/docs/tinymce/6/dialog-components/#dialog-instance-api-methods
+     * {@link https://www.tiny.cloud/docs/tinymce/6/dialog-components/#dialog-instance-api-methods}
      * 
      * @returns {Object} an object representing the body of a dialog that would
      *   let the user edit this collection of settings
@@ -355,7 +356,7 @@ export class SettingsMetadata extends SettingMetadata {
     }
     /**
      * Given a setting's name, we can look up its metadata and return the
-     * appropriate `SettingMetadata` instance, if one with that name exists in
+     * appropriate {@link SettingMetadata} instance, if one with that name exists in
      * this collection.  Otherwise, we return undefined.
      * 
      * @param {String} key the name of the setting whose metadata we should look

@@ -35,7 +35,8 @@ export class Settings extends Map {
      * other names).
      * 
      * @returns {String[]} the keys from the metadata for these settings; see
-     *   `SettingsMetadata.keys()` for more information
+     *   {@link SettingsMetadata#keys SettingsMetadata.keys()} for more
+     *   information
      */
     keys () { return this.metadata.keys() }
     /**
