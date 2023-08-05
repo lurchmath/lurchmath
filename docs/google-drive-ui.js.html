@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: google-drive-ui.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: google-drive-ui.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+ * This file creates simple TinyMCE dialog boxes and simple functions to access
+ * them, to make it easy to provide file open, save, and save-as functionality
+ * that can access the user's Google Drive.
+ * 
+ * @module GoogleDriveUI
+ */
+
+import {
+    ensureLoggedIn, readFileFromDrive, writeNewFileToDrive, updateFileInDrive,
+    showOpenFilePicker, showSaveFolderPicker
+} from './google-drive-utilities.js'
+
+// Global variable for tracking the unique Google Drive ID of the last loaded
+// file, so we can save back into its location if the user asks us to.
+// This variable is updated when we open a file, and is reset to null when we
+// execute File > New.
+let lastUsedFileId = null
+
+/**
+ * Show a Google Drive file open dialog box, and if the user picks a file from
+ * it, load that file into the given TinyMCE editor.  If an error occurs, pop up
+ * a notification in the editor stating that an error occurred opening the file.
+ * 
+ * @param {tinymce.editor} editor the TinyMCE editor instance into which the
+ *   file will be loaded, if the user chooses one
+ * @function
+ */
+const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
+    showOpenFilePicker().then( pickedFileId => {
+        lastUsedFileId = pickedFileId
+        readFileFromDrive( pickedFileId ).then( response =>
+            editor.setContent( response.body )
+        ).catch( error => editor.notificationManager.open( {
+            type : 'error',
+            text : `Error opening file: ${error}`
+        } ) )
+    } )
+} )
+
+/**
+ * Show a Google Drive folder selection dialog box, and if the user selects a
+ * folder, then show them a filename entry dialog box.  If they type a filename
+ * and choose to save, the contents of the given editor are written into that
+ * file as a new file in the given Google Drive folder.  Note that this always
+ * creates a new file (because Google Drive folders can contain multiple files
+ * with the same name).
+ * 
+ * @param {tinymce.Editor} editor the TinyMCE editor instance whose content
+ *   should be saved into the file the user chooses
+ * @function
+ */
+const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
+    showSaveFolderPicker().then( folder => {
+        const dialog = editor.windowManager.open( {
+            title : 'Choose filename to save as',
+            body : {
+                type : 'panel',
+                items : [
+                    {
+                        type : 'htmlpanel',
+                        html : `&lt;p>Saving into folder: ${folder.name}&lt;/p>`
+                    },
+                    {
+                        type : 'input',
+                        name : 'filename',
+                        label : 'Filename',
+                        placeholder : 'My Lurch document'
+                    }
+                ]
+            },
+            buttons : [
+                { text : 'Save', type : 'submit' },
+                { text : 'Cancel', type : 'cancel' }
+            ],
+            onSubmit : () => {
+                const filename = dialog.getData()['filename']
+                const content = editor.getContent()
+                dialog.close()
+                writeNewFileToDrive(
+                    filename, folder.id, content
+                ).then( _ => {
+                    editor.notificationManager.open( {
+                        type : 'success',
+                        text : 'File saved.',
+                        timeout : 2000
+                    } )
+                } )
+                .catch( error => editor.notificationManager.open( {
+                    type : 'error',
+                    text : `Error saving file: ${error}`
+                } ) )
+            }
+        } )
+    } )
+} )
+
+/**
+ * Silently (i.e., without asking the user anything in a dialog box) save the
+ * given new content into the existing Google Drive file with the given ID.
+ * If it succeeds, pop up a brief success notification.  If it fails, show a
+ * failure notification containing the error and wait for the user to dismiss
+ * it.
+ * 
+ * @param {tinymce.Editor} editor the editor to use for any notifications
+ * @param {string} fileId the Google Drive file ID whose content should be
+ *   updated
+ * @param {string} content the new content to save into the file
+ * @function
+ */
+const silentFileSave = ( editor, fileId, content ) => {
+    updateFileInDrive( fileId, content )
+    .then( () => {
+        editor.notificationManager.open( {
+            type : 'success',
+            text : 'File saved.',
+            timeout : 2000
+        } )
+    } )
+    .catch( error => editor.notificationManager.open( {
+        type : 'error',
+        text : `Error saving file: ${error}`
+    } ) )
+}
+
+/**
+ * Install into a TinyMCE editor instance three new menu items: Open, Save, and
+ * Save as...  These three menu items will be associated with calls to the
+ * appropriate dialog boxes and read/write utilities defined earlier in this
+ * file.  A client can simply call this function on their editor instance, then
+ * add the appropriate actions (named opendocument, savedocument, and
+ * savedocumentas) to that editor's menus.
+ * 
+ * @param {tinymce.Editor} editor the editor instance into which the new actions
+ *   should be installed
+ * @function
+ */
+export const installDrive = editor => {
+    editor.ui.registry.addMenuItem( 'newlurchdocument', {
+        text : 'New',
+        icon : 'new-document',
+        tooltip : 'New document',
+        shortcut : 'meta+N',
+        onAction : () => {
+            lastUsedFileId = null
+            editor.setContent( '' )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'opendocument', {
+        text : 'Open',
+        tooltip : 'Open file from Google Drive',
+        shortcut : 'meta+O',
+        onAction : () => showFileOpenDialog( editor )
+    } )
+    editor.ui.registry.addMenuItem( 'savedocumentas', {
+        text : 'Save as...',
+        tooltip : 'Choose name and save file to Google Drive',
+        shortcut : 'meta+shift+S',
+        onAction : () => showSaveAsDialog( editor )
+    } )
+    editor.ui.registry.addMenuItem( 'savedocument', {
+        text : 'Save',
+        icon : 'save',
+        tooltip : 'Save file to Google Drive',
+        shortcut : 'meta+S',
+        onAction : () => lastUsedFileId !== null ?
+            silentFileSave( editor, lastUsedFileId, editor.getContent() ) :
+            showSaveAsDialog( editor )
+    } )
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GoogleDriveUI.html">GoogleDriveUI</a></li><li><a href="module-GoogleDriveUtilities.html">GoogleDriveUtilities</a></li><li><a href="module-SettingsInstaller.html">SettingsInstaller</a></li><li><a href="module-Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></li><li><a href="CategorySettingMetadata.html">CategorySettingMetadata</a></li><li><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></li><li><a href="NoteMetadata.html">NoteMetadata</a></li><li><a href="SettingMetadata.html">SettingMetadata</a></li><li><a href="Settings.html">Settings</a></li><li><a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a></li><li><a href="SettingsMetadata.html">SettingsMetadata</a></li><li><a href="TextSettingMetadata.html">TextSettingMetadata</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat Aug 05 2023 16:51:06 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

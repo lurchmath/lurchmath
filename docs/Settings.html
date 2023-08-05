@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: Settings</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: Settings</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2><span class="attribs"><span class="type-signature"></span></span>Settings<span class="signature">(name, metadata)</span><span class="type-signature"></span></h2>
+        
+            <div class="class-description"><p>A class representing the values of the user's settings in an app.  Instances
+of this class require metadata so that the settings can be presented to the
+user in a dialog for editing.</p>
+<p>The class inherits from <code>Map</code>, which allows you to call <code>has(key)</code>,
+<code>get(key)</code>, <code>set(key,value)</code>, <code>delete(key)</code>, and <code>clear()</code>.  We augment this
+built-in functionality with additional methods for loading, saving, and
+allowing the user to edit the settings interactively.</p></div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    
+    <h4 class="name" id="Settings"><span class="type-signature"></span>new Settings<span class="signature">(name, metadata)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Construct a collection of settings with the given name and metadata.
+Only settings whose metadata appear in the given <code>metadata</code> will be used
+for load, save, or editing purposes.  (You can <code>.set()</code> other things, but
+this class will ignore them.)</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the name of this collection of settings, which
+will be shown to the user in the title of the dialog box presented when
+editing the settings</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metadata</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="SettingsMetadata.html">SettingsMetadata</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the metadata definitions for all
+settings that will be stored in this object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="Settings.html">Settings</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="keys"><span class="type-signature"></span>keys<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;String>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>This should be viewed as the set of allowed keys for this app's settings.
+They are the keys that show up in the metadata, and are thus the only
+keys that this object pays attention to (even if you add settings with
+other names).</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the keys from the metadata for these settings; see
+<a href="SettingsMetadata.html#keys">SettingsMetadata.keys()</a> for more
+information</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;String></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="load"><span class="type-signature"></span>load<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Load from the browser's <code>localStorage</code> all settings whose names show up
+in this object's metadata, and convert them to the appropriate types using
+that metadata.  For any value not in <code>localStorage</code>, fill this object
+with its default value instead (as given by the metadata).</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="save"><span class="type-signature"></span>save<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>For every setting that is stored in this object and whose key is allowed,
+according to this object's metadata, save the key-value pair into the
+browser's <code>localStorage</code> object.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line69">line 69</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="userEdit"><span class="type-signature"></span>userEdit<span class="signature">(editor)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Show to the user a dialog box for editing this settings object.  If the
+user clicks OK, any changes they made will be saved back into this
+object.  If the user clicks cancel, no changes they made in the dialog
+will be retained or stored in this object or anywhere else.</p>
+<p>Returns a promise as described below.  Note that if the user edits the
+settings and closes the dialog, that impacts the contents of this object,
+but not the contents of the browser's <code>localStorage</code>.  If the client
+wishes the new settings to be saved, they should call this object's
+<code>save()</code> function when the promise resolves.</p>
+<p>The promise resolves whether the user clicks OK or cancel, but in the
+case of cancel, an empty array is passed (no settings changed).  The
+promise rejects only if some unexpected error occurs; that would be
+considered a bug, so the intent is for the promise to always resolve.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>editor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">tinymce.Editor</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the editor in which to show the dialog</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="settings.js.html">settings.js</a>, <a href="settings.js.html#line96">line 96</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>a promise that resolves when the user closes the
+dialog, and passes an array of all setting names that the user changed.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GoogleDriveUI.html">GoogleDriveUI</a></li><li><a href="module-GoogleDriveUtilities.html">GoogleDriveUtilities</a></li><li><a href="module-SettingsInstaller.html">SettingsInstaller</a></li><li><a href="module-Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></li><li><a href="CategorySettingMetadata.html">CategorySettingMetadata</a></li><li><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></li><li><a href="NoteMetadata.html">NoteMetadata</a></li><li><a href="SettingMetadata.html">SettingMetadata</a></li><li><a href="Settings.html">Settings</a></li><li><a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a></li><li><a href="SettingsMetadata.html">SettingsMetadata</a></li><li><a href="TextSettingMetadata.html">TextSettingMetadata</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sat Aug 05 2023 16:51:06 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
