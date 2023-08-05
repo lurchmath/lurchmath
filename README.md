@@ -6,8 +6,8 @@ I will update this README when we are closer to success.
 
 For now there are these links:
 
- * [Visit the app](lurchmath.github.io/lurchmath), which does almost nothing yet
- * [View the source code documentation](lurchmath.github.io/lurchmath/docs),
+ * [Visit the app](https://lurchmath.github.io/lurchmath/), which does almost nothing yet
+ * [View the source code documentation](https://lurchmath.github.io/lurchmath/docs/),
    built with jsDoc
 
 2023-08-05
