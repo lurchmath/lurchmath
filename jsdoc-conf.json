@@ -3,6 +3,11 @@
     "metadata": {
         "title": "Lurch Web User Interface"
     },
+    "templates": {
+        "default": {
+            "includeDate": false
+        }
+    },
     "source": {
         "exclude": [
             "./google-api-key-secret.js"
