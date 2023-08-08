@@ -12,11 +12,13 @@
                 ui: 'bdd',
                 fullTrace: true,
                 timeout: 5000
-            } );
-            window.expect = chai.expect;
-            mocha.checkLeaks();
+            } )
+            window.expect = chai.expect
+            mocha.checkLeaks()
+            mocha.globals( [ 'tinymce', 'tinyMCE', 'mce-data-*' ] )
         </script>
         <script type="module" src="utilities-test.js"></script>
+        <script type="module" src="settings-test.js"></script>
         <script type="module" class="mocha-exec">
             const runner = mocha.run();
         </script>

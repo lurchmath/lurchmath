@@ -23,7 +23,7 @@ import { copyWithoutPrototype } from "./utilities.js"
  * which is for an entire collection of settings.  This one (the singular) is
  * the metadata for just one setting.
  */
-class SettingMetadata {
+export class SettingMetadata {
     /**
      * Construct a metadata record about a setting in the app.
      * 
