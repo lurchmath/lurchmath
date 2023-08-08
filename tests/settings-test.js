@@ -70,13 +70,16 @@ describe( 'Settings', () => {
 
     it( 'Should install correctly into a TinyMCE instance', done => {
         loadScript( 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js' ).then( () => {
+            const element = document.createElement( 'textarea' )
+            document.body.appendChild( element )
+            element.style.display = 'none'
             tinymce.init( {
-                target : document.createElement( 'textarea' ),
+                target : element,
                 setup : editor => {
                     installSettings( editor )
                     expect( editor.ui.registry.getAll().buttons
                         .hasOwnProperty( 'settings' ) ).to.equal( true )
-                    setTimeout( done, 0 )
+                    editor.on( 'init', () => done() )
                 }
             } )
         } )
