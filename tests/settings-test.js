@@ -15,7 +15,6 @@ describe( 'Settings', () => {
         expect( SettingsMetadata ).to.be.ok
     } )
 
-    // This is a little awkward because the 
     it( 'Should have application settings with the right structure', () => {
         // appSettings is an object with a string name
         expect( appSettings ).to.be.instanceof( Object )
