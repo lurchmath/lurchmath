@@ -41,6 +41,7 @@ export class LurchDocument {
      */
     constructor ( editor ) {
         this.editor = editor
+        if ( !this.editor.lurchMetadata ) this.clearMetadata()
     }
 
     // Internal use only.  Clears out the editor's content.
@@ -84,7 +85,7 @@ export class LurchDocument {
         else
             this.clearMetadata()
         // There should be a document element; use its HTML content if so.
-        const documentElement = temp.querySelector( '#metadata' )
+        const documentElement = temp.querySelector( '#document' )
         if ( documentElement )
             this.editor.setContent( documentElement.innerHTML )
         else
@@ -122,12 +123,12 @@ export class LurchDocument {
         `
     }
 
-    // Internal use only; helper functions used in several of the public API
-    // functions below.
+    // Internal use only.  Gets all HTML elements that store metadata.
     metadataElements () {
         return Array.from( this.editor.lurchMetadata.childNodes )
-            .filter( element => element instanceof HTMLDivElement )
+            .filter( element => element.tagName == 'DIV' )
     }
+    // Internal use only.  Gets metadata element for a given key, if any.
     findMetadataElement ( category, key ) {
         return this.metadataElements().find( element =>
             element.dataset.category == category
@@ -192,7 +193,7 @@ export class LurchDocument {
     getMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
         return !element ? undefined :
-               element.dataset.valueType == 'html' ? element.cloneNode() :
+               element.dataset.valueType == 'html' ? element.cloneNode( true ) :
                JSON.parse( element.innerHTML )
     }
     
@@ -210,7 +211,7 @@ export class LurchDocument {
     getMetadataCategories () {
         const result = [ ]
         this.metadataElements().forEach( element => {
-            if ( !result.contains( element.dataset.category ) )
+            if ( !result.includes( element.dataset.category ) )
                 result.push( element.dataset.category )
         } )
         return result
@@ -232,7 +233,7 @@ export class LurchDocument {
         const result = [ ]
         this.metadataElements().forEach( element => {
             if ( element.dataset.category == category
-              && !result.contains( element.dataset.key ) )
+              && !result.includes( element.dataset.key ) )
                 result.push( element.dataset.key )
         } )
         return result
