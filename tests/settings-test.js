@@ -1,4 +1,12 @@
 
+// What this module DOES test:
+//  - that we can import the necessary classes for testing
+//  - that we can install the settings module into an editor
+//  - that there is a global variable containing the app settings metadata
+// What this module DOES NOT test:
+//  - the creation of a user interface from settings and/or their metadata
+//  - the ability of that user interface to read from/write to storage
+
 import { loadScript } from '../utilities.js'
 import { appSettings, installSettings } from '../settings-install.js'
 import {

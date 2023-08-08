@@ -1,4 +1,13 @@
 
+// What this module DOES test:
+//  - that we can import the necessary classes for testing
+//  - that we can install the Google Drive module into an editor
+//  - that doing so installs menu items into the editor's UI registry
+// What this module DOES NOT test:
+//  - any user interface that may appear when loading/saving files
+//  - any connection to any user's Google Drive
+//  - loading file into or saving them from the editor
+
 import { loadScript } from '../utilities.js'
 import { installDrive } from '../google-drive-ui.js'
 
