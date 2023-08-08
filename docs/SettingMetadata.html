@@ -2,23 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: SettingMetadata</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <title>Lurch Web User Interface: SettingMetadata</title>
+    
+      <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
+    
+    <link type="text/css" rel="stylesheet" href="styles/styles.css">
+    
+    
+    <style>
+      :root {
+      
+      
+        --nav-width: 335px;
+      
+      }
+    </style>
+    
 </head>
-
 <body>
 
-<div id="main">
+<header class="layout-header">
+  
+  <h1>
+    <a href="./index.html">
+      Lurch Web User Interface
+    </a>
+  </h1>
+  <nav class="layout-nav">
+    <ul><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="BoolSettingMetadata.html#convert">convert</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="CategorySettingMetadata.html">CategorySettingMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="CategorySettingMetadata.html#convert">convert</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="LurchDocument.html">LurchDocument</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#deleteMetadata">deleteMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#getDocument">getDocument</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#getMetadata">getMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#getMetadataCategories">getMetadataCategories</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#getMetadataKeys">getMetadataKeys</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#newDocument">newDocument</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#setDocument">setDocument</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="LurchDocument.html#setMetadata">setMetadata</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="NoteMetadata.html">NoteMetadata</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="SettingMetadata.html">SettingMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingMetadata.html#control">control</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingMetadata.html#convert">convert</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="Settings.html">Settings</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="Settings.html#keys">keys</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="Settings.html#load">load</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="Settings.html#save">save</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="Settings.html#userEdit">userEdit</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsCategoryMetadata.html#control">control</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsCategoryMetadata.html#defaultSettings">defaultSettings</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsCategoryMetadata.html#keys">keys</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsCategoryMetadata.html#metadataFor">metadataFor</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="SettingsMetadata.html">SettingsMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsMetadata.html#control">control</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsMetadata.html#defaultSettings">defaultSettings</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsMetadata.html#keys">keys</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="SettingsMetadata.html#metadataFor">metadataFor</a></span></li><li class="nav-heading"><span class="nav-item-type type-class" title="class">C</span><span class="nav-item-name is-class"><a href="TextSettingMetadata.html">TextSettingMetadata</a></span></li></ul><ul><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module" title="module">M</span><span class="nav-item-name is-module"><a href="module-GoogleDriveUI.html">GoogleDriveUI</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUI.html#.installDrive">installDrive</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUI.html#~showFileOpenDialog">showFileOpenDialog</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUI.html#~showSaveAsDialog">showSaveAsDialog</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUI.html#~silentFileSave">silentFileSave</a></span></li><li class="nav-heading"><span class="nav-item-type type-module" title="module">M</span><span class="nav-item-name is-module"><a href="module-GoogleDriveUtilities.html">GoogleDriveUtilities</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.ensureLoggedIn">ensureLoggedIn</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.listFilesFromFolder">listFilesFromFolder</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.readFileFromDrive">readFileFromDrive</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.showOpenFilePicker">showOpenFilePicker</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.showSaveFolderPicker">showSaveFolderPicker</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.updateFileInDrive">updateFileInDrive</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#.writeNewFileToDrive">writeNewFileToDrive</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-GoogleDriveUtilities.html#~currentUser">currentUser</a></span></li><li class="nav-heading"><span class="nav-item-type type-module" title="module">M</span><span class="nav-item-name is-module"><a href="module-SettingsInstaller.html">SettingsInstaller</a></span></li><li class="nav-item"><span class="nav-item-type type-member" title="member">M</span><span class="nav-item-name is-member"><a href="module-SettingsInstaller.html#.appSettings">appSettings</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-SettingsInstaller.html#.installSettings">installSettings</a></span></li><li class="nav-heading"><span class="nav-item-type type-module" title="module">M</span><span class="nav-item-name is-module"><a href="module-Utilities.html">Utilities</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-Utilities.html#.copyWithoutPrototype">copyWithoutPrototype</a></span></li><li class="nav-item"><span class="nav-item-type type-function" title="function">F</span><span class="nav-item-name is-function"><a href="module-Utilities.html#.loadScript">loadScript</a></span></li></ul>
+  </nav>
+</header>
 
-    <h1 class="page-title">Class: SettingMetadata</h1>
 
+<main class="layout-main ">
+  <div class="container">
+    <p class="page-kind">Class</p>
+    <h1 class="page-title">SettingMetadata</h1>
     
 
 
@@ -26,10 +45,20 @@
 
 <section>
 
-<header>
+
+<header class="class">
+
+
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>SettingMetadata<span class="signature">(name, label, defaultValue)</span><span class="type-signature"></span></h2>
         
+        <!-- <h2>SettingMetadata</h2> -->
+
+        
+
+        
+
+        
+            
             <div class="class-description"><p>Every setting in the app must come with some metadata, including its name
 (a unique key used for saving it), its label (what prompt will be shown on
 screen to the user when editing the setting), and its default value (which
@@ -46,22 +75,36 @@ the metadata for just one setting.</p></div>
 
 <article>
     <div class="container-overview">
+
+
+
     
         
 
-    
-    <h2>Constructor</h2>
-    
 
-    
-    <h4 class="name" id="SettingMetadata"><span class="type-signature"></span>new SettingMetadata<span class="signature">(name, label, defaultValue)</span><span class="type-signature"></span></h4>
-    
+
+
 
     
 
 
+    
+    <h3 class="subtitle">Constructor</h3>
+    
 
-<div class="description">
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="SettingMetadata">new SettingMetadata<span class="signature">(name, label, defaultValue)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
     <p>Construct a metadata record about a setting in the app.</p>
 </div>
 
@@ -73,108 +116,97 @@ the metadata for just one setting.</p></div>
 
 
 
-    <h5>Parameters:</h5>
+    <h4 class="method-heading">Parameters</h4>
     
 
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
+<ul class="method-params">
     
 
-        <tr>
+        <li>
             
-                <td class="name"><code>name</code></td>
+                <span class="param-name">name</span>
             
 
-            <td class="type">
             
                 
-<span class="param-type">String</span>
 
+
+    <span class="param-type">
+        <code>String</code>
+    </span>
+    
 
             
-            </td>
 
             
 
             
 
-            <td class="description last"><p>the unique key for this setting</p></td>
-        </tr>
+            <div class="param-description"><p>the unique key for this setting</p></div>
+            
+        </li>
 
     
 
-        <tr>
+        <li>
             
-                <td class="name"><code>label</code></td>
+                <span class="param-name">label</span>
             
 
-            <td class="type">
             
                 
-<span class="param-type">String</span>
 
+
+    <span class="param-type">
+        <code>String</code>
+    </span>
+    
 
             
-            </td>
 
             
 
             
 
-            <td class="description last"><p>the prompt shown to the user when editing this
-setting</p></td>
-        </tr>
+            <div class="param-description"><p>the prompt shown to the user when editing this
+setting</p></div>
+            
+        </li>
 
     
 
-        <tr>
+        <li>
             
-                <td class="name"><code>defaultValue</code></td>
+                <span class="param-name">defaultValue</span>
             
 
-            <td class="type">
             
                 
-<span class="param-type">any</span>
 
+
+    <span class="param-type">
+        <code>any</code>
+    </span>
+    
 
             
-            </td>
 
             
 
             
 
-            <td class="description last"><p>the default value for this setting</p></td>
-        </tr>
+            <div class="param-description"><p>the default value for this setting</p></div>
+            
+        </li>
 
     
-    </tbody>
-</table>
+</ul>
 
 
 
 
 
-
-<dl class="details">
-
+<div class="details">
     
 
     
@@ -200,18 +232,11 @@ setting</p></td>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="settings-metadata.js.html">settings-metadata.js</a>, <a href="settings-metadata.js.html#line26">line 26</a>
-    </li></ul></dd>
-    
 
     
 
     
-
-    
-</dl>
+</div>
 
 
 
@@ -229,6 +254,13 @@ setting</p></td>
 
 
 
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.26">, line 26</a>
+        </li>
+    </ul>
 
 
 
@@ -238,34 +270,53 @@ setting</p></td>
     
 
     
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="SettingMetadata.html">SettingMetadata</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+     
 
     
 
     
 
-    
 
     
 
     
-
-    
-        <h3 class="subsection-title">Methods</h3>
+        <h3 class="subtitle">Methods</h3>
 
         
             
 
+
+    <article class="method">
+
+
+
+
     
 
-    
-    <h4 class="name" id="control"><span class="type-signature"></span>control<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
     
 
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="control">control<span class="signature">()</span><span class="return-type-signature"> &rarr; {Object}</span>
+    </h4>
 
 
-<div class="description">
+
+
+
+<div class="method-description">
+    
     <p>Whenever this setting needs to be presented to the user in the UI, this
 function will be called to create JSON data representing the setting,
 which should be the kind of data representing a control in TinyMCE's
@@ -285,8 +336,7 @@ https://www.tiny.cloud/docs/tinymce/6/dialog-components/</p>
 
 
 
-<dl class="details">
-
+<div class="details">
     
 
     
@@ -312,74 +362,81 @@ https://www.tiny.cloud/docs/tinymce/6/dialog-components/</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="settings-metadata.js.html">settings-metadata.js</a>, <a href="settings-metadata.js.html#line49">line 49</a>
-    </li></ul></dd>
-    
 
     
 
     
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>an object representing the UI control for this setting</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
+    <h4 class="method-heading">Returns</h4>
+    <ul>
     
+        <li class="method-returns">
+            
+                <code>Object</code>
+            
+            
+                <p>an object representing the UI control for this setting</p>
+            
+        </li>
+    
+    </ul>
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.49">, line 49</a>
+        </li>
+    </ul>
+
+
+
+    </article>
 
         
             
 
+
+    <article class="method">
+
+
+
+
     
 
-    
-    <h4 class="name" id="convert"><span class="type-signature"></span>convert<span class="signature">(data)</span><span class="type-signature"> &rarr; {any}</span></h4>
-    
 
     
 
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="convert">convert<span class="signature">(data)</span><span class="return-type-signature"> &rarr; {any}</span>
+    </h4>
 
 
-<div class="description">
+
+
+
+<div class="method-description">
+    
     <p>When a new value for this setting is provided, it may be of the wrong
 type (e.g., because it was loaded from <code>localStorage</code>, which can only
 store strings).  This function can be used to convert the data back into
@@ -394,61 +451,44 @@ the appropriate type for this setting.</p>
 
 
 
-    <h5>Parameters:</h5>
+    <h4 class="method-heading">Parameters</h4>
     
 
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
+<ul class="method-params">
     
 
-        <tr>
+        <li>
             
-                <td class="name"><code>data</code></td>
+                <span class="param-name">data</span>
             
 
-            <td class="type">
             
                 
-<span class="param-type">any</span>
 
+
+    <span class="param-type">
+        <code>any</code>
+    </span>
+    
 
             
-            </td>
 
             
 
             
 
-            <td class="description last"><p>the data to convert to the appropriate type</p></td>
-        </tr>
+            <div class="param-description"><p>the data to convert to the appropriate type</p></div>
+            
+        </li>
 
     
-    </tbody>
-</table>
+</ul>
 
 
 
 
 
-
-<dl class="details">
-
+<div class="details">
     
 
     
@@ -474,59 +514,53 @@ the appropriate type for this setting.</p>
     
 
     
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="settings-metadata.js.html">settings-metadata.js</a>, <a href="settings-metadata.js.html#line63">line 63</a>
-    </li></ul></dd>
-    
 
     
 
     
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>the same data, possibly converted to a new type</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">any</span>
-
-
-    </dd>
-</dl>
-
+    <h4 class="method-heading">Returns</h4>
+    <ul>
     
+        <li class="method-returns">
+            
+                <code>any</code>
+            
+            
+                <p>the same data, possibly converted to a new type</p>
+            
+        </li>
+    
+    </ul>
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.63">, line 63</a>
+        </li>
+    </ul>
+
+
+
+    </article>
 
         
     
@@ -541,19 +575,17 @@ the appropriate type for this setting.</p>
 
 
 
-</div>
+  </div>
+</main>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GoogleDriveUI.html">GoogleDriveUI</a></li><li><a href="module-GoogleDriveUtilities.html">GoogleDriveUtilities</a></li><li><a href="module-SettingsInstaller.html">SettingsInstaller</a></li><li><a href="module-Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></li><li><a href="CategorySettingMetadata.html">CategorySettingMetadata</a></li><li><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></li><li><a href="LurchDocument.html">LurchDocument</a></li><li><a href="NoteMetadata.html">NoteMetadata</a></li><li><a href="SettingMetadata.html">SettingMetadata</a></li><li><a href="Settings.html">Settings</a></li><li><a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a></li><li><a href="SettingsMetadata.html">SettingsMetadata</a></li><li><a href="TextSettingMetadata.html">TextSettingMetadata</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a>
+<footer class="layout-footer">
+  <div class="container">
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a>
+  </div>
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+
+
+<script src="scripts/prism.dev.js"></script>
 </body>
 </html>
