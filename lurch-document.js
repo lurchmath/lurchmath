@@ -43,19 +43,25 @@ export class LurchDocument {
         this.editor = editor
     }
 
+    // Internal use only.  Clears out the editor's content.
+    clearDocument () {
+        this.editor.setContent( '' )
+    }
+    // Internal use only.  Sets up empty/new metadata structure.
+    clearMetadata () {
+        this.editor.lurchMetadata = this.editor.dom.doc.createElement( 'div' )
+        this.editor.lurchMetadata.setAttribute( 'id', 'metadata' )
+        this.editor.lurchMetadata.style.display = 'none'
+    }
+
     /**
      * Clear out the contents of the editor given at construction time.  This
      * includes clearing out its content as well as any metdata, including
      * document settings and dependencies.
-     * 
-     * NOTE: So far only the clearing of the editor's content has been
-     * implemented.  Later, when per-document settings and dependencies have
-     * been designed, we will come back here and add those features, too.
      */
     newDocument () {
-        this.editor.setContent( '' )
-        // should also clear out its metadata,
-        // but have not yet implemented that
+        this.clearDocument()
+        this.clearMetadata()
     }
 
     /**
@@ -66,15 +72,23 @@ export class LurchDocument {
      * 
      * @param {string} document - the document as it was retrieved from a
      *   filesystem, ready to be loaded into this editor
-     * 
-     * NOTE: So far only filling the editor's content has been implemented.
-     * Later, when per-document settings and dependencies have been designed, we
-     * will come back here and add those features, too.
      */
     setDocument ( document ) {
-        this.editor.setContent( document )
-        // should later distinguish document metadata from document content
-        // but have not yet implemented that
+        // Have some off-screen element parse the HTML for us
+        const temp = this.editor.dom.doc.createElement( 'div' )
+        temp.innerHTML = document
+        // There should be a metadata element; use it directly if so.
+        const metadataElement = temp.querySelector( '#metadata' )
+        if ( metadataElement )
+            this.editor.lurchMetadata = metadataElement
+        else
+            this.clearMetadata()
+        // There should be a document element; use its HTML content if so.
+        const documentElement = temp.querySelector( '#metadata' )
+        if ( documentElement )
+            this.editor.setContent( documentElement.innerHTML )
+        else
+            this.clearDocument()
     }
     
     /**
@@ -82,17 +96,162 @@ export class LurchDocument {
      * construction time.  This includes its visible content as well as its
      * metdata, which includes document settings and dependencies.
      * 
-     * NOTE: So far only the editor's visible content is supported.  Later, when
-     * per-document settings and dependencies have been designed, we will come
-     * back here and add those features, too.
-     * 
      * @returns {string} the document in string form, ready to be stored in a
      *   filesystem
      */
     getDocument () {
-        return this.editor.getContent()
-        // should later include the metadata stored in the editor as well
-        // but have not yet implemented that
+        // Get URL to this app, without any query string
+        let appURL = window.location.protocol + '//'
+                   + window.location.host + window.location.pathname
+        if ( !appURL.endsWith( '/' ) ) appURL += '/'
+        // Get the metadata and document as HTML strings
+        const metadataHTML = this.editor.lurchMetadata.outerHTML
+        const documentHTML = this.editor.getContent()
+        // Use those to build the result
+        return `
+            <div id="loadlink">
+                <p><a>Open this file in the Lurch web app</a></p>
+                <script language="javascript">
+                    const link = document.querySelector( '#loadlink > p > a' )
+                    const thisURL = encodeURIComponent( window.location.href )
+                    link?.setAttribute( 'href', '${appURL}?load=' + thisURL )
+                </script>
+            </div>
+            ${metadataHTML}
+            <div id="document">${documentHTML}</div>
+        `
+    }
+
+    // Internal use only; helper functions used in several of the public API
+    // functions below.
+    metadataElements () {
+        return Array.from( this.editor.lurchMetadata.childNodes )
+            .filter( element => element instanceof HTMLDivElement )
+    }
+    findMetadataElement ( category, key ) {
+        return this.metadataElements().find( element =>
+            element.dataset.category == category
+         && element.dataset.key == key )
+    }
+
+    /**
+     * Store a new piece of metadata in this object, or update an old one.
+     * Pieces of metadata are indexed by a category-key pair, facilitating
+     * "namespaces" within the metadata.  This is useful so that we can
+     * partition the metadata into things like document-level settings, the
+     * document's list of dependencies, data cached by algorithms in the app,
+     * and any other categories that arise.
+     * 
+     * Values can be either JSON data (which includes strings, integers, and
+     * booleans, in addition to the more complex types of JSON data) or HTML
+     * in string form (for example, if you wish to store an entire dependency).
+     * 
+     * @param {string} category - the category for this piece of metadata
+     * @param {string} key - the key for this piece of metadata
+     * @param {string} valueType - either "json" or "html" to specify the format
+     *   for the value
+     * @param {string|Object} value - a string of HTML if `valueType` is "html"
+     *   or an object we can pass to `JSON.stringify()` if `valueType` is "json"
+     */
+    setMetadata ( category, key, valueType, value ) {
+        if ( ![ 'json', 'html' ].includes( valueType.toLowerCase() ) )
+            throw new Error( 'Invalid setting value type: ' + valueType )
+        const element = this.findMetadataElement( category, key )
+        if ( element ) {
+            element.dataset['valueType'] = valueType
+            element.innerHTML = valueType == 'json' ? JSON.stringify( value ) : value
+        } else {
+            const newElement = this.editor.dom.doc.createElement( 'div' )
+            newElement.dataset['category'] = category
+            newElement.dataset['key'] = key
+            newElement.dataset['valueType'] = valueType
+            newElement.innerHTML = valueType == 'json' ? JSON.stringify( value ) : value
+            this.editor.lurchMetadata.appendChild( newElement )
+        }
+    }
+
+    /**
+     * Pieces of metadata are indexed by a category-key pair, facilitating
+     * "namespaces" within the metadata.  See {@link LurchDocument#setMetadata
+     * setMetadata()} for more information on why.  This function looks up the
+     * value that corresponds to the given category and key.
+     * 
+     * If the value is stored in JSON form, then the corresponding object will
+     * be returned (as produced by `JSON.parse()`).  If the value is stored in
+     * HTML form, then an `HTMLDivElement` instance will be returned, the
+     * contents of which are the value of the metadata item.  The element
+     * returned is a copy of the one stored internally, so the caller cannot
+     * alter the internal value by modifying the returned element.
+     * 
+     * @param {string} category - the category for the piece of metadata to look
+     *   up
+     * @param {string} key - the key for the piece of metadata to look up
+     * @returns {string|number|bool|Object|HTMLDivElement|undefined} the value
+     *   stored in the metadata, or undefined if there is no such metadata
+     */
+    getMetadata ( category, key ) {
+        const element = this.findMetadataElement( category, key )
+        return !element ? undefined :
+               element.dataset.valueType == 'html' ? element.cloneNode() :
+               JSON.parse( element.innerHTML )
+    }
+    
+    /**
+     * Pieces of metadata are indexed by a category-key pair, facilitating
+     * "namespaces" within the metadata.  See {@link LurchDocument#setMetadata
+     * setMetadata()} for more information on why.  This function returns all
+     * categories that appear in the document's metadata.  There is no defined
+     * order to the result, but no category is repeated.  The list may be empty
+     * if this document has no metadata stored in it.
+     * 
+     * @returns {string[]} an array containing all strings that appear as
+     *   categories in this document's metadata
+     */
+    getMetadataCategories () {
+        const result = [ ]
+        this.metadataElements().forEach( element => {
+            if ( !result.contains( element.dataset.category ) )
+                result.push( element.dataset.category )
+        } )
+        return result
+    }
+
+    /**
+     * Pieces of metadata are indexed by a category-key pair, facilitating
+     * "namespaces" within the metadata.  See {@link LurchDocument#setMetadata
+     * setMetadata()} for more information on why.  This function returns all
+     * keys that appear in the document's metadata under a given category.
+     * There is no defined order to the result, but no key is repeated.  The
+     * list may be empty if this document has no metadata stored in it under the
+     * given category.
+     * 
+     * @param {string} category - the category whose keys should be listed
+     * @returns {string[]} the keys corresponding to the given category
+     */
+    getMetadataKeys ( category ) {
+        const result = [ ]
+        this.metadataElements().forEach( element => {
+            if ( element.dataset.category == category
+              && !result.contains( element.dataset.key ) )
+                result.push( element.dataset.key )
+        } )
+        return result
+    }
+
+    /**
+     * Pieces of metadata are indexed by a category-key pair, facilitating
+     * "namespaces" within the metadata.  See {@link LurchDocument#setMetadata
+     * setMetadata()} for more information on why.  This function deletes the
+     * unique metadata item stored under the given category-key pair if there is
+     * one, and does nothing otherwise.
+     * 
+     * @param {string} category - the category for the piece of metadata to
+     *   delete
+     * @param {string} key - the key for the piece of metadata to delete
+     */
+    deleteMetadata ( category, key ) {
+        const element = this.findMetadataElement( category, key )
+        if ( element ) element.remove()
     }
 
 }
