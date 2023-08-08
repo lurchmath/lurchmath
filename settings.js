@@ -4,12 +4,13 @@
  * of this class require metadata so that the settings can be presented to the
  * user in a dialog for editing.
  * 
- * The class inherits from `Map`, which allows you to call `has(key)`,
+ * The class inherits from `Map`, which allows you to call `keys()`, `has(key)`,
  * `get(key)`, `set(key,value)`, `delete(key)`, and `clear()`.  We augment this
  * built-in functionality with additional methods for loading, saving, and
  * allowing the user to edit the settings interactively.
  */
 export class Settings extends Map {
+
     /**
      * Construct a collection of settings with the given name and metadata.
      * Only settings whose metadata appear in the given `metadata` will be used
@@ -28,6 +29,7 @@ export class Settings extends Map {
         this.metadata = metadata
         this.defaults = metadata.defaultSettings()
     }
+
     /**
      * This should be viewed as the set of allowed keys for this app's settings.
      * They are the keys that show up in the metadata, and are thus the only
@@ -39,6 +41,35 @@ export class Settings extends Map {
      *   information
      */
     keys () { return this.metadata.keys() }
+
+    /**
+     * A settings object has a key if and only if that key appears as part of
+     * its metadata, which was given at construction time.  Even if no value has
+     * been assigned for the key, the settings object still has it, associated
+     * with its default value.  Even if other keys have been set, we ignore them
+     * because they do not appear in the schema given at construction time.
+     * 
+     * @param {string} key - the key whose presence should be checked
+     * @returns {boolean} whether the key appears in this settings object
+     */
+    has ( key ) { return this.keys().includes( key ) }
+
+    /**
+     * If the given key does not appear in the metadata given at construction
+     * time, then undefined is returned.  Otherwise, if the key has had a value
+     * associated with it via a previous call to `set()`, then we return that
+     * value.  Otherwise, we return the default value given in the metadata for
+     * the given key.
+     * 
+     * @param {string} key - the key to look up
+     * @returns {any} the value stored under the key, or the default value for
+     *   that key if none has yet been set
+     */
+    get ( key ) {
+        return !this.has( key ) ? undefined :
+               super.has( key ) ? super.get( key ) : this.defaults[key]
+    }
+
     /**
      * Load from the browser's `localStorage` all settings whose names show up
      * in this object's metadata, and convert them to the appropriate types using
@@ -57,10 +88,8 @@ export class Settings extends Map {
                 this.set( subkey, metadata ? metadata.convert( loaded ) : loaded )
             }
         }
-        allowedKeys.forEach( key => {
-            if ( !this.has( key ) ) this.set( key, this.defaults[key] )
-        } )
     }
+
     /**
      * For every setting that is stored in this object and whose key is allowed,
      * according to this object's metadata, save the key-value pair into the
@@ -72,6 +101,7 @@ export class Settings extends Map {
                 localStorage.setItem( `lurch-${key}`, this.get( key ) )
         } )
     }
+
     /**
      * Show to the user a dialog box for editing this settings object.  If the
      * user clicks OK, any changes they made will be saved back into this
@@ -120,4 +150,5 @@ export class Settings extends Map {
             } )
         } )
     }
+    
 }
