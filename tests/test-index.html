@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Mocha Tests of the Lurch UI</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="../node_modules/mocha/mocha.css" />
+        <script src="../node_modules/chai/chai.js"></script>
+        <script src="../node_modules/mocha/mocha.js"></script>
+        <script class="mocha-init">
+            mocha.setup( {
+                ui: 'bdd',
+                fullTrace: true,
+                timeout: 5000
+            } );
+            window.expect = chai.expect;
+            mocha.checkLeaks();
+        </script>
+        <script type="module" src="utilities-test.js"></script>
+        <script type="module" class="mocha-exec">
+            const runner = mocha.run();
+        </script>
+    </head>
+    <body>
+        <div id="mocha">
+            <h1>Mocha Tests of the Lurch UI</h1>
+            <h2>1. Do not load this page from a <tt>file:///</tt> URL; it will not
+              run the tests.  Instead, do: <tt>npm run test-server</tt></h2>
+            <h2>2. Click any test description below to see its code.</h2>
+            <h2>3. If you make changes to the source, reload this page to re-run the
+              tests.</h2>
+        </div>
+    </body>
+</html>
