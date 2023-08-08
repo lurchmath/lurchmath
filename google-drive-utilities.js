@@ -34,8 +34,8 @@ const lurchMimeType = 'text/html'
 // key we can share with anyone, because it will not function except on that one
 // domain, which we control).
 loadScript( window.location.hostname == 'localhost' ?
-            'google-api-key-secret.js' :
-            'google-api-key-public.js' ).then( () => {
+            '/google-api-key-secret.js' :
+            '/google-api-key-public.js' ).then( () => {
 loadScript( GoogleSignInAPI ).then( () => {
 loadScript( GoogleDriveAPI ).then( () => {
     gapi.load( 'client:auth2', () => {
