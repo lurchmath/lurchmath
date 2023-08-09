@@ -9,6 +9,7 @@
 import { loadScript } from './utilities.js'
 import { installSettings } from './settings-install.js'
 import { installDrive } from './google-drive-ui.js'
+import { installDownloader } from './downloader.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -31,7 +32,7 @@ loadScript( TinyMCEURL ).then( () => {
         menu: {
             file: {
                 title: 'File',
-                items: 'newlurchdocument opendocument savedocument savedocumentas | print' },
+                items: 'newlurchdocument opendocument savedocument savedocumentas | download | print' },
             edit: {
                 title: 'Edit',
                 items: 'undo redo | cut copy paste pastetext | selectall | searchreplace'
@@ -55,6 +56,8 @@ loadScript( TinyMCEURL ).then( () => {
             installSettings( editor )
             // Install Google Drive-related UI
             installDrive( editor )
+            // Install file downloader menu item
+            installDownloader( editor )
         }
     } )
 } )
