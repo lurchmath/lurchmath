@@ -24,7 +24,7 @@ let lastUsedFileId = null
  * it, load that file into the given TinyMCE editor.  If an error occurs, pop up
  * a notification in the editor stating that an error occurred opening the file.
  * 
- * @param {tinymce.editor} editor the TinyMCE editor instance into which the
+ * @param {tinymce.Editor} editor the TinyMCE editor instance into which the
  *   file will be loaded, if the user chooses one
  * @function
  */
