@@ -1,0 +1,11 @@
+<div id="loadlink">
+    <p><a>Open this file in the Lurch web app</a></p>
+    <script language="javascript">
+        const link = document.querySelector( '#loadlink > p > a' )
+        const thisURL = encodeURIComponent( window.location.href )
+        link?.setAttribute( 'href', 'http://localhost:5500/?load=' + thisURL )
+    </script>
+</div>
+<div id="metadata" style="display: none;"></div>
+<div id="document"><p>This is just an example document to store in our repository for testing.</p>
+<p><strong>It does not even have any metadata.</strong></p></div>
