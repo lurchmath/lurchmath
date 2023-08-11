@@ -10,6 +10,7 @@ import { loadScript } from './utilities.js'
 import { installSettings } from './settings-install.js'
 import { installDrive } from './google-drive-ui.js'
 import { installDownloadUpload } from './upload-download.js'
+import { installImport, loadFromQueryString } from './load-from-url.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -32,7 +33,7 @@ loadScript( TinyMCEURL ).then( () => {
         menu: {
             file: {
                 title: 'File',
-                items: 'newlurchdocument opendocument savedocument savedocumentas | upload download | print' },
+                items: 'newlurchdocument opendocument savedocument savedocumentas | upload download import | print' },
             edit: {
                 title: 'Edit',
                 items: 'undo redo | cut copy paste pastetext | selectall | searchreplace'
@@ -58,6 +59,10 @@ loadScript( TinyMCEURL ).then( () => {
             installDrive( editor )
             // Install file downloader and uploader menu items
             installDownloadUpload( editor )
+            // Install URL importer menu item
+            installImport( editor )
+            // After the editor is loaded, import a doc from the query string, if any:
+            editor.on( 'init', () => loadFromQueryString( editor ) )
         }
     } )
 } )
