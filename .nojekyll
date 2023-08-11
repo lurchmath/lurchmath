@@ -1,0 +1,2 @@
+This file tells GitHub not to use the Jekyll site builder.
+We don't need that because our site is aready ready to deploy.
