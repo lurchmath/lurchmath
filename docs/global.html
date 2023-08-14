@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: TextSettingMetadata</title>
+    <title>Lurch Web User Interface: Global</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -36,8 +36,8 @@
 
 <main class="layout-main ">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">TextSettingMetadata</h1>
+    <p class="page-kind"></p>
+    <h1 class="page-title">Global</h1>
     
 
 
@@ -46,20 +46,17 @@
 <section>
 
 
-<header class="class">
+<header class="not-class">
 
 
     
         
-        <!-- <h2>TextSettingMetadata</h2> -->
+        <!-- <h2></h2> -->
 
         
 
         
 
-        
-            
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for short text values</p></div>
         
     
 </header>
@@ -72,85 +69,79 @@
     
         
 
+        
 
 
-
+<div class="details">
+    
 
     
 
-
-    
-    <h3 class="subtitle">Constructor</h3>
     
 
-    <div class="method-type">
     
-    </div>
 
-    <h4 class="method-name" id="TextSettingMetadata">new TextSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
     
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-text input widget (a single-line input control, not a multi-line editor).</p>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 </div>
 
 
+        
+    
+    </div>
 
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
     
 
-<ul class="method-params">
     
 
-        <li>
-            
-                <span class="param-name">args</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
-            
-        </li>
+     
 
     
-</ul>
+
+    
+
+
+    
+        <h3 class="subtitle">Members</h3>
+
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id="installHeaderEditor">installHeaderEditor<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Install into a TinyMCE editor instance the one menu item that can be used in
+the primary window to pop open the secondary window.  The menu item in
+question is intended for the Edit menu, but could be placed anywhere.</p>
+</div>
+
+
 
 
 
@@ -194,47 +185,162 @@ text input widget (a single-line input control, not a multi-line editor).</p>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
+    <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.111">, line 111</a>
+            <a href="header-editor.js.html">header-editor.js</a><a href="header-editor.js.html#source.61">, line 61</a>
         </li>
     </ul>
 
 
+</article>
+        
+            
 
-    
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-constant">constant</span>
     </div>
+<h4 class="member-name" id="isHeaderEditor">isHeaderEditor<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Detect whether the current copy of the app running in this window is one that
+was created just as a subsidiary of another copy of the app, intended for
+editing the header of the document in the original window.</p>
+</div>
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
 
     
 
     
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="TextSettingMetadata.html">TextSettingMetadata</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
 
     
 
     
 
+    
 
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    <h4>Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="header-editor.js.html">header-editor.js</a><a href="header-editor.js.html#source.50">, line 50</a>
+        </li>
+    </ul>
+
+
+</article>
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id="listenForHeader">listenForHeader<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Assuming that we're in the secondary copy of the app, listen for the message
+from the primary window that sends us the header to edit, and when we receive
+it, populate our editor with it.  While we wait, our editor is read only and
+says &quot;Loading header...&quot; so that the user knows to wait.</p>
+<p>Also, install a new File &gt; Save action that will send our editor's content
+back to the primary window so that it can store that updated content in its
+document header.</p>
+</div>
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    <h4>Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="header-editor.js.html">header-editor.js</a><a href="header-editor.js.html#source.104">, line 104</a>
+        </li>
+    </ul>
+
+
+</article>
+        
     
 
     
