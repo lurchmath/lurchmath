@@ -63,6 +63,7 @@ export class LurchDocument {
     newDocument () {
         this.clearDocument()
         this.clearMetadata()
+        this.editor.undoManager.clear()
     }
 
     /**
@@ -90,6 +91,7 @@ export class LurchDocument {
             this.editor.setContent( documentElement.innerHTML )
         else
             this.clearDocument()
+        this.editor.undoManager.clear()
     }
     
     /**
