@@ -1,4 +1,6 @@
 
+import { appURL } from './utilities.js'
+
 /**
  * A Lurch document will have several parts, including at least the following.
  * 
@@ -103,10 +105,6 @@ export class LurchDocument {
      *   filesystem
      */
     getDocument () {
-        // Get URL to this app, without any query string
-        let appURL = window.location.protocol + '//'
-                   + window.location.host + window.location.pathname
-        if ( !appURL.endsWith( '/' ) ) appURL += '/'
         // Get the metadata and document as HTML strings
         const metadataHTML = this.editor.lurchMetadata.outerHTML
         const documentHTML = this.editor.getContent()
@@ -117,7 +115,7 @@ export class LurchDocument {
                 <script language="javascript">
                     const link = document.querySelector( '#loadlink > p > a' )
                     const thisURL = encodeURIComponent( window.location.href )
-                    link?.setAttribute( 'href', '${appURL}?load=' + thisURL )
+                    link?.setAttribute( 'href', '${appURL()}?load=' + thisURL )
                 </script>
             </div>
             ${metadataHTML}
