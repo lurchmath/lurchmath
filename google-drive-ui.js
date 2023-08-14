@@ -31,9 +31,14 @@ let lastUsedFileId = null
 const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
     showOpenFilePicker().then( pickedFileId => {
         lastUsedFileId = pickedFileId
-        readFileFromDrive( pickedFileId ).then( response =>
+        readFileFromDrive( pickedFileId ).then( response => {
             new LurchDocument( editor ).setDocument( response.body )
-        ).catch( error => editor.notificationManager.open( {
+            editor.notificationManager.open( {
+                type : 'success',
+                text : 'File opened.',
+                timeout : 2000
+            } )
+        } ).catch( error => editor.notificationManager.open( {
             type : 'error',
             text : `Error opening file: ${error}`
         } ) )
