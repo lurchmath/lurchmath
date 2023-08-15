@@ -27,44 +27,16 @@ export const appSettings = new Settings(
     'Application settings',
     new SettingsMetadata(
         new SettingsCategoryMetadata(
-            'Example category 1',
-            new NoteMetadata(
-                'These are not the real application settings.  '
-              + 'This is just a temporary demo.',
-                'warn'
-            ),
-            new BoolSettingMetadata(
-                'example checkbox',
-                'Example boolean value',
-                false
-            ),
-            new ColorSettingMetadata(
-                'example color',
-                'Example color value',
-                'red'
+            'Application warnings',
+            new ShowWarningSettingMetadata(
+                'warn before extract header',
+                'Show warning before moving the header into the document',
+                'Moving the header into the document is an action that cannot be undone.'
             ),
             new ShowWarningSettingMetadata(
-                'test warning',
-                'Show warning before eating mushrooms',
-                'I suppose it depends upon the musrooms...'
-            )
-        ),
-        new SettingsCategoryMetadata(
-            'Example category 2',
-            new TextSettingMetadata(
-                'example text input',
-                'Example string value',
-                'Henry'
-            ),
-            new NoteMetadata(
-                'Notes of any type with basic HTML content can be inserted '
-              + 'between any two settings.'
-            ),
-            new CategorySettingMetadata(
-                'example categorical input',
-                'Example element of a finite set',
-                [ 'happy', 'sad', 'neither' ],
-                'happy'
+                'warn before embed header',
+                'Show warning before moving document content into header',
+                'Moving content into the header is an action that cannot be undone.'
             )
         )
     )

@@ -21,6 +21,7 @@
 
 import { appURL } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
+import { appSettings } from './settings-install.js'
 
 // For internal use only:  Extract the header from the document metadata, as a
 // string of HTML
@@ -66,9 +67,10 @@ export const hasHeaderEditorOpen = () =>
     window.headerEditorWindow && !window.headerEditorWindow.closed
 
 /**
- * Install into a TinyMCE editor instance the one menu item that can be used in
- * the primary window to pop open the secondary window.  The menu item in
- * question is intended for the Edit menu, but could be placed anywhere.
+ * Install into a TinyMCE editor instance the menu items that can be used in
+ * the primary window to pop open the secondary window, or instead to move
+ * content between the header and the main document.  The menu items in question
+ * are intended for the Document menu, but could be placed anywhere.
  * 
  * @param {tinymce.editor} editor - the TinyMCE editor into which to install the
  *   tools
@@ -101,6 +103,67 @@ export const installHeaderEditor = editor => {
                     timeout : 5000
                 } )
             }, false )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'extractheader', {
+        text : 'Move header into document',
+        icon : 'chevron-down',
+        tooltip : 'Extract header to top of document',
+        onAction : () => {
+            if ( hasHeaderEditorOpen() ) {
+                editor.notificationManager.open( {
+                    type : 'error',
+                    text : 'You cannot extract the header while editing it in another window.'
+                } )
+                return
+            }
+            const header = getHeader( editor )
+            if ( header == '' ) {
+                editor.notificationManager.open( {
+                    type : 'warning',
+                    text : 'This document\'s header is currently empty.'
+                } )
+                return
+            }
+            appSettings.load()
+            appSettings.showWarning( 'warn before extract header', editor )
+            .then( () => {
+                editor.selection.setCursorLocation() // == start
+                editor.insertContent( header )
+                setHeader( editor, '' )
+                editor.undoManager.clear()
+            } )
+            .catch( () => { } )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'embedheader', {
+        text : 'Move selection to end of header',
+        icon : 'chevron-up',
+        tooltip : 'Embed selection from document to end of header',
+        onAction : () => {
+            if ( hasHeaderEditorOpen() ) {
+                editor.notificationManager.open( {
+                    type : 'error',
+                    text : 'You cannot extend the header while editing it in another window.'
+                } )
+                return
+            }
+            const toEmbed = editor.selection.getContent()
+            if ( toEmbed == '' ) {
+                editor.notificationManager.open( {
+                    type : 'warning',
+                    text : 'You do not currently have any content selected.'
+                } )
+                return
+            }
+            appSettings.load()
+            appSettings.showWarning( 'warn before embed header', editor )
+            .then( () => {
+                setHeader( editor, getHeader( editor ) + toEmbed )
+                editor.execCommand( 'delete' )
+                editor.undoManager.clear()
+            } )
+            .catch( () => { } )
         }
     } )
 }

@@ -51,7 +51,7 @@ const menuData = {
         'removeformat'
     ),
     document : buildMenu( 'Document',
-        'editheader docsettings'
+        'editheader extractheader embedheader docsettings'
     ),
     help : buildMenu( 'Help', 'help' )
 }
