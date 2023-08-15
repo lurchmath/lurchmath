@@ -123,6 +123,24 @@ export class TextSettingMetadata extends SettingMetadata {
 }
 
 /**
+ * A subclass of {@link SettingMetadata} for long text values
+ */
+export class LongTextSettingMetadata extends SettingMetadata {
+    /**
+     * Passes the parameters to the superclass for initialization, then marks
+     * this setting as one that should be represented in the UI using a
+     * textarea input widget (a multi-line input control, not just a one-line
+     * input).
+     * 
+     * @param  {...any} args - same arguments as for the superclass constructor
+     */
+    constructor ( name, label, defaultValue ) {
+        super( name, label, `${defaultValue}` )
+        this.type = 'textarea'
+    }
+}
+
+/**
  * A subclass of {@link SettingMetadata} for categorical values
  * 
  * (Not to be confused with {@link SettingsCategoryMetadata}, which groups a

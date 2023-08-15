@@ -6,12 +6,13 @@
  * which to install TinyMCE, and then doing that installation.
  */
 
-import { loadScript, appURL } from './utilities.js'
+import { loadScript } from './utilities.js'
 import { installSettings } from './settings-install.js'
 import { installDrive } from './google-drive-ui.js'
 import { installDownloadUpload } from './upload-download.js'
 import { installImport, loadFromQueryString } from './load-from-url.js'
 import { installHeaderEditor, isHeaderEditor, listenForHeader } from './header-editor.js'
+import { installDocumentSettings } from './document-settings.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -36,7 +37,7 @@ const menuData = {
         'cut copy paste pastetext',
         'selectall',
         'searchreplace',
-        'editheader'
+        'editheader docsettings'
     ),
     insert : buildMenu( 'Insert',
         'link emoticons hr',
@@ -94,6 +95,8 @@ loadScript( TinyMCEURL ).then( () => {
                 installDrive( editor )
                 // Install the menu item for editing the document's header
                 installHeaderEditor( editor )
+                // Install the menu item for editing the document's settings
+                installDocumentSettings( editor )
                 // After the editor is loaded, import a doc from the query string, if any:
                 editor.on( 'init', () => loadFromQueryString( editor ) )
             } else {

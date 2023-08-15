@@ -53,7 +53,7 @@ export const appSettings = new Settings(
             ),
             new NoteMetadata(
                 'Notes of any type with basic HTML content can be inserted '
-                + 'between any two settings.'
+              + 'between any two settings.'
             ),
             new CategorySettingMetadata(
                 'example categorical input',
