@@ -236,8 +236,10 @@ export class Settings extends Map {
                     dialog.close()
                     if ( details.name == 'no' )
                         return reject()
-                    if ( details.name == 'yes-and' )
+                    if ( details.name == 'yes-and' ) {
                         this.set( settingName, false )
+                        this.save()
+                    }
                     resolve()
                 }
             } )
