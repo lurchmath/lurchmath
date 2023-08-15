@@ -37,7 +37,7 @@ const menuData = {
         'cut copy paste pastetext',
         'selectall',
         'searchreplace',
-        'editheader docsettings'
+        'preferences'
     ),
     insert : buildMenu( 'Insert',
         'link emoticons hr',
@@ -50,12 +50,14 @@ const menuData = {
         'language',
         'removeformat'
     ),
+    document : buildMenu( 'Document',
+        'editheader docsettings'
+    ),
     help : buildMenu( 'Help', 'help' )
 }
 let toolbarData = 'undo redo | '
                 + 'styles bold italic | '
-                + 'alignleft aligncenter alignright outdent indent | '
-                + 'settings'
+                + 'alignleft aligncenter alignright outdent indent'
 
 // If this instance of the app is just a popup for editing the header in the
 // document of a different instance of the app, we will need to delete
@@ -77,6 +79,7 @@ loadScript( TinyMCEURL ).then( () => {
         selector : '#editor',
         promotion : false, // disable premium features advertisement
         toolbar : toolbarData,
+        menubar : 'file edit insert format document help',
         menu : menuData,
         plugins : 'fullscreen', // enable full screen mode
         statusbar : false,

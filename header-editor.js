@@ -65,7 +65,8 @@ export const isHeaderEditor = () =>
 export const installHeaderEditor = editor => {
     let headerEditor = null
     editor.ui.registry.addMenuItem( 'editheader', {
-        text : 'Document header',
+        text : 'Edit document header in new window',
+        icon : 'new-tab',
         tooltip : 'Edit document header',
         onAction : () => {
             if ( headerEditor && !headerEditor.closed ) {

@@ -44,7 +44,8 @@ export const documentSettingsMetadata = new SettingsMetadata(
  */
 export const installDocumentSettings = editor => {
     editor.ui.registry.addMenuItem( 'docsettings', {
-        text : 'Document settings',
+        text : 'Edit document settings',
+        icon : 'settings',
         tooltip : 'Edit document settings',
         onAction : () => new LurchDocument( editor ).showSettingsInterface()
     } )  

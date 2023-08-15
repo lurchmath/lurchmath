@@ -79,9 +79,10 @@ export const appSettings = new Settings(
  * @function
  */
 export const installSettings = editor => {
-    editor.ui.registry.addButton( 'settings', {
+    editor.ui.registry.addMenuItem( 'preferences', {
+        text : 'Preferences',
+        tooltip : 'Preferences',
         icon : 'preferences',
-        tooltip : 'Edit application settings',
         onAction : () => {
             appSettings.load()
             appSettings.userEdit( editor ).then( changes => {
