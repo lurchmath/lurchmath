@@ -15,6 +15,8 @@
  * needed for the secondary copy of the app, and a function for passing the
  * edited header information back to the primary window upon request from the
  * user.
+ * 
+ * @module HeaderEditor
  */
 
 import { appURL } from './utilities.js'
@@ -46,6 +48,7 @@ const headerFlag = 'editHeader'
  * 
  * @returns {boolean} whether this app window is for editing the document
  *   header from a separate (original) Lurch app window
+ * @function
  */
 export const isHeaderEditor = () =>
     new URL( window.location ).searchParams.get( headerFlag ) == 'true'
@@ -57,6 +60,7 @@ export const isHeaderEditor = () =>
  * 
  * @param {tinymce.editor} editor - the TinyMCE editor into which to install the
  *   tools
+ * @function
  */
 export const installHeaderEditor = editor => {
     let headerEditor = null
@@ -100,6 +104,7 @@ export const installHeaderEditor = editor => {
  * 
  * @param {tinymce.editor} editor - the TinyMCE editor into which to load the
  *   header data, once we receive it from the primary window
+ * @function
  */
 export const listenForHeader = editor => {
     let mainEditor = null

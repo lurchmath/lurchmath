@@ -42,6 +42,7 @@ const getFromURL = url => new Promise( ( resolve, reject ) => {
  * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
  *   menu item should be installed
+ * @function
  */
 export const installImport = editor => {
     editor.ui.registry.addMenuItem( 'import', {
@@ -99,6 +100,7 @@ export const installImport = editor => {
  * 
  * @param {tinymce.Editor} editor - the TinyMCE editor instance into which to
  *   load the document specified in the query string, if there is one
+ * @function
  */
 export const loadFromQueryString = editor => {
     const params = new URL( window.location ).searchParams

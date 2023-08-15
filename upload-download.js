@@ -19,6 +19,7 @@ import { LurchDocument } from './lurch-document.js'
  * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
  *   menu items should be installed
+ * @function
  */
 export const installDownloadUpload = editor => {
     editor.ui.registry.addMenuItem( 'download', {

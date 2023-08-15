@@ -56,6 +56,8 @@ export const copyWithoutPrototype = object => {
  * Return the URL for this app.  It is taken directly from the browser's
  * navigation bar, but it excludes any query string that may be present.
  * It will be of the form `protocol://domain.name/path/to/file.html`.
+ *
+ * @function
  */
 export const appURL = () => {
     const result = window.location.protocol + '//'
