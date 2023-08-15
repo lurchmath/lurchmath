@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: SettingsMetadata</title>
+    <title>Lurch Web User Interface: DocumentSettings</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -36,8 +36,8 @@
 
 <main class="layout-main ">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">SettingsMetadata</h1>
+    <p class="page-kind">Module</p>
+    <h1 class="page-title">DocumentSettings</h1>
     
 
 
@@ -46,31 +46,9 @@
 <section>
 
 
-<header class="class">
+<header class="not-class">
 
 
-    
-        
-        <!-- <h2>SettingsMetadata</h2> -->
-
-        
-
-        
-
-        
-            
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> that does not actually correspond to
-just one setting, but to an entire collection of settings, organized into
-categories.  So the singular <a href="SettingMetadata.html">SettingMetadata</a> is for just one, and
-those are collected into categories using <a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a>,
-and those categories are collected into the full set of settings for an app
-using this class, <a href="SettingsMetadata.html">SettingsMetadata</a> (the plural of
-<a href="SettingMetadata.html">SettingMetadata</a>).</p>
-<p>Because each <a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a> will be presented to the user
-as a tab on a dialog, and this class represents several categories, it is
-presented to the user as a dialog with one or more tabs, one for each
-category contained in this collection.</p></div>
-        
     
 </header>
 
@@ -81,86 +59,89 @@ category contained in this collection.</p></div>
 
     
         
+            <div class="description"><p>This module exports one function that installs in a TinyMCE editor features
+for editing document settings, and it also exports the metadata for Lurch
+document settings, including fields such as title, author, date, and
+abstract.  This metadata can be used by the <a href="LurchDocument.html">LurchDocument</a> class to
+edit document-level settings, which are distinct from the application-level
+settings defined in <a href="module-SettingsInstaller.html">the Settings Installer module</a>.</p></div>
+        
+
+        
 
 
-
-
+<div class="details">
+    
 
     
 
-
-    
-    <h3 class="subtitle">Constructor</h3>
     
 
-    <div class="method-type">
     
-    </div>
 
-    <h4 class="method-name" id="SettingsMetadata">new SettingsMetadata<span class="signature">(&hellip;categories)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
     
-    <p>Create a collection of settings categories</p>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 </div>
 
 
+        
+    
+    </div>
 
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
     
 
-<ul class="method-params">
     
 
-        <li>
-            
-                <span class="param-name">categories</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Array.&lt;<a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a>></code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>the categories in this
-settings collection, in the order they should be shown to the user when
-editing settings</p></div>
-            
-        </li>
+     
 
     
-</ul>
+
+    
+
+
+    
+        <h3 class="subtitle">Members</h3>
+
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id=".documentSettingsMetadata">documentSettingsMetadata<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>This metadata object can be used to create a <a href="Settings.html">Settings</a> instance for
+any given document, which can then present a UI to the user for editing the
+document's setting (using <a href="Settings.html#userEdit">its userEdit() function</a>).
+The <a href="LurchDocument.html">LurchDocument</a> class provides functionality for using this
+metadata object in exactly that way.</p>
+</div>
+
+
 
 
 
@@ -204,47 +185,16 @@ editing settings</p></div>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
+    <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.372">, line 372</a>
+            <a href="document-settings.js.html">document-settings.js</a><a href="document-settings.js.html#source.27">, line 27</a>
         </li>
     </ul>
 
 
-
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="SettingsMetadata.html">SettingsMetadata</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
+</article>
+        
     
 
     
@@ -265,10 +215,10 @@ editing settings</p></div>
     
 
     <div class="method-type">
-    
+    <span class="method-type-signature is-static">static</span>
     </div>
 
-    <h4 class="method-name" id="control">control<span class="signature">()</span><span class="return-type-signature"> &rarr; {Object}</span>
+    <h4 class="method-name" id=".installDocumentSettings">installDocumentSettings<span class="signature">(editor)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -277,366 +227,8 @@ editing settings</p></div>
 
 <div class="method-description">
     
-    <p>Whenever this collection needs to be presented to the user in the UI,
-this function will be called to create JSON data representing the
-collection, which will be the body of a dialog, as exemplified here:
-<a href="https://www.tiny.cloud/docs/tinymce/6/dialog-components/#dialog-instance-api-methods">https://www.tiny.cloud/docs/tinymce/6/dialog-components/#dialog-instance-api-methods</a></p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Object</code>
-            
-            
-                <p>an object representing the body of a dialog that would
-let the user edit this collection of settings</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.393">, line 393</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="defaultSettings">defaultSettings<span class="signature">()</span><span class="return-type-signature"> &rarr; {Object}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>For all settings in this collection, look up their default values and
-return the result as an object mapping setting names to those default
-values.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Object</code>
-            
-            
-                <p>a set of key-value pairs mapping names of settings to
-their default values for all settings in this collection</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.418">, line 418</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="keys">keys<span class="signature">()</span><span class="return-type-signature"> &rarr; {Array.&lt;String>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Creates an ordered list of all the names of all the settings in this
-collection.  (The &quot;name&quot; of each setting is used as the &quot;key&quot; in any
-key-value dictionary representing settings, hence the term &quot;keys.&quot;)</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Array.&lt;String></code>
-            
-            
-                <p>the keys in the order they appear in this collection</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.406">, line 406</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="metadataFor">metadataFor<span class="signature">(key)</span><span class="return-type-signature"> &rarr; {<a href="SettingMetadata.html">SettingMetadata</a>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Given a setting's name, we can look up its metadata and return the
-appropriate <a href="SettingMetadata.html">SettingMetadata</a> instance, if one with that name exists in
-this collection.  Otherwise, we return undefined.</p>
+    <p>Installs in a given TinyMCE editor the UI features for editing document
+settings.</p>
 </div>
 
 
@@ -655,7 +247,7 @@ this collection.  Otherwise, we return undefined.</p>
 
         <li>
             
-                <span class="param-name">key</span>
+                <span class="param-name">editor</span>
             
 
             
@@ -663,7 +255,7 @@ this collection.  Otherwise, we return undefined.</p>
 
 
     <span class="param-type">
-        <code>String</code>
+        <code>tinymce.Editor</code>
     </span>
     
 
@@ -673,8 +265,8 @@ this collection.  Otherwise, we return undefined.</p>
 
             
 
-            <div class="param-description"><p>the name of the setting whose metadata we should look
-up</p></div>
+            <div class="param-description"><p>the editor into which to install the
+features</p></div>
             
         </li>
 
@@ -719,21 +311,6 @@ up</p></div>
 
 
 
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>SettingMetadata</code>
-            
-            
-                <p>the metadata in question, or undefined if no
-such metadata exists in this collection</p>
-            
-        </li>
-    
-    </ul>
-
 
 
 
@@ -752,7 +329,7 @@ such metadata exists in this collection</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.435">, line 435</a>
+            <a href="document-settings.js.html">document-settings.js</a><a href="document-settings.js.html#source.45">, line 45</a>
         </li>
     </ul>
 

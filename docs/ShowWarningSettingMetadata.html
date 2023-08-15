@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: SettingsMetadata</title>
+    <title>Lurch Web User Interface: ShowWarningSettingMetadata</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Class</p>
-    <h1 class="page-title">SettingsMetadata</h1>
+    <h1 class="page-title">ShowWarningSettingMetadata</h1>
     
 
 
@@ -51,7 +51,7 @@
 
     
         
-        <!-- <h2>SettingsMetadata</h2> -->
+        <!-- <h2>ShowWarningSettingMetadata</h2> -->
 
         
 
@@ -59,17 +59,20 @@
 
         
             
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> that does not actually correspond to
-just one setting, but to an entire collection of settings, organized into
-categories.  So the singular <a href="SettingMetadata.html">SettingMetadata</a> is for just one, and
-those are collected into categories using <a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a>,
-and those categories are collected into the full set of settings for an app
-using this class, <a href="SettingsMetadata.html">SettingsMetadata</a> (the plural of
-<a href="SettingMetadata.html">SettingMetadata</a>).</p>
-<p>Because each <a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a> will be presented to the user
-as a tab on a dialog, and this class represents several categories, it is
-presented to the user as a dialog with one or more tabs, one for each
-category contained in this collection.</p></div>
+            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for whether to show a warning</p>
+<p>There are often situations in an application where a user has attempted to
+take a dangerous action (e.g., delete something important) and the
+application pops up a warning first asking the user to confirm that they
+really meant to take that action.  It is common to give the user an option on
+such a warning dialog along the lines of &quot;Don't show this warning again.&quot;</p>
+<p>But in order to make the user's choice permanent, it must be stored in the
+application settings.  And of course the user must also be able to edit it
+there, in case they change their mind.</p>
+<p>This is therefore the metadata for a special type of boolean setting whose
+meaning is &quot;Show warnings before doing X,&quot; for some value of X.  In other
+words, a true value means to show the warning and a false value means not to
+show the warning.  Such settings always default to true, and the user can
+change them to false if they wish.</p></div>
         
     
 </header>
@@ -97,7 +100,7 @@ category contained in this collection.</p></div>
     
     </div>
 
-    <h4 class="method-name" id="SettingsMetadata">new SettingsMetadata<span class="signature">(&hellip;categories)</span><span class="return-type-signature"></span>
+    <h4 class="method-name" id="ShowWarningSettingMetadata">new ShowWarningSettingMetadata<span class="signature">(name, label, warningText)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -106,7 +109,11 @@ category contained in this collection.</p></div>
 
 <div class="method-description">
     
-    <p>Create a collection of settings categories</p>
+    <p>Marks this setting as a checkbox with the given name and label, set its
+default value to true, and also stores the warning text that will be
+shown to users if they attempt an action associated with this warning.
+Note the importance highlighted below of phrasing the checkbox's label in
+a way that is consistent with the meaning of this setting.</p>
 </div>
 
 
@@ -125,7 +132,7 @@ category contained in this collection.</p></div>
 
         <li>
             
-                <span class="param-name">categories</span>
+                <span class="param-name">name</span>
             
 
             
@@ -133,29 +140,74 @@ category contained in this collection.</p></div>
 
 
     <span class="param-type">
-        <code>Array.&lt;<a href="SettingsCategoryMetadata.html">SettingsCategoryMetadata</a>></code>
+        <code>string</code>
     </span>
     
 
             
 
             
-                <span class="param-attributes">
+
+            
+
+            <div class="param-description"><p>same as in <a href="BoolSettingMetadata.html">BoolSettingMetadata</a></p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">label</span>
+            
+
+            
                 
 
-                
 
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
             
 
             
 
-            <div class="param-description"><p>the categories in this
-settings collection, in the order they should be shown to the user when
-editing settings</p></div>
+            
+
+            <div class="param-description"><p>same as in <a href="BoolSettingMetadata.html">BoolSettingMetadata</a>, but note
+that in this case it means the label shown next to the checkbox, which
+must match the semantics of this metadata, and thus should be phrased
+something like &quot;Show warnings before...&quot;</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">warningText</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the message to be printed in the dialog
+box when the warning is shown.  This should therefore be descriptive
+text, one or two sentences, so that the user understands the warning.</p></div>
             
         </li>
 
@@ -218,7 +270,7 @@ editing settings</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.372">, line 372</a>
+            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.110">, line 110</a>
         </li>
     </ul>
 
@@ -233,7 +285,7 @@ editing settings</p></div>
         <h3 class="subsection-title">Classes</h3>
 
         <dl>
-            <dt><a href="SettingsMetadata.html">SettingsMetadata</a></dt>
+            <dt><a href="ShowWarningSettingMetadata.html">ShowWarningSettingMetadata</a></dt>
             <dd></dd>
         </dl>
     
@@ -268,7 +320,7 @@ editing settings</p></div>
     
     </div>
 
-    <h4 class="method-name" id="control">control<span class="signature">()</span><span class="return-type-signature"> &rarr; {Object}</span>
+    <h4 class="method-name" id="convert">convert<span class="signature">(data)</span><span class="return-type-signature"> &rarr; {bool}</span>
     </h4>
 
 
@@ -277,366 +329,8 @@ editing settings</p></div>
 
 <div class="method-description">
     
-    <p>Whenever this collection needs to be presented to the user in the UI,
-this function will be called to create JSON data representing the
-collection, which will be the body of a dialog, as exemplified here:
-<a href="https://www.tiny.cloud/docs/tinymce/6/dialog-components/#dialog-instance-api-methods">https://www.tiny.cloud/docs/tinymce/6/dialog-components/#dialog-instance-api-methods</a></p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Object</code>
-            
-            
-                <p>an object representing the body of a dialog that would
-let the user edit this collection of settings</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.393">, line 393</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="defaultSettings">defaultSettings<span class="signature">()</span><span class="return-type-signature"> &rarr; {Object}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>For all settings in this collection, look up their default values and
-return the result as an object mapping setting names to those default
-values.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Object</code>
-            
-            
-                <p>a set of key-value pairs mapping names of settings to
-their default values for all settings in this collection</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.418">, line 418</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="keys">keys<span class="signature">()</span><span class="return-type-signature"> &rarr; {Array.&lt;String>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Creates an ordered list of all the names of all the settings in this
-collection.  (The &quot;name&quot; of each setting is used as the &quot;key&quot; in any
-key-value dictionary representing settings, hence the term &quot;keys.&quot;)</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Array.&lt;String></code>
-            
-            
-                <p>the keys in the order they appear in this collection</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.406">, line 406</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="metadataFor">metadataFor<span class="signature">(key)</span><span class="return-type-signature"> &rarr; {<a href="SettingMetadata.html">SettingMetadata</a>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Given a setting's name, we can look up its metadata and return the
-appropriate <a href="SettingMetadata.html">SettingMetadata</a> instance, if one with that name exists in
-this collection.  Otherwise, we return undefined.</p>
+    <p>Treats <code>true</code> as true and <code>&quot;true&quot;</code> as true, but all other values as
+false.</p>
 </div>
 
 
@@ -655,7 +349,7 @@ this collection.  Otherwise, we return undefined.</p>
 
         <li>
             
-                <span class="param-name">key</span>
+                <span class="param-name">data</span>
             
 
             
@@ -663,7 +357,7 @@ this collection.  Otherwise, we return undefined.</p>
 
 
     <span class="param-type">
-        <code>String</code>
+        <code>any</code>
     </span>
     
 
@@ -673,8 +367,7 @@ this collection.  Otherwise, we return undefined.</p>
 
             
 
-            <div class="param-description"><p>the name of the setting whose metadata we should look
-up</p></div>
+            <div class="param-description"><p>the data to convert to boolean</p></div>
             
         </li>
 
@@ -724,11 +417,10 @@ up</p></div>
     
         <li class="method-returns">
             
-                <code>SettingMetadata</code>
+                <code>bool</code>
             
             
-                <p>the metadata in question, or undefined if no
-such metadata exists in this collection</p>
+                <p>the same data, now as a boolean</p>
             
         </li>
     
@@ -752,7 +444,7 @@ such metadata exists in this collection</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.435">, line 435</a>
+            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.138">, line 138</a>
         </li>
     </ul>
 
