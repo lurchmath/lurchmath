@@ -1,4 +1,6 @@
 
+import { ShowWarningSettingMetadata } from './settings-metadata.js'
+
 /**
  * A class representing the values of the user's settings in an app.  Instances
  * of this class require metadata so that the settings can be presented to the
@@ -147,6 +149,97 @@ export class Settings extends Map {
                     resolve( changedKeys )
                 },
                 onCancel : () => resolve( [ ] ) // nothing changed (cancel)
+            } )
+        } )
+    }
+
+    /**
+     * When a user attempts to take a dangerous action (e.g., delete something
+     * important) the application may need to pop up a warning asking whether
+     * the user really meant to take that action, so that the application does
+     * not take the action if it was an accident on the user's part.  This
+     * function makes that easy.
+     * 
+     * First, the application settings metadata must contain a setting
+     * corresponding to the warning we want to display, for the reasons
+     * described in the {@link ShowWarningSettingMetadata} class.  (See that
+     * link for details.)
+     * 
+     * Second, the client can call this function and pass the name of the
+     * warning setting in question and the editor over which to pop up the
+     * warning dialog if one is needed.  The client receives a promise in return
+     * that resolves if the user wants to proceed and rejects otherwise.  The
+     * user also has the opportunity to say they always want to proceed, which
+     * will tweak the corresponding warning setting in this object
+     * appropriately.
+     * 
+     * Example use:
+     * ```js
+     * settings.showWarning( 'warn before delete files', editor ).then( () => {
+     *     // put here the code that deletes the files
+     * } ).catch( () => { } ) // to ensure no errors if they say no
+     * ```
+     * 
+     * @param {string} settingName - the name of the setting for the warning
+     * @param {tinymce.Editor} editor - the editor instance over which to pop up
+     *   the dialog, if one needs to be shown
+     * @returns {Promise} a promise that resolves if the user chooses to proceed
+     *   with the action and rejects if the user chooses not to proceed
+     */
+    showWarning ( settingName, editor ) {
+        // If this is not a warning setting, throw an error.
+        const metadata = this.metadata.metadataFor( settingName )
+        if ( !metadata || !( metadata instanceof ShowWarningSettingMetadata ) )
+            throw new Error( 'No such warning setting: ' + settingName )
+        const message = metadata.warningText + '<br/>'
+            + 'Are you sure you want to proceed?'
+        // If the user says not to show this warning, return a resolved promise
+        // so that subsequent client actions will be invoked immediately.
+        if ( !this.get( settingName ) ) return Promise.resolve()
+        // Otherwise return a promise whose resolution is contintgent upon the
+        // user's response to the appropriate warning dialog.
+        return new Promise( ( resolve, reject ) => {
+            const dialog = editor.windowManager.open( {
+                title : 'Warning',
+                body : {
+                    type : 'panel',
+                    items : [
+                        {
+                            type : 'alertbanner',
+                            level : 'warn',
+                            icon : 'warning',
+                            text : message
+                        }
+                    ],
+                },
+                buttons : [
+                    {
+                        text : 'Yes',
+                        name : 'yes',
+                        buttonType : 'secondary',
+                        type : 'custom'
+                    },
+                    {
+                        text : 'Yes and do not ask again',
+                        name : 'yes-and',
+                        buttonType : 'secondary',
+                        type : 'custom'
+                    },
+                    {
+                        text : 'No',
+                        name : 'no',
+                        buttonType : 'primary',
+                        type : 'custom'
+                    }
+                ],
+                onAction : ( _, details ) => {
+                    dialog.close()
+                    if ( details.name == 'no' )
+                        return reject()
+                    if ( details.name == 'yes-and' )
+                        this.set( settingName, false )
+                    resolve()
+                }
             } )
         } )
     }

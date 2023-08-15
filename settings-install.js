@@ -11,7 +11,7 @@ import { Settings } from './settings.js'
 import {
     SettingsMetadata, SettingsCategoryMetadata, BoolSettingMetadata,
     ColorSettingMetadata, CategorySettingMetadata, TextSettingMetadata,
-    NoteMetadata
+    NoteMetadata, ShowWarningSettingMetadata
 } from './settings-metadata.js'
 
 /**
@@ -42,6 +42,11 @@ export const appSettings = new Settings(
                 'example color',
                 'Example color value',
                 'red'
+            ),
+            new ShowWarningSettingMetadata(
+                'test warning',
+                'Show warning before eating mushrooms',
+                'I suppose it depends upon the musrooms...'
             )
         ),
         new SettingsCategoryMetadata(
@@ -83,5 +88,5 @@ export const installSettings = editor => {
                 if ( changes.length > 0 ) appSettings.save()
             } )
         }
-    } )  
+    } )
 }

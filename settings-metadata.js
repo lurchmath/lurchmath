@@ -89,6 +89,56 @@ export class BoolSettingMetadata extends SettingMetadata {
 }
 
 /**
+ * A subclass of {@link SettingMetadata} for whether to show a warning
+ * 
+ * There are often situations in an application where a user has attempted to
+ * take a dangerous action (e.g., delete something important) and the
+ * application pops up a warning first asking the user to confirm that they
+ * really meant to take that action.  It is common to give the user an option on
+ * such a warning dialog along the lines of "Don't show this warning again."
+ * 
+ * But in order to make the user's choice permanent, it must be stored in the
+ * application settings.  And of course the user must also be able to edit it
+ * there, in case they change their mind.
+ * 
+ * This is therefore the metadata for a special type of boolean setting whose
+ * meaning is "Show warnings before doing X," for some value of X.  In other
+ * words, a true value means to show the warning and a false value means not to
+ * show the warning.  Such settings always default to true, and the user can
+ * change them to false if they wish.
+ */
+export class ShowWarningSettingMetadata extends BoolSettingMetadata {
+    /**
+     * Marks this setting as a checkbox with the given name and label, set its
+     * default value to true, and also stores the warning text that will be
+     * shown to users if they attempt an action associated with this warning.
+     * Note the importance highlighted below of phrasing the checkbox's label in
+     * a way that is consistent with the meaning of this setting.
+     * 
+     * @param {string} name - same as in {@link BoolSettingMetadata}
+     * @param {string} label - same as in {@link BoolSettingMetadata}, but note
+     *   that in this case it means the label shown next to the checkbox, which
+     *   must match the semantics of this metadata, and thus should be phrased
+     *   something like "Show warnings before..."
+     * @param {string} warningText - the message to be printed in the dialog
+     *   box when the warning is shown.  This should therefore be descriptive
+     *   text, one or two sentences, so that the user understands the warning.
+     */
+    constructor ( name, label, warningText ) {
+        super( name, label, true )
+        this.warningText = warningText
+    }
+    /**
+     * Treats `true` as true and `"true"` as true, but all other values as
+     * false.
+     * 
+     * @param {any} data - the data to convert to boolean
+     * @returns {bool} the same data, now as a boolean
+     */
+    convert ( data ) { return data === true || data === 'true' }
+}
+
+/**
  * A subclass of {@link SettingMetadata} for color values
  */
 export class ColorSettingMetadata extends SettingMetadata {
