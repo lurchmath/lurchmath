@@ -42,16 +42,28 @@ const setHeader = ( editor, header ) =>
 const headerFlag = 'editHeader'
 
 /**
- * Detect whether the current copy of the app running in this window is one that
- * was created just as a subsidiary of another copy of the app, intended for
- * editing the header of the document in the original window.
+ * Detect whether the current copy of the app running in this window is the
+ * secondary one, created in service to another (primary) window elsewhere.
+ * In other words, return true if this is the secondary window and false if it
+ * is the primary one.
  * 
  * @returns {boolean} whether this app window is for editing the document
- *   header from a separate (original) Lurch app window
+ *   header from a separate (primary) Lurch app window
  * @function
  */
 export const isHeaderEditor = () =>
     new URL( window.location ).searchParams.get( headerFlag ) == 'true'
+
+/**
+ * Detect whether the current copy of the app running in this window is the
+ * primary window *and also* currently has a secondary window open for editing
+ * this window's header.
+ * 
+ * @returns {boolean} whether this app window has a secondary window open for
+ *   editing the header in this window's document
+ */
+export const hasHeaderEditorOpen = () =>
+    window.headerEditorWindow && !window.headerEditorWindow.closed
 
 /**
  * Install into a TinyMCE editor instance the one menu item that can be used in
@@ -63,25 +75,25 @@ export const isHeaderEditor = () =>
  * @function
  */
 export const installHeaderEditor = editor => {
-    let headerEditor = null
     editor.ui.registry.addMenuItem( 'editheader', {
         text : 'Edit document header in new window',
         icon : 'new-tab',
         tooltip : 'Edit document header',
         onAction : () => {
-            if ( headerEditor && !headerEditor.closed ) {
+            if ( hasHeaderEditorOpen() ) {
                 editor.notificationManager.open( {
                     type : 'warning',
                     text : 'You are already editing this document\'s header in another window.'
                 } )
                 return
             }
-            headerEditor = window.open(
+            window.headerEditorWindow = window.open(
                 `${appURL()}?${headerFlag}=true`, '_blank' )
-            headerEditor.addEventListener( 'load', () =>
-                headerEditor.postMessage( getHeader( editor ), appURL() ) )
+            window.headerEditorWindow.addEventListener( 'load', () =>
+                window.headerEditorWindow.postMessage(
+                    getHeader( editor ), appURL() ) )
             window.addEventListener( 'message', event => {
-                if ( event.source != headerEditor ) return
+                if ( event.source != window.headerEditorWindow ) return
                 setHeader( editor, event.data )
                 editor.notificationManager.open( {
                     type : 'success',
