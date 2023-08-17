@@ -25,7 +25,7 @@ import { LurchDocument } from './lurch-document.js'
  * We use it for this purpose in the menu item we create in the
  * {@link module:DocumentSettings.install install()} function.
  */
-const documentSettingsMetadata = new SettingsMetadata(
+export const documentSettingsMetadata = new SettingsMetadata(
     new SettingsCategoryMetadata(
         'Document metadata',
         new TextSettingMetadata( 'title', 'Title', '' ),
