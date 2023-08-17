@@ -77,8 +77,8 @@ describe( 'Settings', () => {
                 target : element,
                 setup : editor => {
                     installSettings( editor )
-                    expect( editor.ui.registry.getAll().buttons
-                        .hasOwnProperty( 'settings' ) ).to.equal( true )
+                    expect( editor.ui.registry.getAll().menuItems
+                        .hasOwnProperty( 'preferences' ) ).to.equal( true )
                     editor.on( 'init', () => done() )
                 }
             } )
