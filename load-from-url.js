@@ -24,10 +24,14 @@ const isValidURL = text => {
 }
 
 // Internal use only: Fetch a file from an URL using a Promise
-const getFromURL = url => new Promise( ( resolve, reject ) => {
+export const loadFromURL = url => new Promise( ( resolve, reject ) => {
     const request = new XMLHttpRequest()
-    request.addEventListener( 'load', event =>
-        resolve( event.currentTarget.responseText ) )
+    request.addEventListener( 'load', event => {
+        if ( event.target.status != 200 )
+            reject( event.currentTarget.responseText )
+        else
+            resolve( event.currentTarget.responseText )
+    } )
     request.addEventListener( 'error', reject )
     request.open( 'GET', url )
     request.send()
@@ -77,7 +81,7 @@ export const installImport = editor => {
                         isValidURL( dialog.getData()['url'] ) )
                 },
                 onSubmit : () => {
-                    getFromURL( dialog.getData()['url'] )
+                    loadFromURL( dialog.getData()['url'] )
                     .then( content =>
                         new LurchDocument( editor ).setDocument( content ) )
                     .catch( () => editor.notificationManager.open( {
@@ -111,7 +115,7 @@ export const loadFromQueryString = editor => {
             type : 'error',
             text : 'Not a valid URL for importing: ' + url
         } )
-    getFromURL( params.get( 'load' ) )
+    loadFromURL( params.get( 'load' ) )
     .then( content => new LurchDocument( editor ).setDocument( content ) )
     .catch( () => editor.notificationManager.open( {
         type : 'error',
