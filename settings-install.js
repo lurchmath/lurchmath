@@ -9,9 +9,7 @@
 
 import { Settings } from './settings.js'
 import {
-    SettingsMetadata, SettingsCategoryMetadata, BoolSettingMetadata,
-    ColorSettingMetadata, CategorySettingMetadata, TextSettingMetadata,
-    NoteMetadata, ShowWarningSettingMetadata
+    SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata
 } from './settings-metadata.js'
 
 /**
