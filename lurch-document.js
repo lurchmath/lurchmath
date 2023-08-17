@@ -1,7 +1,5 @@
 
 import { appURL } from './utilities.js'
-import { Settings } from './settings.js'
-import { documentSettingsMetadata } from './document-settings.js'
 import { className, Atom } from './atoms.js'
 
 /**
@@ -290,34 +288,6 @@ export class LurchDocument {
     deleteMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
         if ( element ) element.remove()
-    }
-
-    /**
-     * Pop up a user interface allowing the user to edit the document's
-     * settings.  Populate that user interface with the existing values of the
-     * settings stored in the document's metadata, and if the user accepts any
-     * changes they've made to the settings before closing the dialog, save
-     * those changes back into the document's metadata as well.
-     */
-    showSettingsInterface () {
-        // Create settings instance
-        const settings = new Settings( 'Document settings',
-            documentSettingsMetadata )
-        // Load document settings into it
-        const allowedKeys = settings.keys()
-        this.getMetadataKeys( 'settings' ).forEach( key => {
-            if ( allowedKeys.includes( key ) ) {
-                const metadata = settings.metadata.metadataFor( key )
-                const loaded = this.getMetadata( 'settings', key )
-                settings.set( key,
-                    metadata ? metadata.convert( loaded ) : loaded )
-            }
-        } )
-        // Present interface to user
-        settings.userEdit( this.editor )
-        // Save iff the user accepted the changes
-        .then( changedKeys => changedKeys.forEach( key =>
-            this.setMetadata( 'settings', key, 'json', settings.get( key ) ) ) )
     }
 
     /**
