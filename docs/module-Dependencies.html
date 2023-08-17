@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: upload-download.js</title>
+    <title>Lurch Web User Interface: Dependencies</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,131 +34,258 @@
 </header>
 
 
-<main class="layout-main  layout-content--source">
+<main class="layout-main ">
   <div class="container">
-    <p class="page-kind">source</p>
-    <h1 class="page-title">upload-download.js</h1>
+    <p class="page-kind">Module</p>
+    <h1 class="page-title">Dependencies</h1>
     
 
 
 
-    
 
 <section>
-    <article>
-        <pre id="source" class="source-page line-numbers"><code class="language-js">
-/**
- * This file installs two tools into the user interface, one menu item for
- * downloading the current Lurch document to the user's computer and another for
- * uploading a new Lurch document into the editor.
- * 
- * @module DownloadUpload
- */
 
-import { LurchDocument } from './lurch-document.js'
 
-/**
- * Install into a TinyMCE editor instance two new menu items: Download and
- * Upload, both intended for the File menu.  The download menu item allows the
- * user to download the current Lurch document to their computer, assuming that
- * the TinyMCE initialization code includes the "download" item on one of the
- * menus.  The upload menu item pops up a dialog into which the user can drag a
- * file to upload it into the editor.
- * 
- * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
- *   menu items should be installed
- * @function
- */
-export const installDownloadUpload = editor => {
-    editor.ui.registry.addMenuItem( 'download', {
-        text : 'Download',
-        icon : 'export',
-        tooltip : 'Download document',
-        onAction : () => {
-            const content = new LurchDocument( editor ).getDocument()
-            const anchor = document.createElement( 'a' )
-            anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
-                + encodeURIComponent( content ) ) 
-            anchor.setAttribute( 'download', 'lurch-document.html' )
-            document.body.appendChild( anchor )
-            anchor.click()
-            anchor.remove()
-        }
-    } )
-    editor.ui.registry.addMenuItem( 'upload', {
-        text : 'Upload',
-        icon : 'upload',
-        tooltip : 'Upload document',
-        onAction : () => {
-            let uploadedContent = null
-            const dialog = editor.windowManager.open( {
-                title : 'Upload a file to edit',
-                body : {
-                    type : 'panel',
-                    items : [
-                        {
-                            type : 'htmlpanel',
-                            html : `&lt;div id='fileUploadZone'>Drag a Lurch document here to open it.&lt;/div>`
-                        },
-                        {
-                            type : 'alertbanner',
-                            level : 'warn',
-                            icon : 'warning',
-                            text : 'This will overwrite the current contents of the editor.'
-                        }
-                    ]
-                },
-                buttons : [
-                    { text : 'Open', type : 'submit', enabled : false, name : 'openButton' },
-                    { text : 'Cancel', type : 'cancel' }
-                ],
-                onSubmit : () => {
-                    // This can be done only if the user has actually dragged a
-                    // file in; see the code below that enables the Open button.
-                    // That same code stores the uploaded file in the
-                    // uploadedContent variable, for us to access here.
-                    new LurchDocument( editor ).setDocument( uploadedContent )
-                    dialog.close()
-                }
-            } )
-            // Style the zone appropriately
-            const zone = document.getElementById( 'fileUploadZone' )
-            zone.style.width = '100%'
-            zone.style.height = '200px'
-            zone.style.border = '1px dashed black'
-            zone.style.display = 'flex'
-            zone.style.justifyContent = 'center'
-            zone.style.alignContent = 'center'
-            zone.style.flexDirection = 'column'
-            zone.style.textAlign = 'center'
-            // Handle basic events for styling and preventing file opening
-            zone.addEventListener( 'dragover', event => event.preventDefault() )
-            zone.addEventListener( 'dragenter', _ =>
-                zone.style.background = '#eeeeff' )
-            zone.addEventListener( 'dragleave', _ =>
-                zone.style.removeProperty( 'background' ) )
-            // If the user drops a file, upload it into a local variable and
-            // enable the Open button on the dialog footer.
-            zone.addEventListener( 'drop', event => {
-                event.preventDefault()
-                const dropped = event.dataTransfer.items ?
-                    Array.from( event.dataTransfer.items )
-                        .filter( item => item.kind == 'file' ) :
-                    Array.from( event.dataTransfer.files )
-                if ( dropped.length > 0 ) {
-                    const file = dropped[0].getAsFile()
-                    file.text().then( content => {
-                        uploadedContent = content
-                        zone.innerHTML = 'File uploaded.&lt;br>Confirm or cancel below.'
-                        dialog.setEnabled( 'openButton', true )
-                    } )
-                }
-            } )
-        }
-    } )
-}
-</code></pre>
+<header class="not-class">
+
+
+    
+</header>
+
+<article>
+    <div class="container-overview">
+
+
+
+    
+        
+            <div class="description"><p>This file installs one tool into the user interface, a menu item for
+inserting a dependecy-type atom into the document.  A user who edits such an
+atom can specify a URL for importing the dependency's content.</p>
+<p>Such an atom will have two important properties:</p>
+<ul>
+<li>Its <code>&quot;url&quot;</code> metadata entry will contain the URL from which the dependency
+was loaded, or it will be absent if the atom has not yet been configured
+by the user.  This is a simple piece of metadata, not HTML-type metadata;
+the difference between the two is documented
+<a href="module-Atoms.Atom.html#getHTMLMetadata">here</a>.</li>
+<li>Its <code>&quot;content&quot;</code> HTML metadata entry will contain the full content of the
+dependency that was loaded from the URL, or it will be absent if the atom
+has not yet been configured by the user.  This is a piece of HTML
+metadata, not simple metadata, because it will typically be large;
+the difference between the two is documented
+<a href="module-Atoms.Atom.html#getHTMLMetadata">here</a>.</li>
+</ul></div>
+        
+
+        
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+     
+
+    
+
+    
+
+
+    
+
+    
+        <h3 class="subtitle">Methods</h3>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".installDependencyMenuItem">installDependencyMenuItem<span class="signature">(editor)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Install into a TinyMCE editor instance a new menu item: Import dependency,
+intended for the Document menu.  It adds a dependency atom (with no content
+or URL) to the user's document, and if the user clicks it, they can then
+specify the URL in a popup dialog.  The dialog will attempt to import a
+document from the web using an <code>XMLHttpRequest</code> at that URL.  If that
+succeeds, the dialog will permit the user to save that content into the
+original dependency atom.</p>
+<p>This assumes that the TinyMCE initialization code includes the &quot;dependency&quot;
+item on one of the menus.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the TinyMCE editor instance into which the new
+menu item should be installed</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dependency.js.html">dependency.js</a><a href="dependency.js.html#source.56">, line 56</a>
+        </li>
+    </ul>
+
+
+
     </article>
+
+        
+    
+
+    
+
+    
+</article>
+
 </section>
 
 
