@@ -246,6 +246,16 @@ export class Atom {
     }
 
     /**
+     * Remove a metadata entry from this atom, with the given key.
+     * 
+     * @param {string} key - the key that (together with its value) should be
+     *   removed
+     */
+    removeMetadata ( key ) {
+        delete this.element.dataset[metadataKey( key )]
+    }
+
+    /**
      * Look up the keys for all metadata entries stored in this atom.  Atoms can
      * contain metadata mapping any string key to any JSONable value.  This
      * function returns only the keys, as an array.
@@ -327,6 +337,16 @@ export class Atom {
             newDatum.innerHTML = value.innerHTML || value
             this.getChild( 'metadata', true ).appendChild( newDatum )
         }
+    }
+
+    /**
+     * Remove an HTML metadata entry from this atom, with the given key.
+     * 
+     * @param {string} key - the key that (together with its value) should be
+     *   removed
+     */
+    removeHTMLMetadata ( key ) {
+        this.findMetadataElement( key )?.remove()
     }
 
     /**
