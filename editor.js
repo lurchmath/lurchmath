@@ -14,6 +14,7 @@ import { installImport, loadFromQueryString } from './load-from-url.js'
 import { installHeaderEditor, isHeaderEditor, listenForHeader } from './header-editor.js'
 import { installDocumentSettings } from './document-settings.js'
 import { installMouseHandlers } from './atoms.js'
+import { installDependencyMenuItem } from './dependency.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -52,7 +53,9 @@ const menuData = {
         'removeformat'
     ),
     document : buildMenu( 'Document',
-        'editheader extractheader embedheader docsettings'
+        'editheader extractheader embedheader',
+        'dependency',
+        'docsettings'
     ),
     help : buildMenu( 'Help', 'help' )
 }
@@ -95,6 +98,8 @@ loadScript( TinyMCEURL ).then( () => {
             installImport( editor )
             // Install mouse event handlers for Lurch atom elements
             installMouseHandlers( editor )
+            // Install menu item for adding dependencies
+            installDependencyMenuItem( editor )
             // Certain tools should be installed only on the main editor:
             if ( !isHeaderEditor() ) {
                 // Install Google Drive-related UI
