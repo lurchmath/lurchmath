@@ -10,7 +10,7 @@
 
 import { loadScript } from '../utilities.js'
 import { Settings } from '../settings.js'
-import { appSettings, installSettings } from '../settings-install.js'
+import { appSettings, install } from '../settings-install.js'
 import {
     SettingsMetadata, SettingsCategoryMetadata, SettingMetadata,
     BoolSettingMetadata, TextSettingMetadata
@@ -21,7 +21,7 @@ describe( 'Settings', () => {
     it( 'Should import correct identifiers', () => {
         expect( Settings ).to.be.ok
         expect( appSettings ).to.be.ok
-        expect( installSettings ).to.be.ok
+        expect( install ).to.be.ok
         expect( SettingMetadata ).to.be.ok
         expect( SettingsCategoryMetadata ).to.be.ok
         expect( SettingsMetadata ).to.be.ok
@@ -76,7 +76,7 @@ describe( 'Settings', () => {
             tinymce.init( {
                 target : element,
                 setup : editor => {
-                    installSettings( editor )
+                    install( editor )
                     expect( editor.ui.registry.getAll().menuItems
                         .hasOwnProperty( 'preferences' ) ).to.equal( true )
                     editor.on( 'init', () => done() )

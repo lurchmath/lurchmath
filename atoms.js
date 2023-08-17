@@ -24,7 +24,7 @@
  * 
  * This module contains tools for working with atoms, including the
  * {@link module:Atoms.className class name} we use to distinguish them, the
- * {@link module:Atoms.installMouseHandlers function} we use to install their
+ * {@link module:Atoms.install function} we use to install their
  * mouse event handlers, and most importantly, the
  * {@link module:Atoms.Atom class} we use to create an API for working with
  * individual atoms.
@@ -472,7 +472,7 @@ export class Atom {
  *   handlers
  * @function
  */
-export const installMouseHandlers = editor => {
+export const install = editor => {
     editor.on( 'init', () => {
         editor.dom.doc.body.addEventListener( 'click', event => {
             const receiver = Atom.findAbove( event.target, editor )
@@ -486,3 +486,5 @@ export const installMouseHandlers = editor => {
         } )
     } )
 }
+
+export default { className, Atom, install }

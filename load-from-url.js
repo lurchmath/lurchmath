@@ -48,7 +48,7 @@ export const loadFromURL = url => new Promise( ( resolve, reject ) => {
  *   menu item should be installed
  * @function
  */
-export const installImport = editor => {
+export const install = editor => {
     editor.ui.registry.addMenuItem( 'import', {
         text : 'Import from URL',
         tooltip : 'Import document from URL',
@@ -123,3 +123,5 @@ export const loadFromQueryString = editor => {
             (Not all servers permit downloads from other domains.)`
     } ) )
 }
+
+export default { loadFromQueryString, loadFromURL, install }

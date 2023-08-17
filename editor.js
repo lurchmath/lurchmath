@@ -7,14 +7,14 @@
  */
 
 import { loadScript } from './utilities.js'
-import { installSettings } from './settings-install.js'
-import { installDrive } from './google-drive-ui.js'
-import { installDownloadUpload } from './upload-download.js'
-import { installImport, loadFromQueryString } from './load-from-url.js'
-import { installHeaderEditor, isHeaderEditor, listenForHeader } from './header-editor.js'
-import { installDocumentSettings } from './document-settings.js'
-import { installMouseHandlers } from './atoms.js'
-import { installDependencyMenuItem } from './dependency.js'
+import Settings from './settings-install.js'
+import GoogleDrive from './google-drive-ui.js'
+import UploadDownload from './upload-download.js'
+import Importer from './load-from-url.js'
+import Headers from './header-editor.js'
+import DocSettings from './document-settings.js'
+import Atoms from './atoms.js'
+import Dependencies from './dependency.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -66,7 +66,7 @@ let toolbarData = 'undo redo | '
 // If this instance of the app is just a popup for editing the header in the
 // document of a different instance of the app, we will need to delete
 // irrelevant menu items before they get installed/displayed:
-if ( isHeaderEditor() ) {
+if ( Headers.isEditor() ) {
     ;[
         'newlurchdocument', 'opendocument', 'savedocumentas', 'editheader'
     ].forEach( toRemove => {
@@ -90,30 +90,21 @@ loadScript( TinyMCEURL ).then( () => {
         setup : editor => {
             // Activate full screen mode as soon as the editor is ready
             editor.on( 'init', () => editor.execCommand( 'mceFullScreen' ) )
-            // Install settings-related UI
-            installSettings( editor )
-            // Install file downloader and uploader menu items
-            installDownloadUpload( editor )
-            // Install URL importer menu item
-            installImport( editor )
-            // Install mouse event handlers for Lurch atom elements
-            installMouseHandlers( editor )
-            // Install menu item for adding dependencies
-            installDependencyMenuItem( editor )
-            // Certain tools should be installed only on the main editor:
-            if ( !isHeaderEditor() ) {
-                // Install Google Drive-related UI
-                installDrive( editor )
-                // Install the menu item for editing the document's header
-                installHeaderEditor( editor )
-                // Install the menu item for editing the document's settings
-                installDocumentSettings( editor )
-                // After the editor is loaded, import a doc from the query string, if any:
-                editor.on( 'init', () => loadFromQueryString( editor ) )
+            // Install all tools the editor always needs:
+            Settings.install( editor )
+            UploadDownload.install( editor )
+            Importer.install( editor )
+            Atoms.install( editor )
+            Dependencies.install( editor )
+            if ( !Headers.isEditor() ) {
+                // Install tools we need only if we are the primary app window:
+                GoogleDrive.install( editor )
+                Headers.install( editor )
+                DocSettings.install( editor )
+                editor.on( 'init', () => Importer.loadFromQueryString( editor ) )
             } else {
-                // But the header editor needs to listen for a setup message
-                // that we will send it right after it loads:
-                listenForHeader( editor )
+                // Install tools we need only if we are the secondary app window:
+                Headers.listen( editor )
             }
         }
     } )

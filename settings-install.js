@@ -48,7 +48,7 @@ export const appSettings = new Settings(
  *   features
  * @function
  */
-export const installSettings = editor => {
+export const install = editor => {
     editor.ui.registry.addMenuItem( 'preferences', {
         text : 'Preferences',
         tooltip : 'Preferences',
@@ -61,3 +61,5 @@ export const installSettings = editor => {
         }
     } )
 }
+
+export default { appSettings, install }

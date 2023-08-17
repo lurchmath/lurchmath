@@ -21,7 +21,7 @@ import { LurchDocument } from './lurch-document.js'
  *   menu items should be installed
  * @function
  */
-export const installDownloadUpload = editor => {
+export const install = editor => {
     editor.ui.registry.addMenuItem( 'download', {
         text : 'Download',
         icon : 'export',
@@ -109,3 +109,5 @@ export const installDownloadUpload = editor => {
         }
     } )
 }
+
+export default { install }

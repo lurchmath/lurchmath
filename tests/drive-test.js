@@ -9,12 +9,12 @@
 //  - loading file into or saving them from the editor
 
 import { loadScript } from '../utilities.js'
-import { installDrive } from '../google-drive-ui.js'
+import { install } from '../google-drive-ui.js'
 
 describe( 'Google Drive integration', () => {
 
     it( 'Should import correct identifier', () => {
-        expect( installDrive ).to.be.ok
+        expect( install ).to.be.ok
     } )
 
     it( 'Should install correctly into a TinyMCE instance', done => {
@@ -22,7 +22,7 @@ describe( 'Google Drive integration', () => {
             tinymce.init( {
                 target : document.createElement( 'textarea' ),
                 setup : editor => {
-                    installDrive( editor )
+                    install( editor )
                     const menuItems = editor.ui.registry.getAll().menuItems
                     expect( menuItems.hasOwnProperty( 'newlurchdocument' ) ).to.equal( true )
                     expect( menuItems.hasOwnProperty( 'opendocument' ) ).to.equal( true )

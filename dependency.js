@@ -53,7 +53,7 @@ const updateAppearance = dependencyAtom => {
  *   menu item should be installed
  * @function
  */
-export const installDependencyMenuItem = editor => {
+export const install = editor => {
     editor.ui.registry.addMenuItem( 'dependency', {
         icon : 'duplicate-row',
         text : 'Import dependency',
@@ -158,3 +158,5 @@ Atom.addType( 'dependency', clickedAtom => {
         }
     } )
 } )
+
+export default { install }

@@ -142,7 +142,7 @@ const silentFileSave = ( editor, fileId, content ) => {
  *   should be installed
  * @function
  */
-export const installDrive = editor => {
+export const install = editor => {
     editor.ui.registry.addMenuItem( 'newlurchdocument', {
         text : 'New',
         icon : 'new-document',
@@ -176,3 +176,5 @@ export const installDrive = editor => {
             showSaveAsDialog( editor )
     } )
 }
+
+export default { install }

@@ -52,7 +52,7 @@ const headerFlag = 'editHeader'
  *   header from a separate (primary) Lurch app window
  * @function
  */
-export const isHeaderEditor = () =>
+export const isEditor = () =>
     new URL( window.location ).searchParams.get( headerFlag ) == 'true'
 
 /**
@@ -63,7 +63,7 @@ export const isHeaderEditor = () =>
  * @returns {boolean} whether this app window has a secondary window open for
  *   editing the header in this window's document
  */
-export const hasHeaderEditorOpen = () =>
+export const hasEditorOpen = () =>
     window.headerEditorWindow && !window.headerEditorWindow.closed
 
 /**
@@ -76,13 +76,13 @@ export const hasHeaderEditorOpen = () =>
  *   tools
  * @function
  */
-export const installHeaderEditor = editor => {
+export const install = editor => {
     editor.ui.registry.addMenuItem( 'editheader', {
         text : 'Edit document header in new window',
         icon : 'new-tab',
         tooltip : 'Edit document header',
         onAction : () => {
-            if ( hasHeaderEditorOpen() ) {
+            if ( hasEditorOpen() ) {
                 editor.notificationManager.open( {
                     type : 'warning',
                     text : 'You are already editing this document\'s header in another window.'
@@ -110,7 +110,7 @@ export const installHeaderEditor = editor => {
         icon : 'chevron-down',
         tooltip : 'Extract header to top of document',
         onAction : () => {
-            if ( hasHeaderEditorOpen() ) {
+            if ( hasEditorOpen() ) {
                 editor.notificationManager.open( {
                     type : 'error',
                     text : 'You cannot extract the header while editing it in another window.'
@@ -141,7 +141,7 @@ export const installHeaderEditor = editor => {
         icon : 'chevron-up',
         tooltip : 'Embed selection from document to end of header',
         onAction : () => {
-            if ( hasHeaderEditorOpen() ) {
+            if ( hasEditorOpen() ) {
                 editor.notificationManager.open( {
                     type : 'error',
                     text : 'You cannot extend the header while editing it in another window.'
@@ -182,7 +182,7 @@ export const installHeaderEditor = editor => {
  *   header data, once we receive it from the primary window
  * @function
  */
-export const listenForHeader = editor => {
+export const listen = editor => {
     let mainEditor = null
     editor.setContent( 'Loading header...' )
     editor.mode.set( 'readonly' )
@@ -209,3 +209,5 @@ export const listenForHeader = editor => {
         }
     } )
 }
+
+export default { isEditor, hasEditorOpen, install, listen }
