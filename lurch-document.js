@@ -308,4 +308,26 @@ export class LurchDocument {
             this.setMetadata( 'settings', key, 'json', settings.get( key ) ) ) )
     }
 
+    /**
+     * For details of what an atom is, read the documentation of
+     * {@link the Atom class}.  An editor can have any number of atoms in it,
+     * each of which is represented as some HTML indicating that it is an atom,
+     * but which is more convenient to work with in JavaScript through use of
+     * the {@link Atom} class.
+     * 
+     * This function finds all atoms in the editor's HTML content, converts each
+     * to an instance of the {@link Atom} class, and returns the resulting
+     * array.
+     * 
+     * @returns {Atom[]} an array of all the atoms in the editor, each one
+     *   represented as an instance of the {@link Atom} class
+     */
+    atoms () {
+        return Array.from(
+            this.editor.getDoc().getElementsByClassName( className )
+        ).filter( element =>
+            !element.parentNode.classList.contains( 'mce-offscreen-selection' )
+        ).map( element => new Atom( element, this.editor ) )
+    }
+
 }

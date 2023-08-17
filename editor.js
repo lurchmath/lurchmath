@@ -13,6 +13,7 @@ import { installDownloadUpload } from './upload-download.js'
 import { installImport, loadFromQueryString } from './load-from-url.js'
 import { installHeaderEditor, isHeaderEditor, listenForHeader } from './header-editor.js'
 import { installDocumentSettings } from './document-settings.js'
+import { installMouseHandlers } from './atoms.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -92,6 +93,8 @@ loadScript( TinyMCEURL ).then( () => {
             installDownloadUpload( editor )
             // Install URL importer menu item
             installImport( editor )
+            // Install mouse event handlers for Lurch atom elements
+            installMouseHandlers( editor )
             // Certain tools should be installed only on the main editor:
             if ( !isHeaderEditor() ) {
                 // Install Google Drive-related UI
