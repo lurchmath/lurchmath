@@ -12,6 +12,7 @@
  */
 
 import { LurchDocument } from './lurch-document.js'
+import { appURL } from './utilities.js'
 
 // Internal use only: Check to see if a string is a valid URL
 const isValidURL = text => {
@@ -123,5 +124,17 @@ export const loadFromQueryString = editor => {
             (Not all servers permit downloads from other domains.)`
     } ) )
 }
+
+/**
+ * Create a URL that will load the Lurch app and then import a document from a
+ * given URL immediately.
+ * 
+ * @param {string} url - the URL referring to the document that should be opened
+ * @returns {string} a URL that points to this Lurch app, but with the given
+ *   `url` embedded in the query string, as an instruction to open it
+ * @function
+ */
+export const autoOpenLink = url =>
+    appURL() + '?load=' + encodeURIComponent( url )
 
 export default { loadFromQueryString, loadFromURL, install }

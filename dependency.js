@@ -23,7 +23,7 @@
 
 import { Atom } from './atoms.js'
 import { escapeHTML } from './utilities.js'
-import { loadFromURL } from './load-from-url.js'
+import { loadFromURL, autoOpenLink } from './load-from-url.js'
 import { LurchDocument } from './lurch-document.js'
 
 // Internal use only.  Given a dependency-type atom, updates its body HTML code
@@ -69,30 +69,43 @@ export const install = editor => {
 
 // Internal use only: Show the dialog whose behavior is described above.
 Atom.addType( 'dependency', clickedAtom => {
+    const existingURL = clickedAtom.getMetadata( 'url' )
     const dialog = clickedAtom.editor.windowManager.open( {
-        title : 'Choose URL for dependency',
+        title : 'Edit dependency',
         body : {
             type : 'panel',
             items : [
                 {
                     type : 'input',
                     name : 'url',
-                    label : 'Dependency URL',
+                    label : 'Specify URL from which to download dependency:',
                     placeholder : 'http://...'
+                },
+                {
+                    type : 'bar',
+                    items : [
+                        {
+                            type : 'button',
+                            text : 'Download from URL',
+                            name : 'download'
+                        },
+                        {
+                            type : 'button',
+                            text : 'Preview contents in new window',
+                            name : 'preview',
+                            enabled : !!existingURL
+                        }
+                    ]
                 }
             ]
         },
         buttons : [
             {
-                text : 'Download from URL',
-                type : 'custom',
-                name : 'download'
-            },
-            {
                 text : 'Embed in document',
                 type : 'submit',
-                enabled : false,
-                name : 'embed'
+                enabled : !!existingURL,
+                name : 'embed',
+                buttonType : 'primary'
             },
             {
                 text : 'Cancel',
@@ -100,6 +113,7 @@ Atom.addType( 'dependency', clickedAtom => {
                 name : 'cancel'
             }
         ],
+        initialData : { url : existingURL || '' },
         onAction : ( _, details ) => {
             if ( details.name == 'download' ) {
                 dialog.block( 'Attempting to download dependency...' )
@@ -115,7 +129,7 @@ Atom.addType( 'dependency', clickedAtom => {
                             items : [
                                 {
                                     type : 'alertbanner',
-                                    text : 'Dependency downloaded successfully.<br>'
+                                    text : 'Dependency downloaded successfully.  '
                                          + 'You may now embed it into the document.',
                                     level : 'success',
                                     icon : 'duplicate-row'
@@ -127,6 +141,7 @@ Atom.addType( 'dependency', clickedAtom => {
                     } )
                     dialog.unblock()
                     dialog.setEnabled( 'embed', true )
+                    dialog.setEnabled( 'preview', true )
                 } )
                 .catch( _ => {
                     const failure = clickedAtom.editor.windowManager.open( {
@@ -136,7 +151,7 @@ Atom.addType( 'dependency', clickedAtom => {
                             items : [
                                 {
                                     type : 'alertbanner',
-                                    text : 'Dependency failed to download.<br>'
+                                    text : 'Dependency failed to download.  '
                                          + 'Try again or change the URL.',
                                     level : 'error',
                                     icon : 'warning'
@@ -148,6 +163,9 @@ Atom.addType( 'dependency', clickedAtom => {
                     } )
                     dialog.unblock()
                 } )
+            } else if ( details.name == 'preview' ) {
+                const previewURL = autoOpenLink( dialog.getData()['url'] )
+                window.open( previewURL, '_blank' )
             }
         },
         onSubmit : () => {

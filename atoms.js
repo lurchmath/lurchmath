@@ -74,7 +74,7 @@ export class Atom {
      * 
      * @param {string} type - the type of atom for which to register an event
      *   handler
-     * @param {function} handler the event handler being registered
+     * @param {function} handler - the event handler being registered
      */
     static addType ( type, handler ) { Atom.handlers.set( type, handler ) }
 
