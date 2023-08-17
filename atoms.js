@@ -228,7 +228,8 @@ export class Atom {
      *   the key is not in the metadata
      */
     getMetadata ( key ) {
-        return JSON.parse( this.element.dataset[metadataKey( key )] )
+        const json = this.element.dataset[metadataKey( key )]
+        return json ? JSON.parse( json ) : json
     }
 
     /**
