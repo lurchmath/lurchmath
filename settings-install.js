@@ -20,6 +20,8 @@ import {
  * we have the full collection of settings we will actually show to users in the
  * Lurch app.  Later, we can replace this with the actual definition of the
  * metadata for the app's settings.
+ * 
+ * @see {@link Settings}
  */
 export const appSettings = new Settings(
     'Application settings',

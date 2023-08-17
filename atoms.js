@@ -101,7 +101,8 @@ export class Atom {
 
     /**
      * Get the HTML representation of this atom, as it currently sits in the
-     * document.
+     * document.  There is no corresponding `setHTML()` function; instead, see
+     * {@link module:Atoms.Atom#fillChild fillChild()}.
      * 
      * @returns {string} the HTML representation of this atom
      */
@@ -151,6 +152,8 @@ export class Atom {
      * @param {boolean} createIfNeeded - whether to create the child in question
      *   if it does not already exist (default is `true`)
      * @returns {HTMLElement} the child of the given type inside this atom
+     * @see {@link module:Atoms.Atom#fillChild fillChild()}
+     * @see {@link module:Atoms.Atom#removeChild removeChild()}
      */
     getChild ( type = 'body', createIfNeeded = true ) {
         // determine whether the type is valid and where it should be placed
@@ -197,6 +200,8 @@ export class Atom {
      *   documentation for {@link module:Atoms.Atom#getChild getChild()} for a
      *   list of the valid children types
      * @param {string} html - the HTML code to use to fill the child
+     * @see {@link module:Atoms.Atom#getChild getChild()}
+     * @see {@link module:Atoms.Atom#removeChild removeChild()}
      */
     fillChild ( type, html ) { this.getChild( type ).innerHTML = html }
 
@@ -208,6 +213,8 @@ export class Atom {
      * @param {string} type - which type of child to write to; see the
      *   documentation for {@link module:Atoms.Atom#getChild getChild()} for a
      *   list of the valid children types
+     * @see {@link module:Atoms.Atom#getChild getChild()}
+     * @see {@link module:Atoms.Atom#fillChild fillChild()}
      */
     removeChild ( type ) { this.getChild( type, false )?.remove() }
 
@@ -226,6 +233,10 @@ export class Atom {
      * @param {string} key - the key whose value should be looked up
      * @returns {any} the data associated with the given key, or undefined if
      *   the key is not in the metadata
+     * @see {@link module:Atoms.Atom#setMetadata setMetadata()}
+     * @see {@link module:Atoms.Atom#removeMetadata removeMetadata()}
+     * @see {@link module:Atoms.Atom#getMetadataKeys getMetadataKeys()}
+     * @see {@link module:Atoms.Atom#getHTMLMetadata getHTMLMetadata()}
      */
     getMetadata ( key ) {
         const json = this.element.dataset[metadataKey( key )]
@@ -240,6 +251,10 @@ export class Atom {
      * 
      * @param {string} key - the key under which to store the value
      * @param {any} value - the value to store
+     * @see {@link module:Atoms.Atom#getMetadata getMetadata()}
+     * @see {@link module:Atoms.Atom#removeMetadata removeMetadata()}
+     * @see {@link module:Atoms.Atom#getMetadataKeys getMetadataKeys()}
+     * @see {@link module:Atoms.Atom#setHTMLMetadata setHTMLMetadata()}
      */
     setMetadata ( key, value ) {
         this.element.dataset[metadataKey( key )] = JSON.stringify( value )
@@ -250,6 +265,10 @@ export class Atom {
      * 
      * @param {string} key - the key that (together with its value) should be
      *   removed
+     * @see {@link module:Atoms.Atom#getMetadata getMetadata()}
+     * @see {@link module:Atoms.Atom#setMetadata setMetadata()}
+     * @see {@link module:Atoms.Atom#getMetadataKeys getMetadataKeys()}
+     * @see {@link module:Atoms.Atom#removeHTMLMetadata removeHTMLMetadata()}
      */
     removeMetadata ( key ) {
         delete this.element.dataset[metadataKey( key )]
@@ -262,6 +281,10 @@ export class Atom {
      * 
      * @returns {string[]} all keys under which metadata has been stored in this
      *   atom
+     * @see {@link module:Atoms.Atom#getMetadata getMetadata()}
+     * @see {@link module:Atoms.Atom#setMetadata setMetadata()}
+     * @see {@link module:Atoms.Atom#removeMetadata removeMetadata()}
+     * @see {@link module:Atoms.Atom#getHTMLMetadataKeys getHTMLMetadataKeys()}
      */
     getMetadataKeys () {
         return Object.keys( this.element.dataset )
@@ -302,6 +325,10 @@ export class Atom {
      * 
      * @param {string} key - the key whose HTML should be looked up
      * @returns {HTMLDivElement} the element wrapping the corresponding value
+     * @see {@link module:Atoms.Atom#setHTMLMetadata setHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#removeHTMLMetadata removeHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#getHTMLMetadataKeys getHTMLMetadataKeys()}
+     * @see {@link module:Atoms.Atom#getMetadata getMetadata()}
      */
     getHTMLMetadata ( key ) { return this.findMetadataElement( key ) }
 
@@ -324,6 +351,10 @@ export class Atom {
      * @param {string} key - the key under which to store the value
      * @param {HTMLElement|string} value - the value to store, either as an
      *   HTMLElement or a string
+     * @see {@link module:Atoms.Atom#getHTMLMetadata getHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#removeHTMLMetadata removeHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#getHTMLMetadataKeys getHTMLMetadataKeys()}
+     * @see {@link module:Atoms.Atom#setMetadata setMetadata()}
      */
     setHTMLMetadata ( key, value ) {
         if ( this.element.tagName != 'DIV' )
@@ -344,6 +375,10 @@ export class Atom {
      * 
      * @param {string} key - the key that (together with its value) should be
      *   removed
+     * @see {@link module:Atoms.Atom#getHTMLMetadata getHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#setHTMLMetadata setHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#getHTMLMetadataKeys getHTMLMetadataKeys()}
+     * @see {@link module:Atoms.Atom#removeMetadata removeMetadata()}
      */
     removeHTMLMetadata ( key ) {
         this.findMetadataElement( key )?.remove()
@@ -357,6 +392,10 @@ export class Atom {
      * 
      * @returns {string[]} all keys under which HTML metadata has been stored in
      *   this atom
+     * @see {@link module:Atoms.Atom#getHTMLMetadata getHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#setHTMLMetadata setHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#removeHTMLMetadata removeHTMLMetadata()}
+     * @see {@link module:Atoms.Atom#getMetadataKeys getMetadataKeys()}
      */
     getHTMLMetadataKeys () {
         return this.metadataElements().map( element => element.dataset.key )
@@ -372,6 +411,8 @@ export class Atom {
      * 
      * @param {HTMLElement} element - the element to check
      * @returns {boolean} whether the element represents an atom
+     * @see {@link module:Atoms.Atom.createElement createElement()}
+     * @see {@link module:Atoms.Atom.findAbove findAbove()}
      */
     static isAtomElement ( element ) {
         return ( element.tagName == 'DIV' || element.tagName == 'SPAN' )
@@ -388,6 +429,7 @@ export class Atom {
      * @param {Node} node - the DOM node from which to begin searching
      * @param {tinymce.Editor} editor - the editor in which the node sits
      * @returns {Atom?} the nearest Atom node enclosing the given `node`
+     * @see {@link module:Atoms.Atom.isAtomElement isAtomElement()}
      */
     static findAbove ( node, editor ) {
         for ( let walk = node ; walk ; walk = walk.parentNode )
@@ -408,6 +450,9 @@ export class Atom {
      * @param {string} tagName - the tag to use, `"span"` for inline atoms or
      *   `"div"` for block-type atoms (which is the default)
      * @returns {HTMLElement} the element constructed
+     * @see {@link module:Atoms.Atom.create create()}
+     * @see {@link module:Atoms.Atom.newInline newInline()}
+     * @see {@link module:Atoms.Atom.newBlock newBlock()}
      */
     static createElement ( editor, tagName = 'div' ) {
         if ( tagName.toLowerCase() != 'div' && tagName.toLowerCase() != 'span' )
@@ -436,6 +481,9 @@ export class Atom {
      *   `{ }`, meaning not to add any metadata)
      * @returns {Atom} the Atom instance corresponding to the newly created
      *   atom element
+     * @see {@link module:Atoms.Atom.createElement createElement()}
+     * @see {@link module:Atoms.Atom.newInline newInline()}
+     * @see {@link module:Atoms.Atom.newBlock newBlock()}
      */
     static create ( editor, tagName, content, metadata = { } ) {
         const result = new Atom( Atom.createElement( editor, tagName ), editor )
@@ -458,6 +506,9 @@ export class Atom {
      * @param {Object} metadata - same as in
      *   {@link module:Atoms.Atom.create create()}
      * @returns {Atom} same as in {@link module:Atoms.Atom.create create()}
+     * @see {@link module:Atoms.Atom.create create()}
+     * @see {@link module:Atoms.Atom.createElement createElement()}
+     * @see {@link module:Atoms.Atom.newBlock newBlock()}
      */
     static newInline ( editor, content, metadata = { } ) {
         return Atom.create( editor, 'span', content, metadata )
@@ -476,6 +527,9 @@ export class Atom {
      * @param {Object} metadata - same as in
      *   {@link module:Atoms.Atom.create create()}
      * @returns {Atom} same as in {@link module:Atoms.Atom.create create()}
+     * @see {@link module:Atoms.Atom.create create()}
+     * @see {@link module:Atoms.Atom.createElement createElement()}
+     * @see {@link module:Atoms.Atom.newInline newInline()}
      */
     static newBlock ( editor, content, metadata = { } ) {
         return Atom.create( editor, 'div', content, metadata )

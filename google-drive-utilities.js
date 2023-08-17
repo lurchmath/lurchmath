@@ -53,6 +53,7 @@ loadScript( GoogleDriveAPI ).then( () => {
  * the current user from a chain of Google API calls.
  * 
  * @function
+ * @see {@link module:GoogleDriveUtilities.ensureLoggedIn ensureLoggedIn()}
  */
 const currentUser = () => gapi.auth2.getAuthInstance().currentUser.get()
 
@@ -64,6 +65,7 @@ const currentUser = () => gapi.auth2.getAuthInstance().currentUser.get()
  * @returns {Promise} a promise that resolves with the user as parameter upon
  *   success, or rejects if the user does not/cannot log in
  * @function
+ * @see {@link module:GoogleDriveUtilities.currentUser currentUser()}
  */
 export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
     const authInstance = gapi.auth2.getAuthInstance()
@@ -92,6 +94,10 @@ export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
  *   response object whose `body` field contains the file's contents, or that
  *   rejects if the file cannot be read
  * @function
+ * @see {@link module:GoogleDriveUtilities.writeNewFileToDrive writeNewFileToDrive()}
+ * @see {@link module:GoogleDriveUtilities.updateFileInDrive updateFileInDrive()}
+ * @see {@link module:GoogleDriveUtilities.listFilesFromFolder listFilesFromFolder()}
+ * @see {@link module:GoogleDriveUtilities.showOpenFilePicker showOpenFilePicker()}
  */
 export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
     fileId : fileId,
@@ -119,6 +125,8 @@ export const readFileFromDrive = fileId => gapi.client.drive.files.get( {
  * @returns {Promise} a promise that resolves once the file is created, or
  *   rejects with an error message if the write attempt fails
  * @function
+ * @see {@link module:GoogleDriveUtilities.readFileFromDrive readFileFromDrive()}
+ * @see {@link module:GoogleDriveUtilities.updateFileInDrive updateFileInDrive()}
  */
 export const writeNewFileToDrive = ( filename, folderId, content ) => {
     const metadata = {
@@ -160,6 +168,8 @@ export const writeNewFileToDrive = ( filename, folderId, content ) => {
  * @returns {Promise} a promise that resolves once the file is created, or
  *   rejects with an error message if the write attempt fails
  * @function
+ * @see {@link module:GoogleDriveUtilities.readFileFromDrive readFileFromDrive()}
+ * @see {@link module:GoogleDriveUtilities.writeNewFileToDrive writeNewFileToDrive()}
  */
 export const updateFileInDrive = ( fileId, newContent ) => {
     const URL = uploadEndpoint.replace( 'files?', `files/${fileId}?` )
@@ -183,6 +193,7 @@ export const updateFileInDrive = ( fileId, newContent ) => {
  *   been fetched, passing the array of filenames to the resolve function, or
  *   rejects if an error occurs during the reading process
  * @function
+ * @see {@link module:GoogleDriveUtilities.readFileFromDrive readFileFromDrive()}
  */
 export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resolve, reject ) => {
     const parameters = {
@@ -208,6 +219,9 @@ export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resol
  * @returns {Promise} a promise that resolves with the selected file ID if the
  *   user chooses one, or never resolves if they cancel
  * @function
+ * @see {@link module:GoogleDriveUI.showFileOpenDialog showFileOpenDialog()}
+ * @see {@link module:GoogleDriveUI.showSaveFolderPicker showSaveFolderPicker()}
+ * @see {@link module:GoogleDriveUtilities.readFileFromDrive readFileFromDrive()}
  */
 export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
     gapi.load( 'picker', () => {
@@ -241,6 +255,9 @@ export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
  * @returns {Promise} a promise that resolves with the selected folder ID if the
  *   user chooses one, or never resolves if they cancel
  * @function
+ * @see {@link module:GoogleDriveUI.showOpenFilePicker showOpenFilePicker()}
+ * @see {@link module:GoogleDriveUI.showFileOpenDialog showFileOpenDialog()}
+ * @see {@link module:GoogleDriveUtilities.writeNewFileToDrive writeNewFileToDrive()}
  */
 export const showSaveFolderPicker = () => new Promise( ( resolve, reject ) => {
     gapi.load( 'picker', () => {

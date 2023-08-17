@@ -10,6 +10,8 @@ import { ShowWarningSettingMetadata } from './settings-metadata.js'
  * `get(key)`, `set(key,value)`, `delete(key)`, and `clear()`.  We augment this
  * built-in functionality with additional methods for loading, saving, and
  * allowing the user to edit the settings interactively.
+ * 
+ * @see {@link SettingsMetadata}
  */
 export class Settings extends Map {
 
@@ -41,6 +43,7 @@ export class Settings extends Map {
      * @returns {String[]} the keys from the metadata for these settings; see
      *   {@link SettingsMetadata#keys SettingsMetadata.keys()} for more
      *   information
+     * @see {@link Settings#has has()}
      */
     keys () { return this.metadata.keys() }
 
@@ -53,6 +56,8 @@ export class Settings extends Map {
      * 
      * @param {string} key - the key whose presence should be checked
      * @returns {boolean} whether the key appears in this settings object
+     * @see {@link Settings#keys keys()}
+     * @see {@link Settings#get get()}
      */
     has ( key ) { return this.keys().includes( key ) }
 
@@ -66,6 +71,7 @@ export class Settings extends Map {
      * @param {string} key - the key to look up
      * @returns {any} the value stored under the key, or the default value for
      *   that key if none has yet been set
+     * @see {@link Settings#has has()}
      */
     get ( key ) {
         return !this.has( key ) ? undefined :
@@ -77,6 +83,8 @@ export class Settings extends Map {
      * in this object's metadata, and convert them to the appropriate types using
      * that metadata.  For any value not in `localStorage`, fill this object
      * with its default value instead (as given by the metadata).
+     * 
+     * @see {@link Settings#save save()}
      */
     load () {
         const allowedKeys = this.keys()
@@ -96,6 +104,8 @@ export class Settings extends Map {
      * For every setting that is stored in this object and whose key is allowed,
      * according to this object's metadata, save the key-value pair into the
      * browser's `localStorage` object.
+     * 
+     * @see {@link Settings#load load()}
      */
     save () {
         this.keys().forEach( key => {
@@ -124,6 +134,8 @@ export class Settings extends Map {
      * @param {tinymce.Editor} editor - the editor in which to show the dialog
      * @returns {Promise} a promise that resolves when the user closes the
      *   dialog, and passes an array of all setting names that the user changed.
+     * @see {@link Settings#load load()}
+     * @see {@link Settings#save save()}
      */
     userEdit ( editor ) {
         const originalSettings = { }
@@ -185,6 +197,7 @@ export class Settings extends Map {
      *   the dialog, if one needs to be shown
      * @returns {Promise} a promise that resolves if the user chooses to proceed
      *   with the action and rejects if the user chooses not to proceed
+     * @see {@link ShowWarningSettingMetadata}
      */
     showWarning ( settingName, editor ) {
         // If this is not a warning setting, throw an error.

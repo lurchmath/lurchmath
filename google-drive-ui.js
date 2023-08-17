@@ -27,6 +27,8 @@ let lastUsedFileId = null
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the
  *   file will be loaded, if the user chooses one
  * @function
+ * @see {@link module:GoogleDriveUI.showSaveAsDialog showSaveAsDialog()}
+ * @see {@link module:GoogleDriveUtilities.showOpenFilePicker showOpenFilePicker()}
  */
 const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
     showOpenFilePicker().then( pickedFileId => {
@@ -56,6 +58,9 @@ const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
  * @param {tinymce.Editor} editor the TinyMCE editor instance whose content
  *   should be saved into the file the user chooses
  * @function
+ * @see {@link module:GoogleDriveUI.showFileOpenDialog showFileOpenDialog()}
+ * @see {@link module:GoogleDriveUI.silentFileSave silentFileSave()}
+ * @see {@link module:GoogleDriveUI.showSaveFolderPicker showSaveFolderPicker()}
  */
 const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
     showSaveFolderPicker().then( folder => {
@@ -114,6 +119,7 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
  *   updated
  * @param {string} content the new content to save into the file
  * @function
+ * @see {@link module:GoogleDriveUI.showSaveAsDialog showSaveAsDialog()}
  */
 const silentFileSave = ( editor, fileId, content ) => {
     updateFileInDrive( fileId, content )

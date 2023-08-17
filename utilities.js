@@ -58,6 +58,7 @@ export const copyWithoutPrototype = object => {
  * It will be of the form `protocol://domain.name/path/to/file.html`.
  *
  * @function
+ * @see {@link module:ImportFromURL.autoOpenLink autoOpenLink()}
  */
 export const appURL = () => {
     const result = window.location.protocol + '//'

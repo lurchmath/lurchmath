@@ -8,7 +8,7 @@
  * constant that the rest of the app can access through an `import` statement.
  */
 
-import { copyWithoutPrototype } from "./utilities.js"
+import { copyWithoutPrototype } from './utilities.js'
 
 /**
  * Every setting in the app must come with some metadata, including its name
@@ -24,6 +24,7 @@ import { copyWithoutPrototype } from "./utilities.js"
  * the metadata for just one setting.
  */
 export class SettingMetadata {
+
     /**
      * Construct a metadata record about a setting in the app.
      * 
@@ -37,6 +38,7 @@ export class SettingMetadata {
         this.label = label
         this.defaultValue = defaultValue
     }
+
     /**
      * Whenever this setting needs to be presented to the user in the UI, this
      * function will be called to create JSON data representing the setting,
@@ -51,6 +53,7 @@ export class SettingMetadata {
         delete result.defaultValue
         return result
     }
+
     /**
      * When a new value for this setting is provided, it may be of the wrong
      * type (e.g., because it was loaded from `localStorage`, which can only
@@ -61,12 +64,14 @@ export class SettingMetadata {
      * @returns {any} the same data, possibly converted to a new type
      */
     convert ( data ) { return data }
+
 }
 
 /**
  * A subclass of {@link SettingMetadata} for boolean values
  */
 export class BoolSettingMetadata extends SettingMetadata {
+
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -78,6 +83,7 @@ export class BoolSettingMetadata extends SettingMetadata {
         super( ...args )
         this.type = 'checkbox'
     }
+
     /**
      * Treats `true` as true and `"true"` as true, but all other values as
      * false.
@@ -86,6 +92,7 @@ export class BoolSettingMetadata extends SettingMetadata {
      * @returns {bool} the same data, now as a boolean
      */
     convert ( data ) { return data === true || data === 'true' }
+
 }
 
 /**
@@ -106,8 +113,11 @@ export class BoolSettingMetadata extends SettingMetadata {
  * words, a true value means to show the warning and a false value means not to
  * show the warning.  Such settings always default to true, and the user can
  * change them to false if they wish.
+ * 
+ * @see {@link BoolSettingMetadata}
  */
 export class ShowWarningSettingMetadata extends BoolSettingMetadata {
+
     /**
      * Marks this setting as a checkbox with the given name and label, set its
      * default value to true, and also stores the warning text that will be
@@ -128,6 +138,7 @@ export class ShowWarningSettingMetadata extends BoolSettingMetadata {
         super( name, label, true )
         this.warningText = warningText
     }
+
     /**
      * Treats `true` as true and `"true"` as true, but all other values as
      * false.
@@ -136,12 +147,14 @@ export class ShowWarningSettingMetadata extends BoolSettingMetadata {
      * @returns {bool} the same data, now as a boolean
      */
     convert ( data ) { return data === true || data === 'true' }
+
 }
 
 /**
  * A subclass of {@link SettingMetadata} for color values
  */
 export class ColorSettingMetadata extends SettingMetadata {
+
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -153,12 +166,16 @@ export class ColorSettingMetadata extends SettingMetadata {
         super( ...args )
         this.type = 'colorinput'
     }
+
 }
 
 /**
  * A subclass of {@link SettingMetadata} for short text values
+ * 
+ * @see {@link LongTextSettingMetadata}
  */
 export class TextSettingMetadata extends SettingMetadata {
+
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -170,12 +187,16 @@ export class TextSettingMetadata extends SettingMetadata {
         super( name, label, `${defaultValue}` )
         this.type = 'input'
     }
+
 }
 
 /**
  * A subclass of {@link SettingMetadata} for long text values
+ * 
+ * @see {@link TextSettingMetadata}
  */
 export class LongTextSettingMetadata extends SettingMetadata {
+
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -188,6 +209,7 @@ export class LongTextSettingMetadata extends SettingMetadata {
         super( name, label, `${defaultValue}` )
         this.type = 'textarea'
     }
+
 }
 
 /**
@@ -199,6 +221,7 @@ export class LongTextSettingMetadata extends SettingMetadata {
  * data type.)
  */
 export class CategorySettingMetadata extends SettingMetadata {
+
     /**
      * Passes the parameters to the superclass for initialization, then marks
      * this setting as one that should be represented in the UI using a
@@ -219,6 +242,7 @@ export class CategorySettingMetadata extends SettingMetadata {
             return { value : `${option}`, text : `${option}` }
         } )
     }
+
     /**
      * Ensures that the value given is on the list of valid values.  If it is
      * not, it replaces it with the first value on the list of valid values.
@@ -231,6 +255,7 @@ export class CategorySettingMetadata extends SettingMetadata {
         return this.items.some( item => item.value === `${data}` ) ?
             `${data}` : this.items[0].value
     }
+
 }
 
 // Possible other subclasses of SettingMetadata we could create later:
@@ -242,6 +267,7 @@ export class CategorySettingMetadata extends SettingMetadata {
  * between controls when the settings are edited in the user interface.
  */
 export class NoteMetadata extends SettingMetadata {
+
     // For internal use only
     // Converts TinyMCE alert banner types into appropriate icon names
     static styleToIcon = {
@@ -250,6 +276,7 @@ export class NoteMetadata extends SettingMetadata {
         error : 'notice',
         success : 'selected'
     }
+
     /**
      * Construct a metadata record that does not correspond to any setting, but
      * to a note that should be inserted between settings when they are
@@ -275,6 +302,7 @@ export class NoteMetadata extends SettingMetadata {
             this.html = content
         }
     }
+
 }
 
 /**
@@ -282,8 +310,11 @@ export class NoteMetadata extends SettingMetadata {
  * just one setting, but to a sequence of settings collected together into a
  * named category.  This is useful for presenting settings to the user with a
  * sensible organization into tabs/pages with appropriate names/headings.
+ * 
+ * @see {@link SettingsMetadata}
  */
 export class SettingsCategoryMetadata extends SettingMetadata {
+
     /**
      * Create a new metadata item for a category of settings
      * 
@@ -298,6 +329,7 @@ export class SettingsCategoryMetadata extends SettingMetadata {
         this.name = name
         this.contents = contents
     }
+
     /**
      * Whenever this category needs to be presented to the user in the UI, this
      * function will be called to create JSON data representing the category,
@@ -314,6 +346,7 @@ export class SettingsCategoryMetadata extends SettingMetadata {
             items : this.contents.map( metadata => metadata.control() )
         }
     }
+
     /**
      * Creates an ordered list of all the names of all the settings in this
      * category.  (The "name" of each setting is used as the "key" in any
@@ -325,6 +358,7 @@ export class SettingsCategoryMetadata extends SettingMetadata {
         return this.contents.map( metadata => metadata.name )
                             .filter( name => !!name )
     }
+
     /**
      * For all settings in this category, look up their default values and
      * return the result as an object mapping setting names to those default
@@ -340,6 +374,7 @@ export class SettingsCategoryMetadata extends SettingMetadata {
         } )
         return result
     }
+
     /**
      * Given a setting's name, we can look up its metadata and return the
      * appropriate {@link SettingMetadata} instance, if one with that name
@@ -353,6 +388,7 @@ export class SettingsCategoryMetadata extends SettingMetadata {
     metadataFor ( key ) {
         return this.contents.find( metadata => metadata.name == key )
     }
+
 }
 
 /**
@@ -368,8 +404,12 @@ export class SettingsCategoryMetadata extends SettingMetadata {
  * as a tab on a dialog, and this class represents several categories, it is
  * presented to the user as a dialog with one or more tabs, one for each
  * category contained in this collection.
+ * 
+ * @see {@link SettingsCategoryMetadata}
+ * @see {@link Settings}
  */
 export class SettingsMetadata extends SettingMetadata {
+
     /**
      * Create a collection of settings categories
      * 
@@ -381,6 +421,7 @@ export class SettingsMetadata extends SettingMetadata {
         super()
         this.categories = categories
     }
+
     /**
      * Whenever this collection needs to be presented to the user in the UI,
      * this function will be called to create JSON data representing the
@@ -396,6 +437,7 @@ export class SettingsMetadata extends SettingMetadata {
             tabs : this.categories.map( category => category.control() )
         }
     }
+
     /**
      * Creates an ordered list of all the names of all the settings in this
      * collection.  (The "name" of each setting is used as the "key" in any
@@ -407,6 +449,7 @@ export class SettingsMetadata extends SettingMetadata {
         return this.categories.map( category => category.keys() )
                               .reduce( ( a, b ) => [ ...a, ...b ], [ ] )
     }
+
     /**
      * For all settings in this collection, look up their default values and
      * return the result as an object mapping setting names to those default
@@ -422,6 +465,7 @@ export class SettingsMetadata extends SettingMetadata {
             return { ...a, ...b }
         }, { } )
     }
+
     /**
      * Given a setting's name, we can look up its metadata and return the
      * appropriate {@link SettingMetadata} instance, if one with that name exists in
@@ -438,4 +482,5 @@ export class SettingsMetadata extends SettingMetadata {
             if ( result ) return result
         }
     }
+
 }

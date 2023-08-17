@@ -105,6 +105,7 @@ export class LurchDocument {
      * 
      * @param {string} document - the document as it was retrieved from a
      *   filesystem, ready to be loaded into this editor
+     * @see {@link LurchDocument#getDocument getDocument()}
      */
     setDocument ( document ) {
         const parts = LurchDocument.documentParts( document )
@@ -128,6 +129,7 @@ export class LurchDocument {
      * 
      * @returns {string} the document in string form, ready to be stored in a
      *   filesystem
+     * @see {@link LurchDocument#setDocument setDocument()}
      */
     getDocument () {
         // Get the metadata and document as HTML strings
@@ -178,6 +180,7 @@ export class LurchDocument {
      *   for the value
      * @param {string|Object} value - a string of HTML if `valueType` is "html"
      *   or an object we can pass to `JSON.stringify()` if `valueType` is "json"
+     * @see {@link LurchDocument#getMetadata getMetadata()}
      */
     setMetadata ( category, key, valueType, value ) {
         if ( ![ 'json', 'html' ].includes( valueType.toLowerCase() ) )
@@ -214,6 +217,9 @@ export class LurchDocument {
      * @param {string} key - the key for the piece of metadata to look up
      * @returns {string|number|bool|Object|HTMLDivElement|undefined} the value
      *   stored in the metadata, or undefined if there is no such metadata
+     * @see {@link LurchDocument#setMetadata setMetadata()}
+     * @see {@link LurchDocument#getMetadataCategories getMetadataCategories()}
+     * @see {@link LurchDocument#getMetadataKeys getMetadataKeys()}
      */
     getMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
@@ -232,6 +238,8 @@ export class LurchDocument {
      * 
      * @returns {string[]} an array containing all strings that appear as
      *   categories in this document's metadata
+     * @see {@link LurchDocument#getMetadata getMetadata()}
+     * @see {@link LurchDocument#getMetadataKeys getMetadataKeys()}
      */
     getMetadataCategories () {
         const result = [ ]
@@ -253,6 +261,8 @@ export class LurchDocument {
      * 
      * @param {string} category - the category whose keys should be listed
      * @returns {string[]} the keys corresponding to the given category
+     * @see {@link LurchDocument#getMetadata getMetadata()}
+     * @see {@link LurchDocument#getMetadataCategories getMetadataCategories()}
      */
     getMetadataKeys ( category ) {
         const result = [ ]
@@ -274,6 +284,8 @@ export class LurchDocument {
      * @param {string} category - the category for the piece of metadata to
      *   delete
      * @param {string} key - the key for the piece of metadata to delete
+     * @see {@link LurchDocument#getMetadata getMetadata()}
+     * @see {@link LurchDocument#setMetadata setMetadata()}
      */
     deleteMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
@@ -310,17 +322,19 @@ export class LurchDocument {
 
     /**
      * For details of what an atom is, read the documentation of
-     * {@link the Atom class}.  An editor can have any number of atoms in it,
-     * each of which is represented as some HTML indicating that it is an atom,
-     * but which is more convenient to work with in JavaScript through use of
-     * the {@link Atom} class.
+     * {@link module:Atoms.Atom the Atom class}.  An editor can have any number
+     * of atoms in it, each of which is represented as some HTML indicating that
+     * it is an atom, but which is more convenient to work with in JavaScript
+     * through use of the {@link module:Atoms.Atom Atom} class.
      * 
      * This function finds all atoms in the editor's HTML content, converts each
-     * to an instance of the {@link Atom} class, and returns the resulting
-     * array.
+     * to an instance of the {@link module:Atoms.Atom Atom} class, and returns
+     * the resulting array.
      * 
      * @returns {Atom[]} an array of all the atoms in the editor, each one
-     *   represented as an instance of the {@link Atom} class
+     *   represented as an instance of the {@link module:Atoms.Atom Atom} class
+     * @see {@link module:Atoms.Atom Atom class}
+     * @see {@link module:Atoms Atoms module}
      */
     atoms () {
         return Array.from(
