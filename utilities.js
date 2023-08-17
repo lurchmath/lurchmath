@@ -64,3 +64,21 @@ export const appURL = () => {
                  + window.location.host + window.location.pathname
     return result.endsWith( '/' ) ? result : result + '/'
 }
+
+/**
+ * Escape a string so that it can be safely inserted into an HTML document and
+ * still represent the plain text within the given string (not interpreting the
+ * string as HTML itself).  For example, the string `"x < a and a > b"` should
+ * appear exactly that way in the rendered HTML, meaning that the `<` and `>`
+ * will need to be escaped so that `"<a and a>"` does not appear to be a tag.
+ * 
+ * @param {string} text - text to escape for insertion into HTML
+ * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
+ *   `"'"`, and `'"'` replaced with character references instead
+ */
+export const escapeHTML = text =>
+    text.replaceAll( '&', '&amp;' )
+        .replaceAll( '<', '&lt;' )
+        .replaceAll( '>', '&gt;' )
+        .replaceAll( '"', '&quot;' )
+        .replaceAll( "'", '&#039;' )
