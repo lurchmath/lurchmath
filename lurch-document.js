@@ -2,6 +2,7 @@
 import { appURL } from './utilities.js'
 import { Settings } from './settings.js'
 import { documentSettingsMetadata } from './document-settings.js'
+import { className, Atom } from './atoms.js'
 
 /**
  * A Lurch document will have several parts, including at least the following.
@@ -71,6 +72,32 @@ export class LurchDocument {
     }
 
     /**
+     * A Lurch document has two main parts, a DIV storing the metadata followed
+     * by a DIV storing the actual document content.  This function takes a
+     * string containing the HTML for a Lurch document and extracts those two
+     * components from it, returning each one as a fully constructed
+     * `HTMLDivElement`.
+     * 
+     * Note that a Lurch document's HTML text also begins with a brief script to
+     * create the link to open the document in the Lurch app, but that portion
+     * of the input string is ignored, because it is not part of the document,
+     * nor its metadata.
+     * 
+     * @param {string} document - the document as it was retrieved from a
+     *   filesystem, ready to be loaded into this editor
+     * @returns {Object} an object with `"metadata"` and `"document"` fields, as
+     *   documented above
+     */
+    static documentParts ( document ) {
+        const temp = window.document.createElement( 'div' )
+        temp.innerHTML = document
+        return {
+            metadata : temp.querySelector( '#metadata' ),
+            document : temp.querySelector( '#document' )
+        }
+    }
+
+    /**
      * Load the given document into the editor given at construction time.  This
      * will replace what's visible in the UI with the visible portion of the
      * given document, and will also replace the invisible document settings and
@@ -80,19 +107,15 @@ export class LurchDocument {
      *   filesystem, ready to be loaded into this editor
      */
     setDocument ( document ) {
-        // Have some off-screen element parse the HTML for us
-        const temp = this.editor.dom.doc.createElement( 'div' )
-        temp.innerHTML = document
+        const parts = LurchDocument.documentParts( document )
         // There should be a metadata element; use it directly if so.
-        const metadataElement = temp.querySelector( '#metadata' )
-        if ( metadataElement )
-            this.editor.lurchMetadata = metadataElement
+        if ( parts.metadata )
+            this.editor.lurchMetadata = parts.metadata
         else
             this.clearMetadata()
         // There should be a document element; use its HTML content if so.
-        const documentElement = temp.querySelector( '#document' )
-        if ( documentElement )
-            this.editor.setContent( documentElement.innerHTML )
+        if ( parts.document )
+            this.editor.setContent( parts.document.innerHTML )
         else
             this.clearDocument()
         this.editor.undoManager.clear()
