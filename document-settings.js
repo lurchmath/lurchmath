@@ -72,7 +72,7 @@ export const install = editor => {
                 }
             } )
             // Present interface to user
-            settings.userEdit( this.editor )
+            settings.userEdit( editor )
             // Save iff the user accepted the changes
             .then( changedKeys => changedKeys.forEach( key =>
                 LDoc.setMetadata( 'settings', key, 'json',
