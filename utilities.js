@@ -17,20 +17,28 @@
  * } )
  * ```
  * 
+ * Note that if this function has already been called on this URL, so that there
+ * already is a script tag with this source, then the promise resolves
+ * immediately without doing anything first.
+ * 
  * @param {String} url - URL of the script to load
  * @returns {Promise} a promise that is resolved if the script finishes loading
  *   or rejected if the script encounters an error
  * @function
  */
-export const loadScript = url => new Promise( ( resolve, reject ) => {
-    const scriptTag = document.createElement( 'script' )
-    document.head.append( scriptTag )
-    scriptTag.setAttribute( 'defer', true )
-    scriptTag.setAttribute( 'referrerpolicy', 'origin' )
-    scriptTag.addEventListener( 'load', resolve )
-    scriptTag.addEventListener( 'error', reject )
-    scriptTag.setAttribute( 'src', url )
-} )
+export const loadScript = url =>
+    Array.from( document.head.querySelectorAll( 'script' ) ).some(
+        script => script.getAttribute( 'src' ) == url ) ?
+    Promise.resolve() :
+    new Promise( ( resolve, reject ) => {
+        const scriptTag = document.createElement( 'script' )
+        document.head.append( scriptTag )
+        scriptTag.setAttribute( 'defer', true )
+        scriptTag.setAttribute( 'referrerpolicy', 'origin' )
+        scriptTag.addEventListener( 'load', resolve )
+        scriptTag.addEventListener( 'error', reject )
+        scriptTag.setAttribute( 'src', url )
+    } )
 
 /**
  * From any JavaScript object, we can create another object by first
