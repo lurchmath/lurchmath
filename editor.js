@@ -15,6 +15,7 @@ import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
 import Dependencies from './dependency.js'
+import Shells from './shells.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -43,7 +44,8 @@ const menuData = {
     ),
     insert : buildMenu( 'Insert',
         'link emoticons hr',
-        'insertdatetime'
+        'insertdatetime',
+        'environment paragraphabove paragraphbelow'
     ),
     format : buildMenu( 'Format',
         'bold italic underline strikethrough superscript subscript',
@@ -95,6 +97,7 @@ loadScript( TinyMCEURL ).then( () => {
             UploadDownload.install( editor )
             Importer.install( editor )
             Atoms.install( editor )
+            Shells.install( editor )
             Dependencies.install( editor )
             if ( !Headers.isEditor() ) {
                 // Install tools we need only if we are the primary app window:

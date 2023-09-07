@@ -5,7 +5,9 @@
  * represented by an HTML div.  Atoms have the following properties.
  * 
  *  1. The user cannot *directly* edit their content.  Rather, the application
- *     determines how the atom appears in the document.
+ *     determines how the atom appears in the document.  (There are also
+ *     meaningful sections of the document that are not indivisible in this way;
+ *     see {@link module:Shells the Shells module}.)
  *  2. The user can *indirectly* edit the atom's content by clicking on it and
  *     interacting with whatever dialog the application pops up in response.
  *  3. There can be many different types of atoms.  For example, one atom may be
@@ -30,6 +32,7 @@
  * individual atoms.
  *
  * @module Atoms
+ * @see {@link module:Shells the Shells module}
  */
 
 /**
