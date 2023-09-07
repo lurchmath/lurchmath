@@ -106,6 +106,18 @@ loadScript( TinyMCEURL ).then( () => {
                 // Install tools we need only if we are the secondary app window:
                 Headers.listen( editor )
             }
+            // Create keyboard shortcuts for all menu items
+            const menuItems = editor.ui.registry.getAll().menuItems
+            for ( let itemName in menuItems ) {
+                const item = menuItems[itemName]
+                if ( item.hasOwnProperty( 'shortcut' ) ) {
+                    const shortcut = item.shortcut
+                        .replace( /enter/i, '13' )
+                        .replace( /space/i, '32' )
+                    editor.addShortcut( shortcut, item.text,
+                        () => item.onAction() )
+                }
+            }
         }
     } )
 } )
