@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: DownloadUpload</title>
+    <title>Lurch Web User Interface: Shells</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Module</p>
-    <h1 class="page-title">DownloadUpload</h1>
+    <h1 class="page-title">Shells</h1>
     
 
 
@@ -59,12 +59,125 @@
 
     
         
-            <div class="description"><p>This file installs two tools into the user interface, one menu item for
-downloading the current Lurch document to the user's computer and another for
-uploading a new Lurch document into the editor.</p></div>
+            <div class="description"><p>In a Lurch document, certain sections will be marked as &quot;shells.&quot;  These will
+always be DIVs and will typically contain other document content.  While
+<a href="module-Atoms.html">atoms (as defined in the Atoms module)</a> are indivisible
+sections of special, meaningful document content, shells are also special,
+meaningful document content, but are not indivisible.  They are intended to
+contain other document content.</p>
+<ol>
+<li>The user can edit what sits inside a shell, but the application
+determines how the shell is drawn as a visual wrapper around that
+content.</li>
+<li>The user can edit the shells's properties by clicking on it (the visual
+boundary around the content, not the content itself) and interacting with
+whatever dialog the application pops up in response.</li>
+<li>There can be many different types of shells.  For example, a theorem
+statement may be one type, and a proof or subproof may be another.  The
+type is stored as an attribute of the shell's HTML element.</li>
+<li>Like atoms, each shell will typically have some meaning that will be
+important when the document is processed in a mathematical way.</li>
+</ol>
+<p>Shells are represented in the document by DIVs with a certain class attached
+to mark them as shells.</p>
+<p>This module contains tools for working with shells, including the
+<a href="module-Shells.html#.className">class name</a> we use to distinguish them, the
+<a href="module-Shells.html#.install">function</a> we use to install their
+mouse event handlers, and most importantly, the
+class we use to create an API for working with
+individual shells.</p></div>
         
 
         
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="module-Atoms.html">the Atoms module</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+        
+    
+    </div>
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-Shells-Shell.html">Shell</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+     
+
+    
+
+    
+
+
+    
+        <h3 class="subtitle">Members</h3>
+
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id=".className">className<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Class name used to distinguish HTML elements representing shells.  (For an
+explanation of what a shell is, see the documentation for
+<a href="module-Shells.html">the module itself</a>.)</p>
+</div>
+
+
+
+
+
 
 
 <div class="details">
@@ -100,21 +213,21 @@ uploading a new Lurch document into the editor.</p></div>
 </div>
 
 
+
+
+
+
+
+    <h4>Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.41">, line 41</a>
+        </li>
+    </ul>
+
+
+</article>
         
-    
-    </div>
-
-    
-
-    
-
-     
-
-    
-
-    
-
-
     
 
     
@@ -147,12 +260,25 @@ uploading a new Lurch document into the editor.</p></div>
 
 <div class="method-description">
     
-    <p>Install into a TinyMCE editor instance two new menu items: Download and
-Upload, both intended for the File menu.  The download menu item allows the
-user to download the current Lurch document to their computer, assuming that
-the TinyMCE initialization code includes the &quot;download&quot; item on one of the
-menus.  The upload menu item pops up a dialog into which the user can drag a
-file to upload it into the editor.</p>
+    <p>This function should be called in the editor's setup routine.  It installs
+several things into the editor:</p>
+<ul>
+<li>a mouse event handler that can watch for click events to any shell, and
+route control flow to the event handler for that shell's type, falling
+back on the edit() method for an untyped
+shell</li>
+<li>a small stylesheet that specifies how to format shells, and how to
+visually distinguish given shells from claim shells</li>
+<li>a menu item for inserting &quot;environments&quot; (untyped shells)</li>
+<li>an event handler for deleting empty environments (which can occur if the
+user creates an environment, leaves it empty, and then positions their
+cursor after it and hits backspace---a corner case, but still one we must
+handle correctly)</li>
+<li>two menu items for inserting blank paragraphs before and after the current
+block, so that the user does not get stuck unable to move their cursor
+after the last shell in the document, or before the first, or between two
+adjacent ones</li>
+</ul>
 </div>
 
 
@@ -189,8 +315,8 @@ file to upload it into the editor.</p>
 
             
 
-            <div class="param-description"><p>the TinyMCE editor instance into which the new
-menu items should be installed</p></div>
+            <div class="param-description"><p>the editor in which to install the features
+described above</p></div>
             
         </li>
 
@@ -253,7 +379,7 @@ menu items should be installed</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="upload-download.js.html">upload-download.js</a><a href="upload-download.js.html#source.24">, line 24</a>
+            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.211">, line 211</a>
         </li>
     </ul>
 
