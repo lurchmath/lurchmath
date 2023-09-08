@@ -220,13 +220,15 @@ class Shell {
      * @param {tinymce.Editor} editor - the TinyMCE editor in which to create
      *   the element
      * @param {string} type - the type of the shell to create
+     * @param {string} content - the content of the new shell (defaults to a
+     *   single non-breaking space)
      * @returns {HTMLDivElement} the element constructed
      */
-    static createElement ( editor, type, innerParagraph=false ) {
+    static createElement ( editor, type, content='&amp;nbsp;' ) {
         const result = editor.dom.doc.createElement( 'div' )
         result.classList.add( className )
         result.dataset.type = type
-        result.innerHTML = '&lt;p>&amp;nbsp;&lt;/p>'
+        result.innerHTML = `&lt;p>${content}&lt;/p>`
         return result
     }
 
@@ -292,8 +294,9 @@ export const install = editor => {
         tooltip : 'Insert block representing an environment',
         shortcut : 'Meta+E',
         onAction : () => {
-            editor.insertContent(
-                Shell.createElement( editor, 'environment', true ).outerHTML )
+            editor.insertContent( Shell.createElement(
+                editor, 'environment', editor.selection.getContent()
+            ).outerHTML )
             const newPara = editor.selection.getStart().parentNode
             const newDiv = newPara.previousSibling
             editor.selection.setCursorLocation( newDiv, 0 )
