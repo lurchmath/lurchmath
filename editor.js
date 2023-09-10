@@ -14,6 +14,7 @@ import Importer from './load-from-url.js'
 import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
+import Expressions from './expressions.js'
 import Dependencies from './dependency.js'
 import Shells from './shells.js'
 
@@ -45,6 +46,7 @@ const menuData = {
     insert : buildMenu( 'Insert',
         'link emoticons hr',
         'insertdatetime',
+        'expression',
         'environment paragraphabove paragraphbelow'
     ),
     format : buildMenu( 'Format',
@@ -97,6 +99,7 @@ loadScript( TinyMCEURL ).then( () => {
             UploadDownload.install( editor )
             Importer.install( editor )
             Atoms.install( editor )
+            Expressions.install( editor )
             Shells.install( editor )
             Dependencies.install( editor )
             if ( !Headers.isEditor() ) {

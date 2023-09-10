@@ -13,16 +13,17 @@
 
 import { Settings } from './settings.js'
 import {
-    SettingsMetadata, SettingsCategoryMetadata,
+    SettingsMetadata, SettingsCategoryMetadata, CategorySettingMetadata,
     TextSettingMetadata, LongTextSettingMetadata
 } from './settings-metadata.js'
+import { names as notationNames } from './notation.js'
 import { LurchDocument } from './lurch-document.js'
 
 /**
  * This metadata object can be used to create a {@link Settings} instance for
  * any given document, which can then present a UI to the user for editing the
- * document's setting (using {@link Settings#userEdit its userEdit() function}).
- * We use it for this purpose in the menu item we create in the
+ * document's settings (using {@link Settings#userEdit its userEdit()
+ * function}).  We use it for this purpose in the menu item we create in the
  * {@link module:DocumentSettings.install install()} function.
  */
 export const documentSettingsMetadata = new SettingsMetadata(
@@ -32,6 +33,11 @@ export const documentSettingsMetadata = new SettingsMetadata(
         new TextSettingMetadata( 'author', 'Author', '' ),
         new TextSettingMetadata( 'date', 'Date', '' ),
         new LongTextSettingMetadata( 'abstract', 'Abstract', '' )
+    ),
+    new SettingsCategoryMetadata(
+        'Mathematical content',
+        new CategorySettingMetadata( 'notation', 'Default notation',
+            notationNames(), notationNames()[0] )
     )
 )
 
@@ -79,6 +85,36 @@ export const install = editor => {
                     settings.get( key ) ) ) )
         }
     } )  
+}
+
+/**
+ * Look up the value of a given setting in a given editor's document.  This will
+ * return either the value the user has specified for that setting, as stored in
+ * the metadata for the document currently loaded in that editor, or the default
+ * value for that setting, if the user has not specified one for that document.
+ * 
+ * This is the function that most parts of the application will use.  Many parts
+ * of the application will want to ask what the value is of a certain document
+ * setting, so that they can respect it.  This function allows them to do so in
+ * a quick and simple way.
+ * 
+ * @param {tinymce.Editor} editor - the editor in which to look up the setting
+ * @param {string} key - the name of the setting to look up
+ */
+export const lookup = ( editor, key ) => {
+    // Create all the objects we need to use for lookup
+    const settings = new Settings( 'Document settings',
+        documentSettingsMetadata )
+    const metadata = settings.metadata.metadataFor( key )
+    const LDoc = new LurchDocument( editor )
+    // If the user has never given the setting a value, use the default
+    // (or return undefined if the caller specified an invalid setting key)
+    if ( !LDoc.getMetadataKeys( 'settings' ).includes( key ) )
+        return metadata ? metadata.defaultValue : undefined
+    // Since the user has given the setting a value, apply to it any applicable
+    // conversion function specified in the metadata, then return it.
+    const value = LDoc.getMetadata( 'settings', key )
+    return metadata ? metadata.convert( value ) : value
 }
 
 export default { documentSettingsMetadata, install }
