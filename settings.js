@@ -142,7 +142,7 @@ export class Settings extends Map {
         Array.from( this.keys() ).forEach( key =>
             originalSettings[key] = this.has( key ) ? this.get( key )
                                                     : this.defaults[key] )
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( ( resolve, _ ) => {
             const dialog = editor.windowManager.open( {
                 title : this.name,
                 size : 'medium',

@@ -175,6 +175,7 @@ Atom.addType( 'dependency', clickedAtom => {
             dialog.close()
         }
     } )
+    setTimeout( () => dialog.focus( 'url' ), 0 )
 } )
 
 export default { install }

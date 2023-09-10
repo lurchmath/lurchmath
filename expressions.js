@@ -116,6 +116,7 @@ Atom.addType( 'notation', clickedAtom => {
             dialog.close()
         }
     } )
+    setTimeout( () => dialog.focus( 'code' ), 0 )
 } )
 
 export default { install }

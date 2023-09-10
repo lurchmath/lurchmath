@@ -104,6 +104,7 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
                 } ) )
             }
         } )
+        setTimeout( () => dialog.focus( 'filename' ), 0 )
     } )
 } )
 

@@ -151,6 +151,7 @@ export const install = editor => {
                     dialog.close()
                 }
             } )
+            setTimeout( () => dialog.focus( 'url' ), 0 )
         }
     } )
 }

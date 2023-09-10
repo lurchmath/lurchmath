@@ -143,6 +143,7 @@ class Shell {
                 dialog.close()
             }
         } )
+        setTimeout( () => dialog.focus( 'isGiven' ), 0 )
     }
 
     /**
