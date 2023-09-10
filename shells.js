@@ -240,9 +240,11 @@ export const install = editor => {
         `
     } )
     // The first menu item described above
+    // (We do not call it "insert environment" because it will go on the insert
+    // menu, so it just needs the word "Environment")
     editor.ui.registry.addMenuItem( 'environment', {
         icon : 'unselected',
-        text : 'Insert environment',
+        text : 'Environment',
         tooltip : 'Insert block representing an environment',
         shortcut : 'Meta+E',
         onAction : () => {
@@ -263,8 +265,9 @@ export const install = editor => {
         } )
     } )
     // The two actions for inserting blank paragraphs, described above
+    // (Same comments apply as given above, re: Insert menu and naming)
     editor.ui.registry.addMenuItem( 'paragraphabove', {
-        text : 'Insert empty paragraph above',
+        text : 'Empty paragraph above',
         tooltip : 'Insert an empty paragraph above the current block',
         shortcut : 'Meta+Shift+Enter',
         onAction : () => {
@@ -284,7 +287,7 @@ export const install = editor => {
         }
     } )
     editor.ui.registry.addMenuItem( 'paragraphbelow', {
-        text : 'Insert empty paragraph below',
+        text : 'Empty paragraph below',
         tooltip : 'Insert an empty paragraph below the current block',
         shortcut : 'Meta+Enter',
         onAction : () => {
