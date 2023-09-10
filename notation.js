@@ -32,7 +32,7 @@
  * @module Notation
  */
 
-import { LogicConcept, Environment }
+import { LogicConcept, MathConcept, Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
 // Internal use only
@@ -98,6 +98,31 @@ addFunction( 'putdown', code => {
             return { message : match[1], position : parseInt( match[2] ) }
         } else {
             return { message : 'Your code is not valid putdown notation.' }
+        }
+    }
+} )
+
+// Internal use only
+// Installs a second notation, smackdown
+addFunction( 'smackdown', code => {
+    try {
+        const MCs = MathConcept.fromSmackdown( code )
+        if ( MCs.length == 0 )
+            return { message : 'Your code contains no expressions.' }
+        if ( MCs.length > 1 )
+            return { message : 'Your code contains more than one expression.' }
+        console.log( MCs[0].toJSON() )
+        const result = MCs[0].interpret()
+        if ( result.hasDescendantSatisfying( d => d instanceof Environment ) )
+            return { message : 'Your code includes an environment.' }
+        console.log( result.toJSON() )
+        return result
+    } catch ( e ) {
+        const match = /^(.*), line \d+ col (\d+)$/.exec( e )
+        if ( match ) {
+            return { message : match[1], position : parseInt( match[2] ) }
+        } else {
+            return { message : 'Your code is not valid smackdown notation.' }
         }
     }
 } )

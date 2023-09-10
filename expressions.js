@@ -53,7 +53,6 @@ export const install = editor => {
 
 // Internal use only: Show the dialog whose behavior is described above.
 Atom.addType( 'notation', clickedAtom => {
-    const currentCode = clickedAtom.getMetadata( 'code' )
     const dialog = clickedAtom.editor.windowManager.open( {
         title : 'Edit expression',
         body : {
@@ -91,7 +90,10 @@ Atom.addType( 'notation', clickedAtom => {
                 name : 'cancel'
             }
         ],
-        initialData : { code : currentCode },
+        initialData : {
+            code : clickedAtom.getMetadata( 'code' ),
+            notation : clickedAtom.getMetadata( 'notation' )
+        },
         onChange : dialog => {
             const code = dialog.getData()['code']
             const lang = dialog.getData()['notation']
