@@ -550,17 +550,26 @@ export class Atom {
  * @function
  */
 export const install = editor => {
+    const startEditing = atom => {
+        const type = atom.getMetadata( 'type' )
+        if ( Atom.handlers.has( type ) )
+            Atom.handlers.get( type )( atom )
+        else
+            console.log( `No atom click handler installed for type "${type}"` )
+    }
     editor.on( 'init', () => {
         editor.dom.doc.body.addEventListener( 'click', event => {
             const receiver = Atom.findAbove( event.target, editor )
-            if ( receiver ) {
-                const type = receiver.getMetadata( 'type' )
-                if ( Atom.handlers.has( type ) )
-                    Atom.handlers.get( type )( receiver )
-                else
-                    console.log( `No atom click handler installed for type "${type}"` )
-            }
+            if ( receiver ) startEditing( receiver )
         } )
+    } )
+    editor.on( 'keydown', event => {
+        if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
+            return
+        const selected = editor.selection.getNode()
+        if ( !Atom.isAtomElement( selected ) )
+            return
+        startEditing( new Atom( selected, editor ) )
     } )
 }
 
