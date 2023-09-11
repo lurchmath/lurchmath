@@ -252,9 +252,6 @@ export const install = editor => {
             editor.insertContent( Shell.createElement(
                 editor, 'environment', editor.selection.getContent()
             ).outerHTML )
-            const newPara = editor.selection.getStart().parentNode
-            const newDiv = newPara.previousSibling
-            editor.selection.setCursorLocation( newDiv, 0 )
         }
     } )
     // The event handler for the corner case described above
