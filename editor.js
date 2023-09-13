@@ -24,7 +24,7 @@ const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce
 // Add a textarea input element to the page, into which we will install TinyMCE
 const textarea = document.createElement( 'textarea' )
 textarea.setAttribute( 'id', 'editor' )
-document.body.appendChild( textarea )
+document.getElementById('editor-container').appendChild( textarea )
 
 // Create the default JSON data for populating the editor's menus and toolbar:
 const buildMenu = ( title, ...list ) => {
@@ -85,6 +85,7 @@ loadScript( TinyMCEURL ).then( () => {
     // ...then set up the editor in the textarea we created above
     tinymce.init( {
         selector : '#editor',
+        content_css : 'document',
         promotion : false, // disable premium features advertisement
         toolbar : toolbarData,
         menubar : 'file edit insert format document help',
