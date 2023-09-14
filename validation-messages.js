@@ -9,16 +9,17 @@
  * instance and call `message.send()` (which therefore just goes "out").  In the
  * message event handler on either end, you can construct a new `Message`
  * instance from the event itself, and its data will be extracted appropriately.
- * For example:
+ * For example, the {@link module:ValidationWorker validation worker} has code
+ * something like this:
  * 
  * ```js
- * worker.addEventListener( 'message', event => {
+ * addEventListener( 'message', event => {
  *     const message = new Message( event )
- *     if ( message.is( 'error' ) ) { // check type
- *         const errorMessage = message.get( 'text' )
- *         // etc...
+ *     if ( message.is( 'putdown' ) ) { // check type
+ *         const putdown = message.get( 'putdown' ) // read message content
+ *         // validate document sent in putdown format
  *     } else {
- *         // etc...
+ *         // send error message because we expected putdown
  *     }
  * } )
  * ```
