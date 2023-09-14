@@ -17,6 +17,7 @@ import Atoms from './atoms.js'
 import Expressions from './expressions.js'
 import Dependencies from './dependency.js'
 import Shells from './shells.js'
+import { checkDocument, addEventListener } from './validation.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -127,3 +128,18 @@ loadScript( TinyMCEURL ).then( () => {
         }
     } )
 } )
+
+// Temporary code for testing purposes only.
+addEventListener( console.log )
+window.testValidation = ( putdown = `
+    {
+        (= (+ 1 1) 2)
+        (> (+ 1 1) 2)
+        (and
+            (<= (/ 3 3) (* 3 3))
+            (= (/ 3 3) (* 3 3))
+        )
+    }
+` ) => {
+    checkDocument( putdown )
+}
