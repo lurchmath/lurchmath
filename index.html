@@ -4,7 +4,15 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script type="module" src="./editor.js"></script>
+        <style>
+            #logo { position: fixed; top : 0; right : 0; width : 75px;
+                z-index: 9999; margin: 18px 12px; font-size: larger; 
+                font-family: fantasy; font-weight: bolder; color: maroon; }
+            #logo #check { color : springgreen;}
+        </style>
     </head>
     <body>
+        <div id="editor-container"></div>
+        <div id="logo">Lurch<span id="check">&#x2713</span></div>
     </body>
 </html>
