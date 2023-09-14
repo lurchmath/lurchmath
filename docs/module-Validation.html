@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Atoms</title>
+    <title>Lurch Web User Interface: Validation</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Module</p>
-    <h1 class="page-title">Atoms</h1>
+    <h1 class="page-title">Validation</h1>
     
 
 
@@ -59,35 +59,17 @@
 
     
         
-            <div class="description"><p>In a Lurch document, certain sections will be marked as &quot;atoms.&quot;  These may
-be an inline section represented by an HTML span or a block section
-represented by an HTML div.  Atoms have the following properties.</p>
-<ol>
-<li>The user cannot <em>directly</em> edit their content.  Rather, the application
-determines how the atom appears in the document.  (There are also
-meaningful sections of the document that are not indivisible in this way;
-see <a href="module-Shells.html">the Shells module</a>.)</li>
-<li>The user can <em>indirectly</em> edit the atom's content by clicking on it and
-interacting with whatever dialog the application pops up in response.</li>
-<li>There can be many different types of atoms.  For example, one atom may be
-a mathematical equation while another atom adds an attribute to the
-document that contains it; these are two different types, and there will
-be other types as well.  The type is stored as an attribute of the atom's
-HTML element.</li>
-<li>Each atom will typically have some meaning that will be important when
-the document is processed in a mathematical way.</li>
-</ol>
-<p>Atoms are represented in the document by spans and divs with a certain class
-attached to mark them as atoms, and they are also have their
-<code>contenteditable</code> property set to false, which TinyMCE respects so that the
-user cannot edit their content (though they can cut, copy, paste, or delete
-them).</p>
-<p>This module contains tools for working with atoms, including the
-<a href="module-Atoms.html#.className">class name</a> we use to distinguish them, the
-<a href="module-Atoms.html#.install">function</a> we use to install their
-mouse event handlers, and most importantly, the
-<a href="module-Atoms.Atom.html">class</a> we use to create an API for working with
-individual atoms.</p></div>
+            <div class="description"><p>This module creates a Web Worker to use for doing validation outside of the
+UI thread.  It loads into that worker the code in
+<a href="module-ValidationWorker.html">the validation worker module</a>, and then
+provides two convenient methods for communicating with that worker.</p>
+<p>First, you can send a document to the worker for validation by calling the
+<a href="module-Validation.html#.checkDocument">checkDocument()</a> function.  Second,
+you can listen for message from the worker using the
+<a href="module-Validation.html#.addEventListener">addEventListener()</a> function.</p>
+<p>Both this module and the <a href="module-ValidationWorker.html">validation worker module</a> make use of the <a href="Message.html">Message</a> class for communication, and any
+client who listens to the events from this module will receive instances of
+that class as well.</p></div>
         
 
         
@@ -121,13 +103,6 @@ individual atoms.</p></div>
     
 
     
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="module-Shells.html">the Shells module</a></li>
-            
-        </ul>
-    
 
     
 </div>
@@ -139,13 +114,6 @@ individual atoms.</p></div>
 
     
 
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-Atoms.Atom.html">Atom</a></dt>
-            <dd></dd>
-        </dl>
     
 
      
@@ -165,15 +133,43 @@ individual atoms.</p></div>
     <div class="method-type">
         <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-<h4 class="member-name" id=".className">className<span class="type-signature"></span></h4>
+<h4 class="member-name" id=".addEventListener">addEventListener<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>Class name used to distinguish HTML elements representing atoms.  (For an
-explanation of what an atom is, see the documentation for
-<a href="module-Atoms.html">the module itself</a>.)</p>
+    <p>Install an event handler that will receive messages about validation
+progress.  After any call to <a href="module-Validation.html#.checkDocument">checkDocument()</a>, a number of messages will be generated, each one sent to
+any listeners installed using this function.  The <code>listener</code> will be called
+with a single parameter, an instance of the <a href="Message.html">Message</a> class.  The
+sequence of messages will be one of the following two possibilities.</p>
+<ol>
+<li>If something went wrong with parsing the serialized document submitted to
+<a href="module-Validation.html#.checkDocument">checkDocument()</a>, then you will
+see:
+<ul>
+<li>A message of type <code>&quot;error&quot;</code> with a <code>&quot;text&quot;</code> field saying what was
+wrong with the serialized document</li>
+<li>A message of type <code>&quot;done&quot;</code> indicating that all processing of that
+document is complete, and no further messages are coming.</li>
+</ul>
+</li>
+<li>If the document could be parsed correctly, then you will see:
+<ul>
+<li>One message for each piece of the document that the
+<a href="module-ValidationWorker.html">validation worker</a> decides it should
+validate (which may be any list of subtrees of the document, even the
+empty list).  Each such message will either be of type <code>&quot;feedback&quot;</code>
+with fields saying which subtree of the document was validated and
+what that validation result was, or it will be of type <code>&quot;error&quot;</code> if
+some internal error occurred when attempting to validate that piece.</li>
+<li>After all such messages have been sent, the final message will be of
+type <code>&quot;done&quot;</code> and indicates that all processing of that document is
+complete, and no further messages are coming.</li>
+</ul>
+</li>
+</ol>
 </div>
 
 
@@ -223,91 +219,41 @@ explanation of what an atom is, see the documentation for
     <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.43">, line 43</a>
+            <a href="validation.js.html">validation.js</a><a href="validation.js.html#source.81">, line 81</a>
         </li>
     </ul>
 
 
 </article>
         
-    
-
-    
-        <h3 class="subtitle">Methods</h3>
-
-        
             
 
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
+<article class="member">
     <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-
-    <h4 class="method-name" id=".install">install<span class="signature">(editor)</span><span class="return-type-signature"></span>
-    </h4>
+<h4 class="member-name" id=".checkDocument">checkDocument<span class="type-signature"></span></h4>
 
 
 
 
-
-<div class="method-description">
-    
-    <p>This function should be called in the editor's setup routine.  It installs a
-single mouse event handler into the editor that can watch for click events to
-any atom, and route control flow to the event handler for that atom's type.</p>
+<div class="description">
+    <p>Send a serialized document to the worker for validation.  It is necessary for
+the document to be serialized, because objects cannot be shared across the
+main thread/worker thread boundary.  Here we require the data to be
+serialized in putdown notation, but that could be extended to support other
+notations in the future, including anything that can be parsed into an
+expression tree, such as JSON, etc.</p>
+<p>No value is returned, but validation will begin.  Messages will be sent to
+any listener installed using <a href="module-Validation.html#.addEventListener">addEventListener()</a>, and those messages will be a sequence of zero or more
+messages of type <code>&quot;feedback&quot;</code> or type <code>&quot;error&quot;</code> followed by exactly one
+message of type <code>&quot;done&quot;</code>.</p>
+<p>Calling this function again before you have received the <code>&quot;done&quot;</code> message
+from the previous call will just queue up the second validation to happen
+after the first one completes.</p>
 </div>
 
 
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the editor in which to install the event
-handlers</p></div>
-            
-        </li>
-
-    
-</ul>
 
 
 
@@ -351,29 +297,18 @@ handlers</p></div>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
+    <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.552">, line 552</a>
+            <a href="validation.js.html">validation.js</a><a href="validation.js.html#source.48">, line 48</a>
         </li>
     </ul>
 
 
-
-    </article>
-
+</article>
         
+    
+
     
 
     

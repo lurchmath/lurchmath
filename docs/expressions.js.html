@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Atoms</title>
+    <title>Lurch Web User Interface: expressions.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,353 +34,144 @@
 </header>
 
 
-<main class="layout-main ">
+<main class="layout-main  layout-content--source">
   <div class="container">
-    <p class="page-kind">Module</p>
-    <h1 class="page-title">Atoms</h1>
+    <p class="page-kind">source</p>
+    <h1 class="page-title">expressions.js</h1>
     
 
 
 
+    
 
 <section>
-
-
-<header class="not-class">
-
-
-    
-</header>
-
-<article>
-    <div class="container-overview">
-
-
-
-    
-        
-            <div class="description"><p>In a Lurch document, certain sections will be marked as &quot;atoms.&quot;  These may
-be an inline section represented by an HTML span or a block section
-represented by an HTML div.  Atoms have the following properties.</p>
-<ol>
-<li>The user cannot <em>directly</em> edit their content.  Rather, the application
-determines how the atom appears in the document.  (There are also
-meaningful sections of the document that are not indivisible in this way;
-see <a href="module-Shells.html">the Shells module</a>.)</li>
-<li>The user can <em>indirectly</em> edit the atom's content by clicking on it and
-interacting with whatever dialog the application pops up in response.</li>
-<li>There can be many different types of atoms.  For example, one atom may be
-a mathematical equation while another atom adds an attribute to the
-document that contains it; these are two different types, and there will
-be other types as well.  The type is stored as an attribute of the atom's
-HTML element.</li>
-<li>Each atom will typically have some meaning that will be important when
-the document is processed in a mathematical way.</li>
-</ol>
-<p>Atoms are represented in the document by spans and divs with a certain class
-attached to mark them as atoms, and they are also have their
-<code>contenteditable</code> property set to false, which TinyMCE respects so that the
-user cannot edit their content (though they can cut, copy, paste, or delete
-them).</p>
-<p>This module contains tools for working with atoms, including the
-<a href="module-Atoms.html#.className">class name</a> we use to distinguish them, the
-<a href="module-Atoms.html#.install">function</a> we use to install their
-mouse event handlers, and most importantly, the
-<a href="module-Atoms.Atom.html">class</a> we use to create an API for working with
-individual atoms.</p></div>
-        
-
-        
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="module-Shells.html">the Shells module</a></li>
-            
-        </ul>
-    
-
-    
-</div>
-
-
-        
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-Atoms.Atom.html">Atom</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
-    
-        <h3 class="subtitle">Members</h3>
-
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".className">className<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Class name used to distinguish HTML elements representing atoms.  (For an
-explanation of what an atom is, see the documentation for
-<a href="module-Atoms.html">the module itself</a>.)</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.43">, line 43</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-    
-
-    
-        <h3 class="subtitle">Methods</h3>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".install">install<span class="signature">(editor)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function should be called in the editor's setup routine.  It installs a
-single mouse event handler into the editor that can watch for click events to
-any atom, and route control flow to the event handler for that atom's type.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the editor in which to install the event
-handlers</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.552">, line 552</a>
-        </li>
-    </ul>
-
-
-
+    <article>
+        <pre id="source" class="source-page line-numbers"><code class="language-js">
+/**
+ * This file installs one tool into the user interface, a menu item for
+ * inserting an inline atom into the document, one that allows the user to write
+ * mathematical expressions using any of the parsers defined in the
+ * {@link module:Notation notation module}.
+ * 
+ * @module NotationAtoms
+ */
+
+import { Atom } from './atoms.js'
+import { lookup } from './document-settings.js'
+import { parse, names as notationNames } from './notation.js'
+import { LogicConcept }
+    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+
+// Internal use only.  Given an expression-type atom, updates its HTML code so
+// that the appearance of the atom is its code/notation, in fixed-width font.
+const updateAppearance = expressionAtom => {
+    expressionAtom.fillChild( 'body',
+        `&lt;tt>${expressionAtom.getMetadata( 'code' )}&lt;/tt>` )
+}
+
+/**
+ * Install into a TinyMCE editor instance a new menu item:
+ * "Expression," intended for the Insert menu.  It adds an inline atom to the
+ * user's document, with default content just one identifier, the word
+ * "expression."  If the user clicks it, they can then change the content in a
+ * popup dialog.  The dialog will ensure that the user can save their edits only
+ * if those edits are judged, by the notation function for the expression, to be
+ * valid code under that notation.
+ * 
+ * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
+ *   menu item should be installed
+ * @function
+ */
+export const install = editor => {
+    editor.ui.registry.addMenuItem( 'expression', {
+        text : 'Expression',
+        tooltip : 'Insert math in simple notation',
+        onAction : () => {
+            const atom = Atom.newInline( editor, '', {
+                type : 'notation',
+                code : 'expression',
+                // use the notation language specified in the document settings:
+                notation : lookup( editor, 'notation' )
+            } )
+            updateAppearance( atom )
+            editor.insertContent( atom.getHTML() )
+        }
+    } )
+}
+
+// Internal use only: Show the dialog whose behavior is described above.
+Atom.addType( 'notation', clickedAtom => {
+    const dialog = clickedAtom.editor.windowManager.open( {
+        title : 'Edit expression',
+        body : {
+            type : 'panel',
+            items : [
+                {
+                    type : 'selectbox',
+                    name : 'notation',
+                    label : 'Choose the notation in which you will write:',
+                    items : notationNames().map( name => {
+                        return { value : name, text : name }
+                    } )
+                },
+                {
+                    type : 'input',
+                    name : 'code',
+                    label : 'Code for expression or declaration in that notation:'
+                },
+                {
+                    type : 'htmlpanel',
+                    html : '&lt;span id="notation-feedback">&lt;/span>'
+                }
+            ]
+        },
+        buttons : [
+            {
+                text : 'Save',
+                type : 'submit',
+                name : 'save',
+                buttonType : 'primary'
+            },
+            {
+                text : 'Cancel',
+                type : 'cancel',
+                name : 'cancel'
+            }
+        ],
+        initialData : {
+            code : clickedAtom.getMetadata( 'code' ),
+            notation : clickedAtom.getMetadata( 'notation' )
+        },
+        onChange : dialog => {
+            const code = dialog.getData()['code']
+            const lang = dialog.getData()['notation']
+            const result = parse( code, lang )
+            if ( result instanceof LogicConcept ) {
+                document.body.querySelector( '#notation-feedback' )
+                    .innerHTML = ''
+                dialog.setEnabled( 'save', true )
+            } else {
+                document.body.querySelector( '#notation-feedback' )
+                    .innerHTML = result.message
+                if ( result.hasOwnProperty( 'position' ) )
+                    document.body.querySelector( '#notation-feedback' )
+                        .innerHTML += `&lt;br>Error is at position ${result.position}.`
+                dialog.setEnabled( 'save', false )
+            }
+        },
+        onSubmit : () => {
+            clickedAtom.setMetadata( 'code', dialog.getData()['code'] )
+            clickedAtom.setMetadata( 'notation', dialog.getData()['notation'] )
+            updateAppearance( clickedAtom )
+            dialog.close()
+        }
+    } )
+    setTimeout( () => dialog.focus( 'code' ), 0 )
+} )
+
+export default { install }
+</code></pre>
     </article>
-
-        
-    
-
-    
-
-    
-</article>
-
 </section>
 
 

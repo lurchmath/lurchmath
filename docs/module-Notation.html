@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Atoms</title>
+    <title>Lurch Web User Interface: Notation</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Module</p>
-    <h1 class="page-title">Atoms</h1>
+    <h1 class="page-title">Notation</h1>
     
 
 
@@ -59,35 +59,31 @@
 
     
         
-            <div class="description"><p>In a Lurch document, certain sections will be marked as &quot;atoms.&quot;  These may
-be an inline section represented by an HTML span or a block section
-represented by an HTML div.  Atoms have the following properties.</p>
+            <div class="description"><p>For the purposes of this module, a <em>notation</em> will be any way in which one
+can encode, as a text string, a non-environment Logic Concept.  (For the
+definition of Logic Concepts, or LCs, refer to the documentation in
+<a href="https://lurchmath.github.io/lde/LogicConcept.html">another repository</a>.)
+For example, putdown notation, as
+<a href="https://lurchmath.github.io/lde/LogicConcept.html#.fromPutdown">defined in that repository</a>, is an example of a &quot;notation,&quot; according to this
+definition.</p>
+<p>A <em>notation function</em> will be a function that inspects a text string and does
+the following two things:</p>
 <ol>
-<li>The user cannot <em>directly</em> edit their content.  Rather, the application
-determines how the atom appears in the document.  (There are also
-meaningful sections of the document that are not indivisible in this way;
-see <a href="module-Shells.html">the Shells module</a>.)</li>
-<li>The user can <em>indirectly</em> edit the atom's content by clicking on it and
-interacting with whatever dialog the application pops up in response.</li>
-<li>There can be many different types of atoms.  For example, one atom may be
-a mathematical equation while another atom adds an attribute to the
-document that contains it; these are two different types, and there will
-be other types as well.  The type is stored as an attribute of the atom's
-HTML element.</li>
-<li>Each atom will typically have some meaning that will be important when
-the document is processed in a mathematical way.</li>
+<li>If the text string does not correctly express one, single,
+non-environment Logic Concept in the expected notation, return an error
+object as described below.</li>
+<li>Otherwise, return the Logic Concept instance described by the input.</li>
 </ol>
-<p>Atoms are represented in the document by spans and divs with a certain class
-attached to mark them as atoms, and they are also have their
-<code>contenteditable</code> property set to false, which TinyMCE respects so that the
-user cannot edit their content (though they can cut, copy, paste, or delete
-them).</p>
-<p>This module contains tools for working with atoms, including the
-<a href="module-Atoms.html#.className">class name</a> we use to distinguish them, the
-<a href="module-Atoms.html#.install">function</a> we use to install their
-mouse event handlers, and most importantly, the
-<a href="module-Atoms.Atom.html">class</a> we use to create an API for working with
-individual atoms.</p></div>
+<p>An error object must have a <code>message</code> field, containing a string describing
+the problem in a human-readable way.  It may optionally also have a
+<code>position</code> field, an integer between 0 and the length of the input
+(inclusive) indicating where the problem occurred.  Indexes into the input
+range from 0 to one less than its length, and so an error position equal to
+the input length can be used to express that something was missing at the end
+of the input, such as a close grouper.</p>
+<p>This module installs one notation function, one supporting putdown notation,
+as described above.  It also provides functions clients can use to install
+additional notation functions, or query the set of currently installed ones.</p></div>
         
 
         
@@ -121,13 +117,6 @@ individual atoms.</p></div>
     
 
     
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="module-Shells.html">the Shells module</a></li>
-            
-        </ul>
-    
 
     
 </div>
@@ -139,13 +128,6 @@ individual atoms.</p></div>
 
     
 
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-Atoms.Atom.html">Atom</a></dt>
-            <dd></dd>
-        </dl>
     
 
      
@@ -165,15 +147,17 @@ individual atoms.</p></div>
     <div class="method-type">
         <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-<h4 class="member-name" id=".className">className<span class="type-signature"></span></h4>
+<h4 class="member-name" id=".addFunction">addFunction<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>Class name used to distinguish HTML elements representing atoms.  (For an
-explanation of what an atom is, see the documentation for
-<a href="module-Atoms.html">the module itself</a>.)</p>
+    <p>Install a new notation function into this module.  Provide the name of the
+notation, together with a function whose behavior works as documented
+<a href="module-Notation.html">at the top of this module</a>.  If you call this function
+more than once with the same name, you will overwrite any function you
+installed in the past for the same name with the new function.</p>
 </div>
 
 
@@ -223,91 +207,30 @@ explanation of what an atom is, see the documentation for
     <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.43">, line 43</a>
+            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.53">, line 53</a>
         </li>
     </ul>
 
 
 </article>
         
-    
-
-    
-        <h3 class="subtitle">Methods</h3>
-
-        
             
 
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
+<article class="member">
     <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-
-    <h4 class="method-name" id=".install">install<span class="signature">(editor)</span><span class="return-type-signature"></span>
-    </h4>
+<h4 class="member-name" id=".names">names<span class="type-signature"></span></h4>
 
 
 
 
-
-<div class="method-description">
-    
-    <p>This function should be called in the editor's setup routine.  It installs a
-single mouse event handler into the editor that can watch for click events to
-any atom, and route control flow to the event handler for that atom's type.</p>
+<div class="description">
+    <p>This function returns a list of all the installed notation functions, which
+is just a list of their names, each one a string.</p>
 </div>
 
 
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the editor in which to install the event
-handlers</p></div>
-            
-        </li>
-
-    
-</ul>
 
 
 
@@ -351,29 +274,90 @@ handlers</p></div>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
+    <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.552">, line 552</a>
+            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.61">, line 61</a>
         </li>
     </ul>
 
 
-
-    </article>
-
+</article>
         
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id=".parse">parse<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Apply the parser for a given notation to some text input.  Return either a
+Logic Concept (if the input was understandable as an expression in the given
+notation, according to the rules <a href="module-Notation.html">at the top of this module</a>), or an error object otherwise (also structured according to that
+same documentation).</p>
+</div>
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    <h4>Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.76">, line 76</a>
+        </li>
+    </ul>
+
+
+</article>
+        
+    
+
     
 
     

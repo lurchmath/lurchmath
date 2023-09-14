@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Atoms</title>
+    <title>Lurch Web User Interface: notation.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,353 +34,148 @@
 </header>
 
 
-<main class="layout-main ">
+<main class="layout-main  layout-content--source">
   <div class="container">
-    <p class="page-kind">Module</p>
-    <h1 class="page-title">Atoms</h1>
+    <p class="page-kind">source</p>
+    <h1 class="page-title">notation.js</h1>
     
 
 
 
+    
 
 <section>
-
-
-<header class="not-class">
-
-
-    
-</header>
-
-<article>
-    <div class="container-overview">
-
-
-
-    
-        
-            <div class="description"><p>In a Lurch document, certain sections will be marked as &quot;atoms.&quot;  These may
-be an inline section represented by an HTML span or a block section
-represented by an HTML div.  Atoms have the following properties.</p>
-<ol>
-<li>The user cannot <em>directly</em> edit their content.  Rather, the application
-determines how the atom appears in the document.  (There are also
-meaningful sections of the document that are not indivisible in this way;
-see <a href="module-Shells.html">the Shells module</a>.)</li>
-<li>The user can <em>indirectly</em> edit the atom's content by clicking on it and
-interacting with whatever dialog the application pops up in response.</li>
-<li>There can be many different types of atoms.  For example, one atom may be
-a mathematical equation while another atom adds an attribute to the
-document that contains it; these are two different types, and there will
-be other types as well.  The type is stored as an attribute of the atom's
-HTML element.</li>
-<li>Each atom will typically have some meaning that will be important when
-the document is processed in a mathematical way.</li>
-</ol>
-<p>Atoms are represented in the document by spans and divs with a certain class
-attached to mark them as atoms, and they are also have their
-<code>contenteditable</code> property set to false, which TinyMCE respects so that the
-user cannot edit their content (though they can cut, copy, paste, or delete
-them).</p>
-<p>This module contains tools for working with atoms, including the
-<a href="module-Atoms.html#.className">class name</a> we use to distinguish them, the
-<a href="module-Atoms.html#.install">function</a> we use to install their
-mouse event handlers, and most importantly, the
-<a href="module-Atoms.Atom.html">class</a> we use to create an API for working with
-individual atoms.</p></div>
-        
-
-        
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="module-Shells.html">the Shells module</a></li>
-            
-        </ul>
-    
-
-    
-</div>
-
-
-        
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-Atoms.Atom.html">Atom</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
-    
-        <h3 class="subtitle">Members</h3>
-
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".className">className<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Class name used to distinguish HTML elements representing atoms.  (For an
-explanation of what an atom is, see the documentation for
-<a href="module-Atoms.html">the module itself</a>.)</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.43">, line 43</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-    
-
-    
-        <h3 class="subtitle">Methods</h3>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".install">install<span class="signature">(editor)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function should be called in the editor's setup routine.  It installs a
-single mouse event handler into the editor that can watch for click events to
-any atom, and route control flow to the event handler for that atom's type.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the editor in which to install the event
-handlers</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.552">, line 552</a>
-        </li>
-    </ul>
-
-
-
+    <article>
+        <pre id="source" class="source-page line-numbers"><code class="language-js">
+/**
+ * For the purposes of this module, a *notation* will be any way in which one
+ * can encode, as a text string, a non-environment Logic Concept.  (For the
+ * definition of Logic Concepts, or LCs, refer to the documentation in
+ * {@link https://lurchmath.github.io/lde/LogicConcept.html another repository}.)
+ * For example, putdown notation, as
+ * {@link https://lurchmath.github.io/lde/LogicConcept.html#.fromPutdown
+ * defined in that repository}, is an example of a "notation," according to this
+ * definition.
+ * 
+ * A *notation function* will be a function that inspects a text string and does
+ * the following two things:
+ * 
+ *  1. If the text string does not correctly express one, single,
+ *     non-environment Logic Concept in the expected notation, return an error
+ *     object as described below.
+ *  2. Otherwise, return the Logic Concept instance described by the input.
+ * 
+ * An error object must have a `message` field, containing a string describing
+ * the problem in a human-readable way.  It may optionally also have a
+ * `position` field, an integer between 0 and the length of the input
+ * (inclusive) indicating where the problem occurred.  Indexes into the input
+ * range from 0 to one less than its length, and so an error position equal to
+ * the input length can be used to express that something was missing at the end
+ * of the input, such as a close grouper.
+ * 
+ * This module installs one notation function, one supporting putdown notation,
+ * as described above.  It also provides functions clients can use to install
+ * additional notation functions, or query the set of currently installed ones.
+ * 
+ * @module Notation
+ */
+
+import { LogicConcept, MathConcept, Environment }
+    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+
+// Internal use only
+// Stores the map from notation names to notation functions
+const notationFunctions = new Map()
+
+/**
+ * Install a new notation function into this module.  Provide the name of the
+ * notation, together with a function whose behavior works as documented
+ * {@link module:Notation at the top of this module}.  If you call this function
+ * more than once with the same name, you will overwrite any function you
+ * installed in the past for the same name with the new function.
+ * 
+ * @param {string} name - the name of the notation
+ * @param {function} func - the notation function, with signature and behavior
+ *   as documented at the top of this module
+ */
+export const addFunction = ( name, func ) => notationFunctions.set( name, func )
+
+/**
+ * This function returns a list of all the installed notation functions, which
+ * is just a list of their names, each one a string.
+ * 
+ * @returns {string[]} the names of all installed notation functions
+ */
+export const names = () => Array.from( notationFunctions.keys() )
+
+/**
+ * Apply the parser for a given notation to some text input.  Return either a
+ * Logic Concept (if the input was understandable as an expression in the given
+ * notation, according to the rules {@link module:Notation at the top of this
+ * module}), or an error object otherwise (also structured according to that
+ * same documentation).
+ * 
+ * @param {string} input - the input to be parsed
+ * @param {string} notationName - the name of the notation function to use for
+ *   parsing
+ * @returns {LogicConcept|Object} either a LogicConcept instance, upon success,
+ *   or an error object, upon failure, as described above
+ */
+export const parse = ( input, notationName ) => {
+    if ( !notationFunctions.has( notationName ) )
+        throw new Error( `No such notation: ${notationName}` )
+    return notationFunctions.get( notationName )( input )
+}
+
+// Internal use only
+// Installs default notation, which is putdown
+addFunction( 'putdown', code => {
+    try {
+        const LCs = LogicConcept.fromPutdown( code )
+        if ( LCs.length == 0 )
+            return { message : 'Your code contains no expressions.' }
+        if ( LCs.length > 1 )
+            return { message : 'Your code contains more than one expression.' }
+        const result = LCs[0]
+        if ( result.hasDescendantSatisfying( d => d instanceof Environment ) )
+            return { message : 'Your code includes an environment.' }
+        return result
+    } catch ( e ) {
+        const match = /^(.*), line \d+ col (\d+)$/.exec( e )
+        if ( match ) {
+            return { message : match[1], position : parseInt( match[2] ) }
+        } else {
+            return { message : 'Your code is not valid putdown notation.' }
+        }
+    }
+} )
+
+// Internal use only
+// Installs a second notation, smackdown
+addFunction( 'smackdown', code => {
+    try {
+        const MCs = MathConcept.fromSmackdown( code )
+        if ( MCs.length == 0 )
+            return { message : 'Your code contains no expressions.' }
+        if ( MCs.length > 1 )
+            return { message : 'Your code contains more than one expression.' }
+        console.log( MCs[0].toJSON() )
+        const result = MCs[0].interpret()
+        if ( result.hasDescendantSatisfying( d => d instanceof Environment ) )
+            return { message : 'Your code includes an environment.' }
+        console.log( result.toJSON() )
+        return result
+    } catch ( e ) {
+        const match = /^(.*), line \d+ col (\d+)$/.exec( e )
+        if ( match ) {
+            return { message : match[1], position : parseInt( match[2] ) }
+        } else {
+            return { message : 'Your code is not valid smackdown notation.' }
+        }
+    }
+} )
+</code></pre>
     </article>
-
-        
-    
-
-    
-
-    
-</article>
-
 </section>
 
 

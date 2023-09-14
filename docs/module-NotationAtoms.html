@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Atoms</title>
+    <title>Lurch Web User Interface: NotationAtoms</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Module</p>
-    <h1 class="page-title">Atoms</h1>
+    <h1 class="page-title">NotationAtoms</h1>
     
 
 
@@ -59,35 +59,10 @@
 
     
         
-            <div class="description"><p>In a Lurch document, certain sections will be marked as &quot;atoms.&quot;  These may
-be an inline section represented by an HTML span or a block section
-represented by an HTML div.  Atoms have the following properties.</p>
-<ol>
-<li>The user cannot <em>directly</em> edit their content.  Rather, the application
-determines how the atom appears in the document.  (There are also
-meaningful sections of the document that are not indivisible in this way;
-see <a href="module-Shells.html">the Shells module</a>.)</li>
-<li>The user can <em>indirectly</em> edit the atom's content by clicking on it and
-interacting with whatever dialog the application pops up in response.</li>
-<li>There can be many different types of atoms.  For example, one atom may be
-a mathematical equation while another atom adds an attribute to the
-document that contains it; these are two different types, and there will
-be other types as well.  The type is stored as an attribute of the atom's
-HTML element.</li>
-<li>Each atom will typically have some meaning that will be important when
-the document is processed in a mathematical way.</li>
-</ol>
-<p>Atoms are represented in the document by spans and divs with a certain class
-attached to mark them as atoms, and they are also have their
-<code>contenteditable</code> property set to false, which TinyMCE respects so that the
-user cannot edit their content (though they can cut, copy, paste, or delete
-them).</p>
-<p>This module contains tools for working with atoms, including the
-<a href="module-Atoms.html#.className">class name</a> we use to distinguish them, the
-<a href="module-Atoms.html#.install">function</a> we use to install their
-mouse event handlers, and most importantly, the
-<a href="module-Atoms.Atom.html">class</a> we use to create an API for working with
-individual atoms.</p></div>
+            <div class="description"><p>This file installs one tool into the user interface, a menu item for
+inserting an inline atom into the document, one that allows the user to write
+mathematical expressions using any of the parsers defined in the
+<a href="module-Notation.html">notation module</a>.</p></div>
         
 
         
@@ -121,13 +96,6 @@ individual atoms.</p></div>
     
 
     
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="module-Shells.html">the Shells module</a></li>
-            
-        </ul>
-    
 
     
 </div>
@@ -139,13 +107,6 @@ individual atoms.</p></div>
 
     
 
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-Atoms.Atom.html">Atom</a></dt>
-            <dd></dd>
-        </dl>
     
 
      
@@ -155,81 +116,6 @@ individual atoms.</p></div>
     
 
 
-    
-        <h3 class="subtitle">Members</h3>
-
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".className">className<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Class name used to distinguish HTML elements representing atoms.  (For an
-explanation of what an atom is, see the documentation for
-<a href="module-Atoms.html">the module itself</a>.)</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.43">, line 43</a>
-        </li>
-    </ul>
-
-
-</article>
-        
     
 
     
@@ -262,9 +148,13 @@ explanation of what an atom is, see the documentation for
 
 <div class="method-description">
     
-    <p>This function should be called in the editor's setup routine.  It installs a
-single mouse event handler into the editor that can watch for click events to
-any atom, and route control flow to the event handler for that atom's type.</p>
+    <p>Install into a TinyMCE editor instance a new menu item:
+&quot;Expression,&quot; intended for the Insert menu.  It adds an inline atom to the
+user's document, with default content just one identifier, the word
+&quot;expression.&quot;  If the user clicks it, they can then change the content in a
+popup dialog.  The dialog will ensure that the user can save their edits only
+if those edits are judged, by the notation function for the expression, to be
+valid code under that notation.</p>
 </div>
 
 
@@ -301,8 +191,8 @@ any atom, and route control flow to the event handler for that atom's type.</p>
 
             
 
-            <div class="param-description"><p>the editor in which to install the event
-handlers</p></div>
+            <div class="param-description"><p>the TinyMCE editor instance into which the new
+menu item should be installed</p></div>
             
         </li>
 
@@ -365,7 +255,7 @@ handlers</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="atoms.js.html">atoms.js</a><a href="atoms.js.html#source.552">, line 552</a>
+            <a href="expressions.js.html">expressions.js</a><a href="expressions.js.html#source.37">, line 37</a>
         </li>
     </ul>
 
