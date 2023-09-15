@@ -188,7 +188,7 @@ export class Shell {
      *   single non-breaking space)
      * @returns {HTMLDivElement} the element constructed
      */
-    static createElement ( editor, type, content='&nbsp;' ) {
+    static createElement ( editor, type, content='<br data-mce-bogus="1">' ) {
         const result = editor.dom.doc.createElement( 'div' )
         result.classList.add( className )
         result.dataset.type = type
@@ -299,7 +299,7 @@ export const install = editor => {
             {
                 if ( walk.parentNode && walk.tagName == 'DIV' ) {
                     const newPara = editor.dom.doc.createElement( 'p' )
-                    newPara.innerHTML = '&nbsp;'
+                    newPara.innerHTML = '<br data-mce-bogus="1">'
                     walk.parentNode.insertBefore( newPara, walk )
                     editor.selection.setCursorLocation( newPara, 0 )
                     editor.focus()
@@ -319,7 +319,7 @@ export const install = editor => {
             {
                 if ( walk.parentNode && walk.tagName == 'DIV' ) {
                     const newPara = editor.dom.doc.createElement( 'p' )
-                    newPara.innerHTML = '&nbsp;'
+                    newPara.innerHTML = '<br data-mce-bogus="1">'
                     walk.parentNode.insertBefore( newPara, walk.nextSibling )
                     editor.selection.setCursorLocation( newPara, 0 )
                     editor.focus()
