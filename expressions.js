@@ -37,7 +37,9 @@ const updateAppearance = expressionAtom => {
 export const install = editor => {
     editor.ui.registry.addMenuItem( 'expression', {
         text : 'Expression',
+        icon : 'insert-character',
         tooltip : 'Insert math in simple notation',
+        shortcut : 'Meta+E',
         onAction : () => {
             const atom = Atom.newInline( editor, '', {
                 type : 'notation',

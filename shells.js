@@ -258,7 +258,7 @@ export const install = editor => {
         icon : 'unselected',
         text : 'Environment',
         tooltip : 'Insert block representing an environment',
-        shortcut : 'Meta+E',
+        shortcut : 'Meta+Shift+E',
         onAction : () => {
             editor.insertContent( Shell.createElement(
                 editor, 'environment', editor.selection.getContent()
