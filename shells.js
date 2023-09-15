@@ -116,7 +116,7 @@ class Shell {
     // Internal use only:
     // Default handler for environments.  Allows toggling given/claim status.
     edit () {
-        this.editor.windowManager.open( {
+        const dialog = this.editor.windowManager.open( {
             title : 'Edit environment',
             body : {
                 type : 'panel',
