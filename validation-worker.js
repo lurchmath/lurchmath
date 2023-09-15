@@ -41,15 +41,23 @@ import { LogicConcept, LurchSymbol }
 // feedback instead.
 addEventListener( 'message', event => {
     const message = new Message( event )
-    if ( !message.is( 'putdown' ) )
-        return Message.error( 'Not a putdown message' )
+    if ( !message.is( 'document' ) )
+        return Message.error( 'Not a document message' )
+    const encoding = message.get( 'encoding' )
+    const code = message.get( 'code' )
     try {
-        const LCs = LogicConcept.fromPutdown( message.get( 'putdown' ) )
-        if ( LCs.length != 1 )
-            throw new Error( 'Incorrect number of LCs: ' + LCs.length )
-        validateDocument( LCs[0] )
+        if ( encoding == 'putdown' ) {
+            const LCs = LogicConcept.fromPutdown( code )
+            if ( LCs.length != 1 )
+                throw new Error( 'Incorrect number of LCs: ' + LCs.length )
+            validateDocument( LCs[0] )
+        } else if ( encoding == 'json' ) {
+            validateDocument( LogicConcept.fromJSON( code ) )
+        } else {
+            throw new Error( `Not a valid document encoding: ${encoding}` )
+        }
     } catch ( error ) {
-        Message.error( error.message )
+        Message.error( error.message || `${error}` )
         Message.done()
     }
 } )
@@ -60,8 +68,12 @@ const validateDocument = LC => {
     LC.descendantsSatisfying( isArithmeticSentence ).forEach( sentence => {
         try {
             const result = checkArithmetic( sentence )
+            let walk
+            for ( walk = sentence ; walk ; walk = walk.parent() )
+                if ( walk.ID() ) break
             Message.feedback( {
                 id : sentence.ID(),
+                ancestorID : walk ? walk.ID() : undefined,
                 address : sentence.address( LC ),
                 putdown : sentence.toPutdown(),
                 valid : result

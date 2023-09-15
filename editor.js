@@ -17,7 +17,7 @@ import Atoms from './atoms.js'
 import Expressions from './expressions.js'
 import Dependencies from './dependency.js'
 import Shells from './shells.js'
-import { checkDocument, addEventListener } from './validation.js'
+import Validation from './validation.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -60,6 +60,7 @@ const menuData = {
     document : buildMenu( 'Document',
         'editheader extractheader embedheader',
         'dependency',
+        'clearvalidation validate',
         'docsettings'
     ),
     help : buildMenu( 'Help', 'help' )
@@ -104,6 +105,7 @@ loadScript( TinyMCEURL ).then( () => {
             Expressions.install( editor )
             Shells.install( editor )
             Dependencies.install( editor )
+            Validation.install( editor )
             if ( !Headers.isEditor() ) {
                 // Install tools we need only if we are the primary app window:
                 GoogleDrive.install( editor )
@@ -129,18 +131,3 @@ loadScript( TinyMCEURL ).then( () => {
         }
     } )
 } )
-
-// Temporary code for testing purposes only.
-addEventListener( console.log )
-window.testValidation = ( putdown = `
-    {
-        (= (+ 1 1) 2)
-        (> (+ 1 1) 2)
-        (and
-            (<= (/ 3 3) (* 3 3))
-            (= (/ 3 3) (* 3 3))
-        )
-    }
-` ) => {
-    checkDocument( putdown )
-}
