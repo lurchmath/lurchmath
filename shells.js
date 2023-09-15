@@ -196,6 +196,19 @@ export class Shell {
         return result
     }
 
+    /**
+     * Find all elements in the given TinyMCE editor that represent shells, and
+     * return each one, transformed into an instance of the Shell class.  They
+     * are returned in the order they appear in the document.
+     * 
+     * @param {tinymce.Editor} editor - the editor in which to search
+     * @returns {Atom[]} the array of shell elements in the editor's document
+     */
+    static allIn ( editor ) {
+        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
+            .map( element => new Shell( element ) )
+    }
+
 }
 
 /**

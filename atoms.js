@@ -538,6 +538,19 @@ export class Atom {
         return Atom.create( editor, 'div', content, metadata )
     }
 
+    /**
+     * Find all elements in the given TinyMCE editor that represent atoms, and
+     * return each one, transformed into an instance of the Atom class.  They
+     * are returned in the order they appear in the document.
+     * 
+     * @param {tinymce.Editor} editor - the editor in which to search
+     * @returns {Atom[]} the array of atom elements in the editor's document
+     */
+    static allIn ( editor ) {
+        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
+            .map( element => new Atom( element ) )
+    }
+
 }
 
 /**
