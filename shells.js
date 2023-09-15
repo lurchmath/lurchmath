@@ -40,11 +40,11 @@
  */
 export const className = 'lurch-shell'
 
-// Internal use only:
-// Class name used to distinguish givens from claims
+// Internal use only
+// Whether this shell represents a "given" environment
 const givenClassName = 'lurch-given'
 
-class Shell {
+export class Shell {
 
     // Internal use only: Stores a mapping from atom types to event handlers for
     // shells of that type.  Public use of this data should be done through the
@@ -112,6 +112,17 @@ class Shell {
      * @see {@link module:Shells.Shell#getType getType()}
      */
     setType ( type ) { this.element.dataset.type = type }
+
+    /**
+     * In Lurch, elements can be classified as either *givens* or *claims,* for
+     * validation purposes.  A *given* means exactly what it does in high school
+     * geometry---a hypothesis from which other conclusions will probably be
+     * drawn.  Shells can be marked as givens, and if they are not, they default
+     * to being claims.
+     * 
+     * @returns {boolean} whether this shell is a given
+     */
+    isGiven () { return this.element.classList.contains( givenClassName ) }
 
     // Internal use only:
     // Default handler for environments.  Allows toggling given/claim status.
