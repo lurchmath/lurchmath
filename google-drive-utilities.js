@@ -16,12 +16,43 @@ import { loadScript } from './utilities.js'
 
 // Bring several constants to the top for better organization
 const GoogleDriveAPI = 'https://apis.google.com/js/api.js'
-const GoogleSignInAPI = 'https://apis.google.com/js/platform.js'
+const GoogleSignInAPI = 'https://accounts.google.com/gsi/client'
 const discoveryDoc = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
 const fileScope = 'https://www.googleapis.com/auth/drive.file'
 const uploadEndpoint = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'
 const googleFolderMIMEType = 'application/vnd.google-apps.folder'
 const lurchMimeType = 'text/html'
+
+// Internal use only
+// Keeps track of whether we have user's Google credentials yet or not
+let user = null
+let tokenClient = null
+let lastToken = null
+const getToken = () => new Promise( ( resolve, reject ) => {
+    if ( lastToken !== null ) {
+        resolve( lastToken )
+        return
+    }
+    if ( tokenClient == null )
+        tokenClient = google.accounts.oauth2.initTokenClient( {
+            client_id : window.LurchClientId,
+            scope : fileScope,
+            prompt : 'none',
+            callback : response => {
+                if ( response.error === undefined ) {
+                    lastToken = response.access_token
+                    setTimeout(
+                        () => lastToken = null,
+                        ( response.expires_in - 1 ) * 1000
+                    )
+                    resolve( response.access_token )
+                } else {
+                    reject( response.error )
+                }
+            }
+        } )
+    tokenClient.requestAccessToken( { login_hint : user.sub } )
+} )
 
 // Ensure that we have loaded
 //   (a) our API and Client keys,
@@ -38,50 +69,19 @@ loadScript( window.location.hostname == 'localhost' ?
             'google-api-key-public.js' ).then( () => {
 loadScript( GoogleSignInAPI ).then( () => {
 loadScript( GoogleDriveAPI ).then( () => {
-    gapi.load( 'client:auth2', () => {
-        gapi.client.init( {
-            apiKey : window.LurchAPIKey,
-            clientId : window.LurchClientId,
-            discoveryDocs : [ discoveryDoc ],
-            scope : fileScope
-        } ) // Drive API will be ready when this promise resolves.
+    google.accounts.id.initialize( {
+        client_id : window.LurchClientId,
+        auto_select : true,
+        use_fedcm_for_prompt : true,
+        callback : response => {
+            const parts = response.credential.split( '.' )
+            const payload = parts[1].replace( /\-/g, '+' ).replace( /_/g, '/' )
+            user = JSON.parse( atob( payload ) )
+        }
     } )
+    google.accounts.id.prompt()
+    gapi.load( 'client', () => gapi.client.load( 'drive', 'v3' ) )
 } ) } ) } )
-
-/**
- * Just a shortcut to simplify multiple pieces of code later that need to get
- * the current user from a chain of Google API calls.
- * 
- * @function
- * @see {@link module:GoogleDriveUtilities.ensureLoggedIn ensureLoggedIn()}
- */
-const currentUser = () => gapi.auth2.getAuthInstance().currentUser.get()
-
-/**
- * Ensure the user has logged in by looking up their existing login information
- * if they've already logged in, or forcing them to log in so that we can get
- * their information thereafter.
- * 
- * @returns {Promise} a promise that resolves with the user as parameter upon
- *   success, or rejects if the user does not/cannot log in
- * @function
- * @see {@link module:GoogleDriveUtilities.currentUser currentUser()}
- */
-export const ensureLoggedIn = () => new Promise( ( resolve, reject ) => {
-    const authInstance = gapi.auth2.getAuthInstance()
-    const authorizeUser = () => {
-        const idToken = currentUser().getAuthResponse().id_token
-        currentUser().reloadAuthResponse().then( () => {
-            currentUser().getAuthResponse().id_token = idToken
-            resolve( currentUser() )
-        } ).catch( reject )
-    }
-    if ( authInstance.isSignedIn.get() ) {
-        authorizeUser()
-    } else {
-        authInstance.signIn().then( authorizeUser )
-    }
-} )
 
 /**
  * Read a file from the current user's Google Drive.  The client must pass a
@@ -140,12 +140,12 @@ export const writeNewFileToDrive = ( filename, folderId, content ) => {
         { type : 'application/json' }
     ) )
     formData.append( 'file', new Blob( [ content ], { type : lurchMimeType } ) )
-    return fetch( uploadEndpoint, {
-        method : 'POST',
-        headers : new Headers( {
-            'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
-        } ),
-        body : formData
+    getToken().then( token => {
+        fetch( uploadEndpoint, {
+            method : 'POST',
+            headers : new Headers( { 'Authorization': 'Bearer ' + token } ),
+            body : formData
+        } )
     } )
 }
 
@@ -173,12 +173,12 @@ export const writeNewFileToDrive = ( filename, folderId, content ) => {
  */
 export const updateFileInDrive = ( fileId, newContent ) => {
     const URL = uploadEndpoint.replace( 'files?', `files/${fileId}?` )
-    return fetch( URL, {   
-        method : 'PATCH',
-        headers : new Headers( {
-            'Authorization': 'Bearer ' + gapi.auth.getToken().access_token
-        } ),
-        body: new Blob( [ newContent ], { type : lurchMimeType } )
+    getToken().then( token => {
+        fetch( URL, {   
+            method : 'PATCH',
+            headers : new Headers( { 'Authorization': 'Bearer ' + token } ),
+            body: new Blob( [ newContent ], { type : lurchMimeType } )
+        } )
     } )
 }
 
@@ -224,27 +224,28 @@ export const listFilesFromFolder = ( folderId = 'root' ) => new Promise( ( resol
  * @see {@link module:GoogleDriveUtilities.readFileFromDrive readFileFromDrive()}
  */
 export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
-    gapi.load( 'picker', () => {
-        const view = new google.picker.DocsView()
-        view.setMode( google.picker.DocsViewMode.LIST )
-        view.setIncludeFolders( true )
-        view.setMimeTypes( lurchMimeType )
-        const picker = new google.picker.PickerBuilder()
-            .setTitle( 'Choose a file to open' )
-            .setDeveloperKey( window.LurchAPIKey )
-            .setAppId( window.LurchClientId )
-            .setOAuthToken( currentUser().getAuthResponse().access_token )
-            .addView( view )
-            .setCallback( event => {
-                if ( event[google.picker.Response.ACTION] === google.picker.Action.PICKED ) {
-                    const file = event[google.picker.Response.DOCUMENTS][0]
-                    const fileId = file[google.picker.Document.ID]
-                    resolve( fileId )
-                }
-            } )
-            .build()
-        picker.setVisible( true )
-        picker.V.style.zIndex += 5000 // hack to put it in front of TinyMCE
+    getToken().then( token => {
+        gapi.load( 'picker', () => {
+            const view = new google.picker.DocsView()
+            view.setMode( google.picker.DocsViewMode.LIST )
+            view.setIncludeFolders( true )
+            view.setMimeTypes( lurchMimeType )
+            const picker = new google.picker.PickerBuilder()
+                .setTitle( 'Choose a file to open' )
+                .setDeveloperKey( window.LurchAPIKey )
+                .setAppId( window.LurchClientId )
+                .setOAuthToken( token )
+                .addView( view )
+                .setCallback( event => {
+                    if ( event[google.picker.Response.ACTION] === google.picker.Action.PICKED ) {
+                        const file = event[google.picker.Response.DOCUMENTS][0]
+                        const fileId = file[google.picker.Document.ID]
+                        resolve( fileId )
+                    }
+                } )
+                .build()
+            picker.setVisible( true )
+        } )
     } )
 } )
 
@@ -260,30 +261,32 @@ export const showOpenFilePicker = () => new Promise( ( resolve, _ ) => {
  * @see {@link module:GoogleDriveUtilities.writeNewFileToDrive writeNewFileToDrive()}
  */
 export const showSaveFolderPicker = () => new Promise( ( resolve, reject ) => {
-    gapi.load( 'picker', () => {
-        const view = new google.picker.DocsView( google.picker.ViewId.FOLDERS )
-        view.setMode( google.picker.DocsViewMode.LIST )
-        view.setIncludeFolders( true )
-        view.setSelectFolderEnabled( true )
-        view.setMimeTypes( googleFolderMIMEType )
-        const picker = new google.picker.PickerBuilder()
-            .setTitle( 'Choose a folder in which to save your file' )
-            .setDeveloperKey( window.LurchAPIKey )
-            .setAppId( window.LurchClientId )
-            .setOAuthToken( currentUser().getAuthResponse().access_token )
-            .addView( view )
-            .setCallback( event => {
-                if ( event[google.picker.Response.ACTION] === google.picker.Action.PICKED ) {
-                    const pickedItems = event[google.picker.Response.DOCUMENTS]
-                    if ( pickedItems.length == 0 ) return reject()
-                    resolve( {
-                        id : pickedItems[0][google.picker.Document.ID],
-                        name : pickedItems[0][google.picker.Document.NAME]
-                    } )
-                }
-            } )
-            .build()
-        picker.setVisible( true )
-        picker.V.style.zIndex += 5000 // hack to put it in front of TinyMCE
+    getToken().then( token => {
+        console.log( 'gonna show save picker with', token )
+        gapi.load( 'picker', () => {
+            const view = new google.picker.DocsView( google.picker.ViewId.FOLDERS )
+            view.setMode( google.picker.DocsViewMode.LIST )
+            view.setIncludeFolders( true )
+            view.setSelectFolderEnabled( true )
+            view.setMimeTypes( googleFolderMIMEType )
+            const picker = new google.picker.PickerBuilder()
+                .setTitle( 'Choose a folder in which to save your file' )
+                .setDeveloperKey( window.LurchAPIKey )
+                .setAppId( window.LurchClientId )
+                .setOAuthToken( token )
+                .addView( view )
+                .setCallback( event => {
+                    if ( event[google.picker.Response.ACTION] === google.picker.Action.PICKED ) {
+                        const pickedItems = event[google.picker.Response.DOCUMENTS]
+                        if ( pickedItems.length == 0 ) return reject()
+                        resolve( {
+                            id : pickedItems[0][google.picker.Document.ID],
+                            name : pickedItems[0][google.picker.Document.NAME]
+                        } )
+                    }
+                } )
+                .build()
+            picker.setVisible( true )
+        } )
     } )
 } )

@@ -8,7 +8,7 @@
  */
 
 import {
-    ensureLoggedIn, readFileFromDrive, writeNewFileToDrive, updateFileInDrive,
+    readFileFromDrive, writeNewFileToDrive, updateFileInDrive,
     showOpenFilePicker, showSaveFolderPicker
 } from './google-drive-utilities.js'
 import { LurchDocument } from './lurch-document.js'
@@ -30,7 +30,7 @@ let lastUsedFileId = null
  * @see {@link module:GoogleDriveUI.showSaveAsDialog showSaveAsDialog()}
  * @see {@link module:GoogleDriveUtilities.showOpenFilePicker showOpenFilePicker()}
  */
-const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
+const showFileOpenDialog = editor => {
     showOpenFilePicker().then( pickedFileId => {
         lastUsedFileId = pickedFileId
         readFileFromDrive( pickedFileId ).then( response => {
@@ -45,7 +45,7 @@ const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
             text : `Error opening file: ${error}`
         } ) )
     } )
-} )
+}
 
 /**
  * Show a Google Drive folder selection dialog box, and if the user selects a
@@ -62,7 +62,7 @@ const showFileOpenDialog = editor => ensureLoggedIn().then( () => {
  * @see {@link module:GoogleDriveUI.silentFileSave silentFileSave()}
  * @see {@link module:GoogleDriveUI.showSaveFolderPicker showSaveFolderPicker()}
  */
-const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
+const showSaveAsDialog = editor => {
     showSaveFolderPicker().then( folder => {
         const dialog = editor.windowManager.open( {
             title : 'Choose filename to save as',
@@ -106,7 +106,7 @@ const showSaveAsDialog = editor => ensureLoggedIn().then( () => {
         } )
         setTimeout( () => dialog.focus( 'filename' ), 0 )
     } )
-} )
+}
 
 /**
  * Silently (i.e., without asking the user anything in a dialog box) save the

@@ -95,8 +95,12 @@ loadScript( TinyMCEURL ).then( () => {
         plugins : 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {
-            // Activate full screen mode as soon as the editor is ready
-            editor.on( 'init', () => editor.execCommand( 'mceFullScreen' ) )
+            // Activate full screen mode as soon as the editor is ready,
+            // and ensure it's not in front of any future Google Drive dialogs
+            editor.on( 'init', () => {
+                editor.execCommand( 'mceFullScreen' )
+                document.querySelector( '.tox-tinymce' ).style.zIndex = 500
+            } )
             // Install all tools the editor always needs:
             Settings.install( editor )
             UploadDownload.install( editor )
