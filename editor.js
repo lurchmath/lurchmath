@@ -25,7 +25,8 @@ const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce
 // Add a textarea input element to the page, into which we will install TinyMCE
 const textarea = document.createElement( 'textarea' )
 textarea.setAttribute( 'id', 'editor' )
-document.getElementById('editor-container').appendChild( textarea )
+const container = document.getElementById('editor-container')
+container.insertBefore( textarea , container.firstChild )
 
 // Create the default JSON data for populating the editor's menus and toolbar:
 const buildMenu = ( title, ...list ) => {
@@ -87,18 +88,19 @@ loadScript( TinyMCEURL ).then( () => {
     // ...then set up the editor in the textarea we created above
     tinymce.init( {
         selector : '#editor',
-        content_css : 'document',
+        content_css : ['document','lurchcontent.css'],
+        height : "100%",
         promotion : false, // disable premium features advertisement
         toolbar : toolbarData,
         menubar : 'file edit insert format document help',
         menu : menuData,
-        plugins : 'fullscreen', // enable full screen mode
+        // plugins : 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {
-            // Activate full screen mode as soon as the editor is ready,
-            // and ensure it's not in front of any future Google Drive dialogs
+            // As soon as the editor is ready, ensure it's not in front
+            // of any future Google Drive dialogs
             editor.on( 'init', () => {
-                editor.execCommand( 'mceFullScreen' )
+                // editor.execCommand( 'mceFullScreen' )
                 document.querySelector( '.tox-tinymce' ).style.zIndex = 500
             } )
             // Install all tools the editor always needs:

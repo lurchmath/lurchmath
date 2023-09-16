@@ -18,7 +18,7 @@ import { LogicConcept }
 // that the appearance of the atom is its code/notation, in fixed-width font.
 const updateAppearance = expressionAtom => {
     expressionAtom.fillChild( 'body',
-        `<tt>${expressionAtom.getMetadata( 'code' )}</tt>` )
+        `${expressionAtom.getMetadata( 'code' )}` )
 }
 
 /**
