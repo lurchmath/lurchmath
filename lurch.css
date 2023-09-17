@@ -14,10 +14,10 @@ body {
     position: absolute; 
     top : 0; 
     right : 0; 
-    width : 75px;
+    width : 120px;
     z-index: 9999; 
-    margin: 18px 18px; 
-    font-size: larger; 
+    margin: 25.5px 40px; 
+    font-size: xx-large; 
     font-family: Lato; 
     font-weight: 900; 
     letter-spacing:-0.01em;
