@@ -17,7 +17,6 @@ import { loadScript } from './utilities.js'
 // Bring several constants to the top for better organization
 const GoogleDriveAPI = 'https://apis.google.com/js/api.js'
 const GoogleSignInAPI = 'https://accounts.google.com/gsi/client'
-const discoveryDoc = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
 const fileScope = 'https://www.googleapis.com/auth/drive.file'
 const uploadEndpoint = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'
 const googleFolderMIMEType = 'application/vnd.google-apps.folder'
