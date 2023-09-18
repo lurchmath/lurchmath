@@ -45,7 +45,8 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'application width in window',
                 'Width of application in browser window',
-                [ 'Fixed size', 'Full width' ]
+                [ 'Fixed size', 'Full width' ],
+                'Fixed size'
             )
         )
     )
@@ -64,9 +65,8 @@ const applySettings = changes => {
         // If max width desired, just let CSS come through, because it has a
         // max width built in.  Otherwise, block it with 'none'.
         const appElement = document.querySelector( '#editor-container' )
-        appElement.style.maxWidth =
-            appSettings.get( 'application width in window' ) == 'Fixed size' ?
-            null : 'none'
+        const setting = appSettings.get( 'application width in window' )
+        appElement.style.maxWidth = setting == 'Fixed size' ? null : 'none'
     }
 }
 
