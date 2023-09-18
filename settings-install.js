@@ -9,7 +9,8 @@
 
 import { Settings } from './settings.js'
 import {
-    SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata
+    SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata,
+    CategorySettingMetadata
 } from './settings-metadata.js'
 
 /**
@@ -38,13 +39,44 @@ export const appSettings = new Settings(
                 'Show warning before moving document content into header',
                 'Moving content into the header is an action that cannot be undone.'
             )
+        ),
+        new SettingsCategoryMetadata(
+            'Editor appearance',
+            new CategorySettingMetadata(
+                'application width in window',
+                'Width of application in browser window',
+                [ 'Fixed size', 'Full width' ]
+            )
         )
     )
 )
 
+// Internal use only
+// Called when the user says OK in the app settings dialog.
+// Parameter is a list of what settings they changed (array of string keys),
+// or undefined if the app has just loaded and we need to apply loaded changes.
+const applySettings = changes => {
+    // First, if there were any changes, save the settings to the browser.
+    if ( changes && changes.length > 0 ) appSettings.save()
+    // Now, for any change that must result in some code being run now to alter
+    // the app's behavior, run that code.
+    if ( !changes || changes.includes( 'application width in window' ) ) {
+        // If max width desired, just let CSS come through, because it has a
+        // max width built in.  Otherwise, block it with 'none'.
+        const appElement = document.querySelector( '#editor-container' )
+        appElement.style.maxWidth =
+            appSettings.get( 'application width in window' ) == 'Fixed size' ?
+            null : 'none'
+    }
+}
+
 /**
- * Installs in a given TinyMCE editor the UI features for editing application
- * settings.
+ * First, install in a given TinyMCE editor the UI features for editing
+ * application settings.
+ * 
+ * Second, install an event handler so that when the editor finishes its
+ * initialization, we load the application settings and apply to the editor any
+ * of them that impact its appearance.
  * 
  * @param {tinymce.Editor} editor - the editor into which to install the
  *   features
@@ -57,10 +89,12 @@ export const install = editor => {
         icon : 'preferences',
         onAction : () => {
             appSettings.load()
-            appSettings.userEdit( editor ).then( changes => {
-                if ( changes.length > 0 ) appSettings.save()
-            } )
+            appSettings.userEdit( editor ).then( applySettings )
         }
+    } )
+    editor.on( 'init', () => {
+        appSettings.load()
+        applySettings()
     } )
 }
 
