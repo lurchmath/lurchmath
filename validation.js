@@ -61,8 +61,8 @@ const clearValidation = target => {
 // Create HTML for the feedback icon to place into the suffix of an atom
 // element, based on the feedback message received
 const markerHTML = message => {
-    return message.get( 'valid' ) ? '<font color=green>✅</font>'
-                                  : '<font color=red>❌</font>'
+    return message.get( 'valid' ) ? '<span class="checkmark">&check;</span>'
+                                  : '<span class="redx">✗</span>'
 }
 
 // Internal use only
@@ -74,7 +74,7 @@ const addValidation = ( target, marker ) => {
     if ( !( target instanceof Atom ) )
         throw new Error( `Invalid validation target: ${target}` )
     const suffix = target.getChild( 'suffix' )
-    target.fillChild( 'suffix', suffix.innerHTML + ' ' + marker )
+    target.fillChild( 'suffix', suffix.innerHTML + marker )
 }
 
 // Internal use only
