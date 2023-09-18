@@ -45,8 +45,7 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'application width in window',
                 'Width of application in browser window',
-                [ 'Fixed size', 'Full width' ],
-                'Fixed size'
+                [ 'Fixed size', 'Full width' ]
             )
         )
     )

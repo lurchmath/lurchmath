@@ -236,6 +236,8 @@ export class CategorySettingMetadata extends SettingMetadata {
      *   be on the list of `options`
      */
     constructor ( name, label, options, defaultValue ) {
+        if ( defaultValue === undefined )
+            defaultValue = options[0]
         super( name, label, `${defaultValue}` )
         this.type = 'selectbox'
         this.items = options.map( option => {
