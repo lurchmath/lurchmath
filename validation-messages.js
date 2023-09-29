@@ -3,6 +3,7 @@ import { Atom, className as atomClassName } from './atoms.js'
 import { Shell, className as shellClassName } from './shells.js'
 import { LogicConcept, Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { getHeader } from './header-editor.js'
 
 /**
  * This class simplifies communication between the main thread and worker
@@ -202,16 +203,21 @@ export class Message {
      *   document, in serialized form
      */
     static document ( editor, encoding = 'json' ) {
+        // Ensure that the encoding is one of the valid ones; error if not.
         encoding = encoding.toLowerCase()
         if ( ![ 'putdown', 'json' ].includes( encoding ) )
             throw new Error( `Invalid document encoding: ${encoding}` )
         let counter = 1 // makes it easy to use || to check if valid
+        // Clear out the idToElement map and create a function to repopulate it.
         Message.idToElement.clear()
         const assignID = ( LC, element ) => {
             LC.setID( counter )
             Message.idToElement.set( `${counter}`, element )
             counter++
         }
+        // Convert an array of HTMLElements into an LC representing the document.
+        // These HTMLElements must be those that represent atoms or shells,
+        // and must appear in the same order that they do in the document.
         const elementsToLC = ( array, context = new Environment() ) => {
             if ( array.length == 0 ) return context
             const head = array.shift()
@@ -234,14 +240,20 @@ export class Message {
             context.pushChild( elementsToLC( inside, innerContext ) )
             return elementsToLC( outside, context )
         }
+        // Run the elementsToLC function on all the elements in the document that
+        // represent atoms and shells, including any that appear in the header.
+        const selector = `.${shellClassName},.${atomClassName}`
         const LC = elementsToLC(
-            Array.from(
-                editor.dom.doc.querySelectorAll( `.${shellClassName},.${atomClassName}` )
-            ).map( element =>
+            [
+                ...getHeader( editor ).querySelectorAll( selector ),
+                ...editor.dom.doc.querySelectorAll( selector )
+            ].map( element =>
                 element.classList.contains( atomClassName ) ?
                 new Atom( element ) : new Shell( element )
             )
         )
+        // Create a message that could be sent to the validation worker, including
+        // the encoding produced above of the document's atoms and shells.
         return new Message( {
             type : 'document',
             encoding : encoding,

@@ -23,10 +23,25 @@ import { appURL } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
 import { appSettings } from './settings-install.js'
 
+/**
+ * The metadata element for a document is stored in the editor rather than the
+ * DOM, because we do not want TinyMCE to be able to edit it.  It is useful to
+ * be able to extract that header element at times, so that it can be treated
+ * like an entire document (fragment), since it effectively is one.
+ * 
+ * @param {tinymce.Editor} editor - the editor from which to extract the
+ *   document header
+ * @returns {HTMLElement} the HTMLElement that contains the document header
+ *   for this editor
+ * @function
+ */
+export const getHeader = editor =>
+    new LurchDocument( editor ).getMetadata( 'main', 'header' )
+
 // For internal use only:  Extract the header from the document metadata, as a
 // string of HTML
-const getHeader = editor => {
-    const result = new LurchDocument( editor ).getMetadata( 'main', 'header' )
+const getHeaderHTML = editor => {
+    const result = getHeader( editor )
     return result ? result.innerHTML : ''
 }
 // For internal use only:  Save the given HTML text into the document metadata
@@ -93,7 +108,7 @@ export const install = editor => {
                 `${appURL()}?${headerFlag}=true`, '_blank' )
             window.headerEditorWindow.addEventListener( 'load', () =>
                 window.headerEditorWindow.postMessage(
-                    getHeader( editor ), appURL() ) )
+                    getHeaderHTML( editor ), appURL() ) )
             window.addEventListener( 'message', event => {
                 if ( event.source != window.headerEditorWindow ) return
                 setHeader( editor, event.data )
@@ -117,7 +132,7 @@ export const install = editor => {
                 } )
                 return
             }
-            const header = getHeader( editor )
+            const header = getHeaderHTML( editor )
             if ( header == '' ) {
                 editor.notificationManager.open( {
                     type : 'warning',
@@ -159,7 +174,7 @@ export const install = editor => {
             appSettings.load()
             appSettings.showWarning( 'warn before embed header', editor )
             .then( () => {
-                setHeader( editor, getHeader( editor ) + toEmbed )
+                setHeader( editor, getHeaderHTML( editor ) + toEmbed )
                 editor.execCommand( 'delete' )
                 editor.undoManager.clear()
             } )
