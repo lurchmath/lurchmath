@@ -405,6 +405,56 @@ export class Atom {
     }
 
     /**
+     * Handle a click event for this atom, using whatever handler was installed
+     * for this atom's type, if any.  If there is none, print a message to the
+     * console indicating that there is no click handler for this type.
+     * 
+     * @see {@link module:Atoms.Atom.addType addType()}
+     */
+    handleClick () {
+        const type = this.getMetadata( 'type' )
+        if ( Atom.handlers.has( type ) )
+            Atom.handlers.get( type )( this )
+        else
+            console.log( `No atom click handler installed for type "${type}"` )
+    }
+
+    /**
+     * When inserting an atom into an editor, we do so by placing its HTML
+     * content into the document using TinyMCE's `insertContent()` function.
+     * This makes it difficult to get the newly inserted atom as an Atom or an
+     * HTMLElement, because TinyMCE does not provide those objects as a result
+     * of the insertion operation.
+     * 
+     * This function fills that gap by inserting the atom's HTML into the
+     * document and returning a new Atom instance for the newly inserted
+     * content.  This instance of the Atom class is unaffected, because it is
+     * never actually inserted anywhere; only its HTML content is, and hence the
+     * word "copy" in the name of this function.  The return value of this
+     * function will be a different instance of the Atom class than this
+     * instance.
+     * 
+     * @param {tinymce.Editor} editor - the editor into which to insert a copy
+     *   of this atom
+     * @returns an Atom instance for the newly inserted content
+     */
+    insertAndReturnCopy ( editor ) {
+        const tempClass = 'temp_Lurch_new_atom_class'
+        this.element.classList.add( tempClass )
+        editor.insertContent( this.getHTML() )
+        this.element.classList.remove( tempClass )
+        const elements = Array.from(
+            editor.dom.doc.getElementsByClassName( tempClass )
+        ).filter( element =>
+            !element.parentNode.classList.contains( 'mce-offscreen-selection' )
+        )
+        if ( elements.length != 1 )
+            throw new Error( 'Failed to insert atom HTML' )
+        elements[0].classList.remove( tempClass )
+        return new Atom( elements[0], editor )
+    }
+
+    /**
      * One can construct an instance of the Atom class to interface with an
      * element in the editor only if that element actually represents an atom,
      * as defined in {@link module:Atoms the documentation for the Atoms
@@ -563,26 +613,15 @@ export class Atom {
  * @function
  */
 export const install = editor => {
-    const startEditing = atom => {
-        const type = atom.getMetadata( 'type' )
-        if ( Atom.handlers.has( type ) )
-            Atom.handlers.get( type )( atom )
-        else
-            console.log( `No atom click handler installed for type "${type}"` )
-    }
-    editor.on( 'init', () => {
-        editor.dom.doc.body.addEventListener( 'click', event => {
-            const receiver = Atom.findAbove( event.target, editor )
-            if ( receiver ) startEditing( receiver )
-        } )
-    } )
+    editor.on( 'init', () =>
+        editor.dom.doc.body.addEventListener( 'click', event =>
+            Atom.findAbove( event.target, editor )?.handleClick() ) )
     editor.on( 'keydown', event => {
         if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
             return
         const selected = editor.selection.getNode()
-        if ( !Atom.isAtomElement( selected ) )
-            return
-        startEditing( new Atom( selected, editor ) )
+        if ( Atom.isAtomElement( selected ) )
+            new Atom( selected, editor ).handleClick()
     } )
 }
 

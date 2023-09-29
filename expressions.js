@@ -48,7 +48,8 @@ export const install = editor => {
                 notation : lookup( editor, 'notation' )
             } )
             updateAppearance( atom )
-            editor.insertContent( atom.getHTML() )
+            // Insert the atom and immediately begin editing it.
+            atom.insertAndReturnCopy( editor ).handleClick()
         }
     } )
 }

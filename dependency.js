@@ -62,7 +62,8 @@ export const install = editor => {
             const atom = Atom.newBlock( editor, '',
                 { type : 'dependency', state : 'no url' } )
             updateAppearance( atom )
-            editor.insertContent( atom.getHTML() )
+            // Insert the atom and immediately begin editing it.
+            atom.insertAndReturnCopy( editor ).handleClick()
         }
     } )
 }
