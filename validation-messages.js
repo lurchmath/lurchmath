@@ -34,7 +34,7 @@ import { getHeader } from './header-editor.js'
  * means not dividing the communication protocol code over multiple files, and
  * thus improving consistency and reducing chances of logic errors.
  * 
- * Tbere are also some static members that make certain message-sending
+ * There are also some static members that make certain message-sending
  * operations more concise and readable; see below.
  */
 export class Message {
