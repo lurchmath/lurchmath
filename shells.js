@@ -219,7 +219,7 @@ export class Shell {
  *    route control flow to the event handler for that shell's type, falling
  *    back on the {@link module:Shells.Shell#edit edit()} method for an untyped
  *    shell
- *  * a small stylesheet that specifies how to format shells, and how to
+ *  * the css classes that can be used to format shells with css, and how to
  *    visually distinguish given shells from claim shells
  *  * a menu item for inserting "environments" (untyped shells)
  *  * an event handler for deleting empty environments (which can occur if the
@@ -248,21 +248,6 @@ export const install = editor => {
                     receiver.edit() // default handler
             }
         } )
-        // The small stylesheet described above
-        editor.dom.doc.head.innerHTML += `
-            <style>
-                div.${className} {
-                    position: relative;
-                    border: 1px solid #bbb;
-                    border-radius: 6px;
-                    padding: 0 1em;
-                    margin: 1ex 0;
-                }
-                div.${className}.${givenClassName} {
-                    border: 2px dashed #bbb;
-                }
-            </style>
-        `
     } )
     // The first menu item described above
     // (We do not call it "insert environment" because it will go on the insert
