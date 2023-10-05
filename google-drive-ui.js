@@ -118,12 +118,11 @@ const showSaveAsDialog = editor => {
  * @param {tinymce.Editor} editor the editor to use for any notifications
  * @param {string} fileId the Google Drive file ID whose content should be
  *   updated
- * @param {string} content the new content to save into the file
  * @function
  * @see {@link module:GoogleDriveUI.showSaveAsDialog showSaveAsDialog()}
  */
-const silentFileSave = ( editor, fileId, content ) => {
-    updateFileInDrive( fileId, content )
+const silentFileSave = ( editor, fileId ) => {
+    updateFileInDrive( fileId, new LurchDocument( editor ).getDocument() )
     .then( () => {
         editor.notificationManager.open( {
             type : 'success',
@@ -178,8 +177,7 @@ export const install = editor => {
         tooltip : 'Save file to Google Drive',
         shortcut : 'meta+S',
         onAction : () => lastUsedFileId !== null ?
-            silentFileSave( editor, lastUsedFileId,
-                new LurchDocument( editor ).getDocument() ) :
+            silentFileSave( editor, lastUsedFileId ) :
             showSaveAsDialog( editor )
     } )
 }
