@@ -91,3 +91,49 @@ export const escapeHTML = text =>
         .replaceAll( '>', '&gt;' )
         .replaceAll( '"', '&quot;' )
         .replaceAll( "'", '&#039;' )
+
+/**
+ * Given an ordered set of HTML Nodes in an array, and a node in the same
+ * document, return just the subset of `nodes` that appear before `point`.
+ * Because the given set of nodes are in order, this subset will always be an
+ * initial segment of the given array.  It can be empty (if none precede `point`)
+ * and it can be the whole array (if all preceded `point`).
+ * 
+ * While this could be done with a simple array filter, that could be slow on
+ * larger arrays; this uses a binary search.  Furthermore, node comparisons are
+ * a tedious process that uses an enum, so this function is simpler.
+ * 
+ * @param {Node[]} nodes - ordered array of Nodes to filter
+ * @param {Node} point - the node that will determine which subset of `nodes`
+ *   gets rerturned
+ * @returns {Node[]} some initial segment of `nodes`, including precisely those
+ *   that appear before `point`
+ */
+export const onlyBefore = ( nodes, point ) => {
+    const lt = ( a, b ) => {
+        const comparison = a.compareDocumentPosition( b )
+        if ( ( comparison & Node.DOCUMENT_POSITION_PRECEDING )
+          || ( comparison & Node.DOCUMENT_POSITION_CONTAINS ) )
+            return true
+        if ( ( comparison & Node.DOCUMENT_POSITION_FOLLOWING )
+          || ( comparison & Node.DOCUMENT_POSITION_CONTAINED_BY )
+          || ( comparison == 0 ) ) // 0 means a == b
+            return false
+        throw new Error( 'Cannot compare document positions' )
+    }
+    try {
+        if ( !lt( nodes[0], point ) ) return [ ]
+        if ( lt( nodes[nodes.length-1], point ) ) return nodes
+        let indexLT = 0
+        let indexGE = nodes.length - 1
+        while ( indexLT < indexGE - 1 ) {
+            const midIndex = Math.floor( ( indexLT + indexGE ) / 2 )
+            if ( lt( nodes[midIndex], point ) ) indexLT = midIndex
+            else indexGE = midIndex
+        }
+        return nodes.slice( 0, indexGE )
+    } catch ( e ) {
+        console.log( 'DEBUG:', e )
+        return nodes
+    }
+}

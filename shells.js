@@ -33,6 +33,10 @@
  * @see {@link module:Atoms the Atoms module}
  */
 
+import { getHeader } from './header-editor.js'
+import { onlyBefore } from './utilities.js'
+import { className as atomClassName } from './atoms.js'
+
 /**
  * Class name used to distinguish HTML elements representing shells.  (For an
  * explanation of what a shell is, see the documentation for
@@ -207,6 +211,86 @@ export class Shell {
     static allIn ( editor ) {
         return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
             .map( element => new Shell( element ) )
+    }
+
+    /**
+     * This function can take any DOM node and walk up its ancestor chain and
+     * find whether any element in that chain represents a shell.  If so, it
+     * returns the corresponding Shell instance.  If not, it returns null.
+     * 
+     * @param {Node} node - the DOM node from which to begin searching
+     * @param {tinymce.Editor} editor - the editor in which the node sits
+     * @returns {Shell?} the nearest Shell enclosing the given `node`
+     * @see {@link module:Shells.Shell.isShellElement isShellElement()}
+     */
+    static findAbove ( node, editor ) {
+        for ( let walk = node ; walk ; walk = walk.parentNode )
+            if ( Shell.isShellElement( walk ) )
+                return new Shell( walk, editor )
+    }
+
+    /**
+     * Accessibility of HTML nodes sitting inside a hierarchy of Shells is
+     * analogous to accessibility of `MathConcept` or `LogicConcept` instances
+     * inside their own hierarchy.  The shells create the hierarchy/tree and the
+     * HTML nodes within them act as leaves of the tree.
+     * 
+     * Of course, one HTML node is not accessible to another if it comes later
+     * in the document, so this function assumes that you are asking about
+     * accessibility of an earlier node to a later node.  It does not check to
+     * be sure that this is true; the client must ensure that.
+     * 
+     * It returns true if the `earlier` node is accessible to the `later` node.
+     * 
+     * @param {Node} earlier - the earlier of the two DOM nodes to compare
+     * @param {Node} later - the later of the two DOM nodes to compare
+     * @returns {boolean} whether the `earlier` node is accessible to the
+     *   `later` node
+     */
+    static isAccessibleTo ( earlier, later ) {
+        let walk1 = earlier
+        let walk2 = later
+        while ( walk1 ) {
+            if ( !walk2 ) return false
+            walk1 = Shell.findAbove( walk1.parentNode )
+            walk2 = Shell.findAbove( walk2.parentNode )
+            if ( walk1 && ( walk1 !== walk2 ) ) return false
+        }
+        return true
+    }
+
+    /**
+     * For the meaning of accessibility, see
+     * {@link module:Shells.Shell.isAccessibleTo isAccessibleTo()}.
+     * This function returns the array of all HTML nodes that are accessible to
+     * the given `target` in the given `editor`, as long as they have the given
+     * `className` and satisfy the given `predicate`.  HTML nodes that appear in
+     * dependencies and in the document header are also included.  All nodes are
+     * returned in the order that they appear in the document (counting the
+     * header as earliest).
+     * 
+     * The predicate can be omitted and defaults to an accessibility check
+     * relative to the given `target` node.  The class name can be omitted and
+     * defaults to the class name used to mark nodes as being part of the
+     * {@link module:Atoms.Atom Atoms module}.
+     * 
+     * @param {tinymce.Editor} editor - the editor in which to search
+     * @param {Node} target - the node to use for filtering the result list
+     * @param {Function?} predicate - a function that takes a node and returns
+     *   true if that node should be included in the results
+     * @param {string?} className - the class name of the nodes to include
+     * @returns {Node[]} the ordered array of accessible nodes satisfying all of
+     *   the given criteria
+     */
+    static accessibles (
+        editor, target, predicate = null, className = atomClassName
+    ) {
+        return [
+            // dependencies in header:
+            ...getHeader( editor ).querySelectorAll( `.${className}` ),
+            // nodes in document preceding target:
+            ...onlyBefore( editor.dom.doc.querySelectorAll( `.${className}` ), target )
+        ].filter( predicate || ( node => Shell.isAccessibleTo( node, target ) ) )
     }
 
 }
