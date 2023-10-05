@@ -4,6 +4,9 @@ body {
     min-height : 100vh;
     background : linear-gradient(45deg, darkslategrey, transparent);
 }
+textarea#editor {
+    display: none;
+}
 #editor-container {
     margin : 0 auto;
     max-width : 853px;

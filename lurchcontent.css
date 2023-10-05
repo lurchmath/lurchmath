@@ -12,3 +12,13 @@ span.redx {
     color: red;
     font-weight: bold;
 }
+div.lurch-shell {
+    position: relative;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    padding: 0 1em;
+    margin: 1ex 0;
+}
+div.lurch-shell.lurch-given {
+    border: 2px dashed #bbb;
+}
