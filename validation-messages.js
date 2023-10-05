@@ -223,11 +223,13 @@ export class Message {
             const head = array.shift()
             if ( head instanceof Atom ) {
                 const code = head.getMetadata( 'code' )
-                const headLCs = LogicConcept.fromPutdown( code )
-                if ( headLCs.length != 1 )
-                    throw new Error( `Not a single putdown expression: ${code}` )
-                assignID( headLCs[0], head.element )
-                context.pushChild( headLCs[0] )
+                if ( code ) { // because some atoms don't want to be putdown-ified
+                    const headLCs = LogicConcept.fromPutdown( code )
+                    if ( headLCs.length != 1 )
+                        throw new Error( `Not a single putdown expression: ${code}` )
+                    assignID( headLCs[0], head.element )
+                    context.pushChild( headLCs[0] )
+                }
                 return elementsToLC( array, context )
             }
             const innerContext = new Environment()
