@@ -22,9 +22,9 @@
  */
 
 import { Atom } from './atoms.js'
-import { escapeHTML } from './utilities.js'
 import { loadFromURL, autoOpenLink } from './load-from-url.js'
 import { LurchDocument } from './lurch-document.js'
+import { simpleHTMLTable, escapeHTML } from './utilities.js'
 
 // Internal use only.  Given a dependency-type atom, updates its body HTML code
 // to correctly represent it to the user, based on whether it has a URL or not.
@@ -32,9 +32,10 @@ const updateAppearance = dependencyAtom => {
     dependencyAtom.element.style.border = 'solid 1px gray'
     dependencyAtom.element.style.padding = '0 1em 0 1em'
     const url = dependencyAtom.getMetadata( 'url' )
-    dependencyAtom.fillChild( 'body',
-        url ? `<p>Dependency imported from: <tt>${escapeHTML( url )}</tt></p>` :
-              '<p>Click to choose URL for dependency.</p>' )
+    dependencyAtom.fillChild( 'body', simpleHTMLTable(
+        'Imported dependency document',
+        [ 'Source:', `<tt>${escapeHTML( url )}</tt>` ]
+    ) )
 }
 
 /**

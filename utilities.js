@@ -85,12 +85,68 @@ export const appURL = () => {
  * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
  *   `"'"`, and `'"'` replaced with character references instead
  */
-export const escapeHTML = text =>
+export const escapeHTML = ( text = '' ) =>
     text.replaceAll( '&', '&amp;' )
         .replaceAll( '<', '&lt;' )
         .replaceAll( '>', '&gt;' )
         .replaceAll( '"', '&quot;' )
         .replaceAll( "'", '&#039;' )
+
+/**
+ * This function makes it easy to construct two-column tables of HTML content,
+ * which is something that several types of {@link module:Atoms.Atom Atoms} will
+ * want to do.  The arguments to the function are the rows of the table, and
+ * they are treated as follows.
+ * 
+ *  * Any string is treated as the content for a row of the table spanning both
+ *    columns (using `colspan`) and in bold font.
+ *  * An array of strings containing just one entry is treated the same as a
+ *    single string.
+ *  * An array of two strings is treated as the contents of the two cells in
+ *    the row.
+ *  * An array of three strings is treated as two rows, first a two-cell row,
+ *    and then an optional error row (only if the third entry is not falsy) that
+ *    places the error message in red font in the second cell.
+ * 
+ * Example use:
+ * 
+ * ```js
+ * simpleHTMLTable(
+ *     'Here is the information you entered:',
+ *     [ 'Your name:', 'Frederick the Great' ],
+ *     [ 'Your age:', '42' ],
+ *     [ 'Your favorite color:', color,
+ *       !isColor(color) && 'That is not a valid color.' ]
+ * )
+ * ```
+ * 
+ * @param  {...any} rows - the data representing the rows of the table to construct
+ * @returns {string} the HTML code for the table
+ */
+export const simpleHTMLTable = ( ...rows ) => {
+    let result = '<table style="border:none;">'
+    const row = inside => `<tr>${inside}</tr>`
+    const cell = inside =>
+        `<td style='border:none;'>${inside}</td>`
+    const bigCell = inside =>
+        `<td colspan='2' style='border:none;'><b>${inside}</b></td>`
+    const error = inside =>
+        `<td style='border:none;'><font color=red>${inside}</font></td>`
+    rows.forEach( rowData => {
+        if ( typeof( rowData ) == 'string' ) {
+            result += row( bigCell( rowData ) )
+        } else if ( rowData.length == 1 ) {
+            result += row( bigCell( rowData[0] ) )
+        } else if ( rowData.length == 2 ) {
+            result += row( cell( rowData[0] ) + cell( rowData[1] ) )
+        } else if ( rowData.length == 3 ) {
+            result += row( cell( rowData[0] ) + cell( rowData[1] ) )
+            if ( rowData[2] ) result += row( cell( '' ) + error( rowData[2] ) )
+        }
+    } )
+    result += '</table>'
+    return result
+}
 
 /**
  * Given an ordered set of HTML Nodes in an array, and a node in the same
