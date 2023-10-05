@@ -69,7 +69,9 @@ export const install = editor => {
                     // file in; see the code below that enables the Open button.
                     // That same code stores the uploaded file in the
                     // uploadedContent variable, for us to access here.
-                    new LurchDocument( editor ).setDocument( uploadedContent )
+                    const LD = new LurchDocument( editor )
+                    LD.setDocument( uploadedContent )
+                    LD.clearFileID()
                     dialog.close()
                 }
             } )

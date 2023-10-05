@@ -66,8 +66,44 @@ export class LurchDocument {
     newDocument () {
         this.clearDocument()
         this.clearMetadata()
+        this.clearFileID()
         this.editor.undoManager.clear()
     }
+
+    /**
+     * If the application loaded a file from a given filename, or a given online
+     * storage location, it may want to save a unique ID (such as the filename
+     * or a pointer to the online storage location) so that the user can later
+     * just choose "Save" and have the file instantly stored back in the same
+     * location.  To facilitate this, we allow the storing of an arbitrary ID
+     * associated with the given file.  This ID is cleared out whenever
+     * {@link LurchDocument#newDocument newDocument()} is called.
+     * 
+     * @param {any} id - the ID to store
+     * @see {@link LurchDocument#getFileID getFileID()}
+     * @see {@link LurchDocument#clearFileID clearFileID()}
+     */
+    setFileID ( id ) { this.editor.lastLurchFileID = id }
+
+    /**
+     * See the description of {@link LurchDocument#setFileID setFileID()} for an
+     * explanation of file IDs.  This function returns the current file ID if
+     * there is one, or undefined otherwise.
+     * 
+     * @see {@link LurchDocument#setFileID setFileID()}
+     * @see {@link LurchDocument#clearFileID clearFileID()}
+     */
+    getFileID () { return this.editor.lastLurchFileID }
+
+    /**
+     * See the description of {@link LurchDocument#setFileID setFileID()} for an
+     * explanation of file IDs.  This function removes any file ID from this
+     * document.  This function is called whenever
+     * {@link LurchDocument#newDocument newDocument()} is called.
+     * 
+     * @see {@link LurchDocument#setFileID setFileID()}
+     */
+    clearFileID () { delete this.editor.lastLurchFileID }
 
     /**
      * A Lurch document has two main parts, a DIV storing the metadata followed
