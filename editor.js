@@ -8,7 +8,7 @@
 
 import { loadScript } from './utilities.js'
 import Settings from './settings-install.js'
-import GoogleDrive from './google-drive-ui.js'
+// import GoogleDrive from './google-drive-ui.js'
 import UploadDownload from './upload-download.js'
 import Importer from './load-from-url.js'
 import Headers from './header-editor.js'
@@ -34,7 +34,7 @@ const buildMenu = ( title, ...list ) => {
 }
 const menuData = {
     file : buildMenu( 'File',
-        'newlurchdocument opendocument savedocument savedocumentas',
+        // 'newlurchdocument opendocument savedocument savedocumentas',
         'upload download import',
         'print'
     ),
@@ -114,7 +114,7 @@ loadScript( TinyMCEURL ).then( () => {
             Validation.install( editor )
             if ( !Headers.isEditor() ) {
                 // Install tools we need only if we are the primary app window:
-                GoogleDrive.install( editor )
+                // GoogleDrive.install( editor )
                 Headers.install( editor )
                 DocSettings.install( editor )
                 editor.on( 'init', () => Importer.loadFromQueryString( editor ) )
