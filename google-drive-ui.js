@@ -60,7 +60,7 @@ const showFileOpenDialog = editor => {
  * @function
  * @see {@link module:GoogleDriveUI.showFileOpenDialog showFileOpenDialog()}
  * @see {@link module:GoogleDriveUI.silentFileSave silentFileSave()}
- * @see {@link module:GoogleDriveUI.showSaveFolderPicker showSaveFolderPicker()}
+ * @see {@link module:GoogleDriveUtilities.showSaveFolderPicker showSaveFolderPicker()}
  */
 const showSaveAsDialog = editor => {
     showSaveFolderPicker().then( folder => {

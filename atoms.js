@@ -481,7 +481,7 @@ export class Atom {
      * 
      * @param {Node} node - the DOM node from which to begin searching
      * @param {tinymce.Editor} editor - the editor in which the node sits
-     * @returns {Atom?} the nearest Atom node enclosing the given `node`
+     * @returns {Atom?} the nearest Atom enclosing the given `node`
      * @see {@link module:Atoms.Atom.isAtomElement isAtomElement()}
      */
     static findAbove ( node, editor ) {

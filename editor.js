@@ -25,7 +25,7 @@ const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce
 // Add a textarea input element to the page, into which we will install TinyMCE
 const textarea = document.createElement( 'textarea' )
 textarea.setAttribute( 'id', 'editor' )
-const container = document.getElementById('editor-container')
+const container = document.getElementById( 'editor-container' )
 container.insertBefore( textarea , container.firstChild )
 
 // Create the default JSON data for populating the editor's menus and toolbar:
