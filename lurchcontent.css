@@ -2,6 +2,12 @@ span.lurch-atom {
     font-size : 12pt;
     font-family : 'Courier New', Courier, monospace;
 }
+span.lurch-atom-empty::before {
+    content : 'empty expression';
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-style: italic;
+    color : #bbb;
+}
 span.checkmark {
     font-family: 'Lucida Grande';
     color: #4CAF50;
