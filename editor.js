@@ -90,6 +90,7 @@ loadScript( TinyMCEURL ).then( () => {
     tinymce.init( {
         selector : '#editor',
         content_css : ['document','lurchcontent.css'],
+        visual_table_class : 'lurch-borderless-table',
         height : "100%",
         promotion : false, // disable premium features advertisement
         toolbar : toolbarData,

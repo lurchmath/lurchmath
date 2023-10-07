@@ -124,14 +124,14 @@ export const escapeHTML = ( text = '' ) =>
  * @returns {string} the HTML code for the table
  */
 export const simpleHTMLTable = ( ...rows ) => {
-    let result = '<table style="border:none;">'
+    let result = '<table><colgroup><col><col></colgroup>'
     const row = inside => `<tr>${inside}</tr>`
     const cell = inside =>
-        `<td style='border:none;'>${inside}</td>`
+        `<td>${inside}</td>`
     const bigCell = inside =>
-        `<td colspan='2' style='border:none;'><b>${inside}</b></td>`
+        `<td colspan='2'><b>${inside}</b></td>`
     const error = inside =>
-        `<td style='border:none;'><font color=red>${inside}</font></td>`
+        `<td><font color=red>${inside}</font></td>`
     rows.forEach( rowData => {
         if ( typeof( rowData ) == 'string' ) {
             result += row( bigCell( rowData ) )

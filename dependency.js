@@ -29,12 +29,13 @@ import { simpleHTMLTable, escapeHTML } from './utilities.js'
 // Internal use only.  Given a dependency-type atom, updates its body HTML code
 // to correctly represent it to the user, based on whether it has a URL or not.
 const updateAppearance = dependencyAtom => {
-    dependencyAtom.element.style.border = 'solid 1px gray'
-    dependencyAtom.element.style.padding = '0 1em 0 1em'
+    dependencyAtom.element.classList.add('lurch-dependency')
+    // dependencyAtom.element.style.border = 'solid 1px gray'
+    // dependencyAtom.element.style.padding = '0 1em 0 1em'
     const url = dependencyAtom.getMetadata( 'url' )
     dependencyAtom.fillChild( 'body', simpleHTMLTable(
         'Imported dependency document',
-        [ 'Source:', `<tt>${escapeHTML( url )}</tt>` ]
+        [ 'Source:', `<span class="URL">${escapeHTML( url )}</span>` ]
     ) )
 }
 
