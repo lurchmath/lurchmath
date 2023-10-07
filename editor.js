@@ -89,7 +89,7 @@ loadScript( TinyMCEURL ).then( () => {
     // ...then set up the editor in the textarea we created above
     tinymce.init( {
         selector : '#editor',
-        content_css : ['document','lurchcontent.css'],
+        content_css : ['document','lurch.css'],
         visual_table_class : 'lurch-borderless-table',
         height : "100%",
         promotion : false, // disable premium features advertisement

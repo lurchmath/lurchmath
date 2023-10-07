@@ -1,35 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@900&display=swap');
-body {
-    margin : 0;
-    min-height : 100vh;
-    background : linear-gradient(45deg, darkslategrey, transparent);
+/***************************************************************************
+  Lurch css
+
+  The css file for styling the editor content and anything in its iframe.
+  Styling for the container html page that contains the editor and the Lurch
+  logo is stored in lurchhome.css.
+***************************************************************************/
+
+/* Tables with no border get this class. Tinymce puts a dotted border around
+   borderless tables by default, so we do that here and then override it in 
+   special cases. This class is defined in the tinymce.init.
+*/
+.lurch-borderless-table {
+    border: 1px dashed #bbb;
 }
-textarea#editor {
-    display: none;
-}
-#editor-container {
-    margin : 0 auto;
-    max-width : 853px;
-    height : 100vh;
-    position : relative
-}
-#logo { 
-    position: absolute; 
-    top : 0; 
-    right : 0; 
-    width : 120px;
-    z-index: 9999; 
-    margin: 25.5px 40px; 
-    font-size: xx-large; 
-    font-family: Lato; 
-    font-weight: 900; 
-    letter-spacing:-0.01em;
-    color:#000;
-    text-align:center;
-}
-#logo #check { 
-    color:#4CAF50;
-}
+
+/* Expression atoms */
 span.lurch-atom {
     font-size : 12pt;
+    font-family : 'Courier New', Courier, monospace;
+}
+span.lurch-atom-empty::before {
+    content: 'empty expression';
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-style: italic;
+    color: #bbb;
+}
+span.checkmark {
+    font-family: 'Lucida Grande';
+    color: #4CAF50;
+    font-weight: bold;
+}
+span.redx {
+    font-family: 'Lucida Grande';
+    color: red;
+    font-weight: bold;
+}
+
+/* shells */
+div.lurch-shell {
+    position: relative;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    padding: 0 1em;
+    margin: 1ex 0;
+}
+div.lurch-shell.lurch-given {
+    border: 2px dashed #bbb;
+}
+
+/* Dependency URL atoms  */
+.lurch-dependency {
+    border: solid 1px gray;
+    padding: 0 1em;  
+}
+.lurch-dependency table {
+    table-layout: fixed;
+    width: 100%;  
+}
+.lurch-dependency .lurch-borderless-table {
+    border: none;
+}
+.lurch-dependency col:first-of-type {
+    width: 15%;  
+}
+span.URL {
+    font-family : 'Courier New', Courier, monospace;
+    font-size: small;
 }

@@ -1,0 +1,48 @@
+/*******************************************************************************
+  Lurch Home Page css
+
+  The css file for styling the html page that contains the editor and the Lurch
+  logo.  The styling for the editor content is stored in lurchhome.css.
+*******************************************************************************/
+
+/* import Lato font for Logo */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@900&display=swap');
+
+/* Background color (not visible in full screen mode) */
+body {
+    margin : 0;
+    min-height : 100vh;
+    background : linear-gradient(45deg, darkslategrey, transparent);
+}
+
+/* Prevent this from being seen while the page is loading. */
+textarea#editor {
+    display: none;
+}
+
+/* position and size the editor container div */
+#editor-container {
+    margin : 0 auto;
+    max-width : 853px;
+    height : 100vh;
+    position : relative
+}
+
+/* The Lurch Logo  */
+#logo { 
+    position: absolute; 
+    top : 0; 
+    right : 0; 
+    width : 120px;
+    z-index: 9999; 
+    margin: 25.5px 40px; 
+    font-size: xx-large; 
+    font-family: Lato; 
+    font-weight: 900; 
+    letter-spacing:-0.01em;
+    color:#000;
+    text-align:center;
+}
+#logo #check { 
+    color:#4CAF50;
+}
