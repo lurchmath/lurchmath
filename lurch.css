@@ -61,8 +61,15 @@ div.lurch-shell.lurch-given {
     border: none;
 }
 .lurch-dependency col:first-of-type {
-    width: 15%;  
+    width: 12%;  
 }
+.lurch-dependency td {
+    vertical-align: baseline;
+}
+.lurch-dependency tr:nth-of-type(2) td:first-of-type {
+    font-size: 11pt;
+}
+
 span.URL {
     font-family : 'Courier New', Courier, monospace;
     font-size: small;

@@ -35,7 +35,7 @@ const updateAppearance = dependencyAtom => {
     const url = dependencyAtom.getMetadata( 'url' )
     dependencyAtom.fillChild( 'body', simpleHTMLTable(
         'Imported dependency document',
-        [ 'Source:', `<span class="URL">${escapeHTML( url )}</span>` ]
+        [ '<span class="Label">Source:</span>', `<span class="URL">${escapeHTML( url )}</span>` ]
     ) )
 }
 
