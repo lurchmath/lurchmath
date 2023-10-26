@@ -7,11 +7,17 @@
  * importing them from the web.  It also provides a file menu item for deleting
  * files from the browser's local storage.
  * 
+ * It also installs autosave features into the editor.  Every few seconds, if
+ * the editor's content is dirty, it is saved into browser local storage.  If
+ * the user saves the content elsewhere, it is removed from browser local
+ * storage.  If the user opens Lurch and it finds that content is in the local
+ * storage autosave, it lets the user choose whether to load it or discard it.
+ * 
  * @module LocalStorageDrive
  */
 
 import { LurchDocument } from './lurch-document.js'
-import { Dialog } from './dialog.js'
+import { Dialog, AlertItem } from './dialog.js'
 
 // Internal use only
 // Prefix for distinguishing which LocalStorage keys are for Lurch files
@@ -60,6 +66,20 @@ export const writeFile = ( name, content ) =>
  * @param {string} name - the name of the file to be deleted
  */
 export const deleteFile = name => window.localStorage.removeItem( prefix + name )
+
+// Internal use only
+// Tools similar to those above, but for autosave
+const autosaveKey = 'lurch-autosave'
+const autosaveFrequencyInSeconds = 5
+const autosave = content =>
+    window.localStorage.setItem( autosaveKey, content )
+const getAutosave = () => window.localStorage.getItem( autosaveKey )
+const autosaveExists = () => {
+    for ( let i = 0 ; i < window.localStorage.length ; i++ )
+        if ( window.localStorage.key( i ) == autosaveKey ) return true
+    return false
+}
+const removeAutosave = () => window.localStorage.removeItem( autosaveKey )
 
 /**
  * Save the contents of the given editor into the given file.  However, if a
@@ -116,17 +136,22 @@ const silentFileSave = editor => {
     const LD = new LurchDocument( editor )
     writeFile( LD.getFileID(), LD.getDocument() )
     editor.setDirty( false )
+    removeAutosave()
 }
 
 /**
  * Install into a TinyMCE editor instance five new menu items intended for the
- * File menu: New, Open, Save, Save as..., and Delete a saved document.
+ * File menu: New, Open, Save, Save as..., and Delete a saved document.  Also
+ * install autosave features that store the current document whenever it is
+ * dirty and unsaved, and offer to reload it if you close the tab and then
+ * re-open.
  * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
  *   menu item should be installed
  * @function
  */
 export const install = editor => {
+    // First install the menu items:
     editor.ui.registry.addMenuItem( 'newlurchdocument', {
         text : 'New',
         icon : 'new-document',
@@ -159,7 +184,10 @@ export const install = editor => {
                 silentFileSave( editor )
             else
                 Dialog.saveFile( editor, 'Save file' ).then( saved => {
-                    if ( saved ) editor.setDirty( false )
+                    if ( saved ) {
+                        editor.setDirty( false )
+                        removeAutosave()
+                    }
                 } )
         }
     } )
@@ -168,7 +196,10 @@ export const install = editor => {
         tooltip : 'Save or download file',
         shortcut : 'meta+shift+S',
         onAction : () => Dialog.saveFile( editor, 'Save file' ).then( saved => {
-            if ( saved ) editor.setDirty( false )
+            if ( saved ) {
+                editor.setDirty( false )
+                removeAutosave()
+            }
         } )
     } )
     editor.ui.registry.addMenuItem( 'deletesaved', {
@@ -188,6 +219,33 @@ export const install = editor => {
                 Dialog.notify( editor, 'success', `Deleted ${filename}.` )
             } )
         }
+    } )
+    // When the editor is fully initialized, handle autosaving:
+    editor.on( 'init', () => {
+        // First, if there's an autosave, offer to load it:
+        if ( autosaveExists() ) {
+            const dialog = new Dialog( 'Unsaved work exists', editor )
+            dialog.addItem( new AlertItem(
+                'warn',
+                'There is an unsaved document stored in your browser.  '
+              + 'This could be from another copy of Lurch running in another tab, '
+              + 'or from a previous session in which you did not save your work.'
+            ) )
+            dialog.setButtons(
+                { text : 'Load it', type : 'submit', buttonType : 'primary' },
+                { text : 'Delete it', type : 'cancel' }
+            )
+            dialog.show().then( choseToLoad => {
+                if ( choseToLoad )
+                    new LurchDocument( editor ).setDocument( getAutosave() )
+                removeAutosave()
+            } )
+        }
+        // Next, set up the recurring timer for autosaving:
+        setInterval( () => {
+            if ( editor.isDirty() )
+                autosave( new LurchDocument( editor ).getDocument() )
+        }, autosaveFrequencyInSeconds * 1000 )
     } )
 }
 
