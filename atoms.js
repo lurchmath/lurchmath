@@ -437,7 +437,7 @@ export class Atom {
      * 
      * @param {tinymce.Editor} editor - the editor into which to insert a copy
      *   of this atom
-     * @returns an Atom instance for the newly inserted content
+     * @returns {Atom} an Atom instance for the newly inserted content
      */
     insertAndReturnCopy ( editor ) {
         const tempClass = 'temp_Lurch_new_atom_class'

@@ -110,7 +110,7 @@ export const openFileInNewWindow = content => {
  * 
  * @param {string} source - the URL or local filename referring to the document
  *   that should be opened ("local filename" means in the browser's local storage)
- * @param {boolean=false} andDelete - whether to delete the file after opening
+ * @param {boolean} [andDelete=false] - whether to delete the file after opening
  *   it (which makes sense only for local files, not URLs)
  * @returns {string} a URL that points to this Lurch app, but with the given
  *   source embedded in the query string, as an instruction to open it

@@ -17,7 +17,7 @@ export class Dialog {
      * Create (but do not yet show) a dialog box associated with a given editor.
      * 
      * @param {string} title - the title to display at the top of the dialog
-     * @param {tinymce.editor} editor - the editor in which to create the dialog
+     * @param {tinymce.Editor} editor - the editor in which to create the dialog
      */
     constructor ( title, editor ) {
         this.editor = editor
@@ -79,7 +79,7 @@ export class Dialog {
      * ] )
      * ```
      * 
-     * @param  {...any} buttons - the JSON code for the buttons in the dialog's
+     * @param  {any[]} buttons - the JSON code for the buttons in the dialog's
      *   footer
      * @see {@link Dialog#removeButton removeButton()}
      */
@@ -131,7 +131,7 @@ export class Dialog {
      * panel of controls.  You can split them into a set of tabs by calling
      * this function and providing the names of the tabs you want created.
      * 
-     * @param  {...string} titles - the titles of the tabs
+     * @param  {string[]} titles - the titles of the tabs
      * @see {@link Dialog#currentTabTitle currentTabTitle()}
      * @see {@link Dialog#showTab showTab()}
      * @see {@link Dialog#removeTabs removeTabs()}
@@ -290,10 +290,9 @@ export class Dialog {
      * possible to show a success message in a modal dialog using just one line
      * of code.
      * 
-     * @param {tinymce.editor} editor - the editor over which to show the dialog
+     * @param {tinymce.Editor} editor - the editor over which to show the dialog
      * @param {string} text - the success message to be displayed
-     * @param {string} title - an optional title for the dialog (defaults to
-     *   "Success")
+     * @param {string} [title="Success"] - an optional title for the dialog
      * @returns {Promise} a promise that resolves when the dialog closes, the
      *   result of a call to {@link Dialog#show show()}
      * @see {@link Dialog.failure Dialog.failure()}
@@ -312,10 +311,9 @@ export class Dialog {
      * possible to show a failure message in a modal dialog using just one line
      * of code.
      * 
-     * @param {tinymce.editor} editor - the editor over which to show the dialog
+     * @param {tinymce.Editor} editor - the editor over which to show the dialog
      * @param {string} text - the failure message to be displayed
-     * @param {string} title - an optional title for the dialog (defaults to
-     *   "Failure")
+     * @param {string} [title="Failure"] - an optional title for the dialog
      * @returns {Promise} a promise that resolves when the dialog closes, the
      *   result of a call to {@link Dialog#show show()}
      * @see {@link Dialog.success Dialog.success()}
@@ -334,7 +332,7 @@ export class Dialog {
      * value is a promise that resolves with a boolean argument indicating
      * whether the user clicked yes/I'm sure (true) or no/Cancel (false).
      * 
-     * @param {tinymce.editor} editor - the editor over which to show the dialog
+     * @param {tinymce.Editor} editor - the editor over which to show the dialog
      * @param {string} text - the question to be displayed
      * @returns {Promise} a promise that resolves when the dialog closes, the
      *   result of a call to {@link Dialog#show show()}
@@ -363,10 +361,9 @@ export class Dialog {
      * filename will be the filename or URL and the content will be the entirety
      * of the file's content, which may be large.  Both are strings.
      * 
-     * @param {tinymce.editor} editor - the editor instance in which to display
+     * @param {tinymce.Editor} editor - the editor instance in which to display
      *   the dialog
-     * @param {string} title - the title to show at the top of the dialog,
-     *   defaulting to "File"
+     * @param {string} [title="File"] - the title to show at the top of the dialog
      * @returns {Promise} a promise that resolves to the file information as
      *   specified above, or rejects if an error occurs
      * @see {@link Dialog.saveFile Dialog.saveFile()}
@@ -421,10 +418,9 @@ export class Dialog {
      * browser's local storage, the handler will be passed a string containing
      * the chosen filename.
      * 
-     * @param {tinymce.editor} editor - the editor instance in which to display
+     * @param {tinymce.Editor} editor - the editor instance in which to display
      *   the dialog
-     * @param {string} title - the title to show at the top of the dialog,
-     *   defaulting to "File"
+     * @param {string} [title="File"] - the title to show at the top of the dialog
      * @returns {Promise} a promise that resolves as specified above, or rejects
      *   if an error occurs
      * @see {@link Dialog.loadFile Dialog.loadFile()}
@@ -464,7 +460,7 @@ export class Dialog {
      * more convenient, because the parameters are named, and one does not need
      * to remember the JSON encoding of them.
      * 
-     * @param {tinymce.editor} editor - the editor in which to show the
+     * @param {tinymce.Editor} editor - the editor in which to show the
      *   notification
      * @param {string} type - the type of notification to show, which TinyMCE
      *   requires must be one of "success", "info", "warning", or "error"
