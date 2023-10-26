@@ -1,16 +1,17 @@
 
 /**
- * This file creates simple TinyMCE dialog boxes and simple functions to access
- * them, to make it easy to provide file open, save, and save-as functionality
- * that work only within the browser's `LocalStorage`.  This is a drop-in
- * replacement for the {@link module:GoogleDriveUI Google Drive UI}, which has
- * been quite unstable and we therefore sometimes need to disable it until we
- * can fully debug its problems.
+ * This file creates functions for accessing the browser's local storage as if
+ * it were a collection of files.  It also provides file open, save, and save as
+ * menu items that can be used not only for loading files from and saving files
+ * to the browser's local storage, but also uploading and downloading files or
+ * importing them from the web.  It also provides a file menu item for deleting
+ * files from the browser's local storage.
  * 
  * @module LocalStorageDrive
  */
 
 import { LurchDocument } from './lurch-document.js'
+import { Dialog } from './dialog.js'
 
 // Internal use only
 // Prefix for distinguishing which LocalStorage keys are for Lurch files
@@ -26,225 +27,65 @@ const allFileNames = () => {
     return result
 }
 
-// Internal use only
-// Test whether a file with the given name exists
-const fileExists = name => readFile( name ) !== null
+/**
+ * Test whether the given file currently exists in the browser's local storage.
+ * 
+ * @param {string} name - the name of the file whose presence is to be tested
+ * @returns {boolean} whether a file with that name is currently stored in the
+ *   browser's localStorage
+ */
+export const fileExists = name => allFileNames().includes( name )
 
-// Internal use only
-// Read file content from a given filename
-const readFile = name => window.localStorage.getItem( prefix + name )
+/**
+ * Read the contents of a file from the browser's local storage.
+ * 
+ * @param {string} name - the name of the file whose contents are to be read
+ * @returns {string} the contents of the file (or undefined if the file does not
+ *   exist)
+ */
+export const readFile = name => window.localStorage.getItem( prefix + name )
 
-// Internal use only
-// Write file content to a given filename
-const writeFile = ( name, content ) =>
+/**
+ * Write new contents into a file in the browser's local storage.
+ * 
+ * @param {string} name - the name of the file whose contents are to be written
+ * @param {string} content - the new contents to write
+ */
+export const writeFile = ( name, content ) =>
     window.localStorage.setItem( prefix + name, content )
 
-// Internal use only
-// Delete file from browser LocalStorage
-const deleteFile = name => window.localStorage.removeItem( prefix + name )
+/**
+ * Delete a file from the browser's local storage.
+ * 
+ * @param {string} name - the name of the file to be deleted
+ */
+export const deleteFile = name => window.localStorage.removeItem( prefix + name )
 
 /**
- * Show a file open dialog box viewing the files in the user's `LocalStorage`.
- * If the user picks a file from it, load that file into the given TinyMCE
- * editor.  If an error occurs, pop up a notification in the editor stating that
- * an error occurred opening the file.
+ * Save the contents of the given editor into the given file.  However, if a
+ * file with that name already exists, pop up a dialog prompting the user to
+ * decide if they really want to overwrite the file, and proceed only if they
+ * accept.
  * 
- * @param {tinymce.Editor} editor the TinyMCE editor instance into which the
- *   file will be loaded, if the user chooses one
- * @function
- * @see {@link module:LocalStorageDrive.showSaveAsDialog showSaveAsDialog()}
+ * @param {tinymce.Editor} editor - the editor whose contents are to be saved
+ * @param {string} filename - the filename into which to save those contents
  */
-const showFileOpenDialog = editor => {
-    const filenames = allFileNames()
-    if ( filenames.length == 0 ) {
-        editor.notificationManager.open( {
-            type : 'error',
-            text : 'There are not yet any files saved, so there are none to open.'
-        } )
-        return
+export const saveAs = ( editor, filename ) => {
+    if ( !fileExists( filename ) ) {
+        const LD = new LurchDocument( editor )
+        writeFile( filename, LD.getDocument() )
+        LD.setFileID( filename )
+        return Dialog.notify( editor, 'success', `Saved ${filename}.` )
     }
-    const dialog = editor.windowManager.open( {
-        title : 'Open file from browser storage',
-        body : {
-            type : 'panel',
-            items : [
-                {
-                    type : 'selectbox',
-                    name : 'filename',
-                    label : 'Choose the file to open:',
-                    items : filenames.map( name => {
-                        return { value : name, text : name }
-                    } )
-                }
-            ]
-        },
-        buttons : [
-            {
-                type : 'submit',
-                text : 'Open selected file',
-                buttonType : 'primary'
-            },
-            {
-                type : 'cancel',
-                text : 'Cancel',
-            }
-        ],
-        onSubmit : () => {
-            const filename = dialog.getData()['filename']
-            const LD = new LurchDocument( editor )
-            LD.setDocument( readFile( filename ) )
-            LD.setFileID( filename )
-            dialog.close()
-            editor.notificationManager.open( {
-                type : 'success',
-                text : `Loaded ${filename}.`,
-                timeout : 2000
-            } )
-        }
-    } )
-}
-
-/**
- * Show the user a filename entry dialog box.  If they type a filename and
- * choose to save, the contents of the given editor are written into that file
- * in the user's `LocalStorage`.  If it would overwrite an existing file, pop up
- * a warning first to ensure that the user really wants to do that.
- * 
- * @param {tinymce.Editor} editor the TinyMCE editor instance whose content
- *   should be saved under the filename the user chooses
- * @function
- * @see {@link module:LocalStorageDrive.showFileOpenDialog showFileOpenDialog()}
- * @see {@link module:LocalStorageDrive.silentFileSave silentFileSave()}
- * @see {@link module:LocalStorageDrive.showDeleteDialog showDeleteDialog()}
- */
-const showSaveAsDialog = editor => {
-    const dialog = editor.windowManager.open( {
-        title : 'Choose filename under which to save',
-        body : {
-            type : 'panel',
-            items : [
-                {
-                    type : 'input',
-                    name : 'filename',
-                    label : 'Filename',
-                    maximized : true
-                }
-            ],
-        },
-        buttons : [
-            { text : 'Save', type : 'submit', buttonType : 'primary' },
-            { text : 'Cancel', type : 'cancel' }
-        ],
-        initialData : {
-            filename : new LurchDocument( editor ).getFileID() || ''
-        },
-        onSubmit : () => {
-            const filename = dialog.getData()['filename']
-            dialog.close()
-            if ( !fileExists( filename ) ) {
-                const LD = new LurchDocument( editor )
-                writeFile( filename, LD.getDocument() )
-                LD.setFileID( filename )
-                editor.notificationManager.open( {
-                    type : 'success',
-                    text : `Saved ${filename}.`,
-                    timeout : 2000
-                } )
-                return
-            }
-            const warningDialog = editor.windowManager.open( {
-                title : 'Overwrite existing file?',
-                body : {
-                    type : 'panel',
-                    items : [
-                        {
-                            type : 'alertbanner',
-                            level : 'warn',
-                            icon : 'warning',
-                            text : `A file named ${filename} already exists.  Overwrite it?`
-                        }
-                    ]
-                },
-                buttons : [
-                    { text : 'Overwrite and save', type : 'submit' },
-                    { text : 'Cancel', type : 'cancel' }
-                ],
-                onSubmit : () => {
-                    const LD = new LurchDocument( editor )
-                    writeFile( filename, LD.getDocument() )
-                    LD.setFileID( filename )
-                    warningDialog.close()
-                    editor.notificationManager.open( {
-                        type : 'success',
-                        text : `Saved over ${filename}.`,
-                        timeout : 2000
-                    } )
-                }
-            } )
-        }
-    } )
-}
-
-/**
- * Show a file open dialog box viewing the files in the user's `LocalStorage`.
- * If the user picks a file from it, delete that file from the user's storage.
- * 
- * @param {tinymce.Editor} editor the TinyMCE editor instance that should be
- *   used to create the dialog
- * @function
- * @see {@link module:LocalStorageDrive.showSaveAsDialog showSaveAsDialog()}
- */
-const showDeleteDialog = editor => {
-    const filenames = allFileNames()
-    if ( filenames.length == 0 ) {
-        editor.notificationManager.open( {
-            type : 'error',
-            text : 'There are not yet any files saved, so there are none to delete.'
-        } )
-        return
-    }
-    const dialog = editor.windowManager.open( {
-        title : 'Delete file from browser storage',
-        body : {
-            type : 'panel',
-            items : [
-                {
-                    type : 'selectbox',
-                    name : 'filename',
-                    label : 'Choose the file to delete:',
-                    items : filenames.map( name => {
-                        return { value : name, text : name }
-                    } )
-                },
-                {
-                    type : 'alertbanner',
-                    level : 'warn',
-                    icon : 'warning',
-                    text : 'This action cannot be undone.'
-                }
-    ]
-        },
-        buttons : [
-            {
-                type : 'submit',
-                text : 'Permanently delete selected file',
-                buttonType : 'primary'
-            },
-            {
-                type : 'cancel',
-                text : 'Cancel',
-            }
-        ],
-        onSubmit : () => {
-            const filename = dialog.getData()['filename']
-            deleteFile( filename )
-            editor.notificationManager.open( {
-                type : 'success',
-                text : `Deleted ${filename}.`,
-                timeout : 2000
-            } )
-            dialog.close()
-        }
+    Dialog.areYouSure( editor,
+        `A file named ${filename} already exists.
+        Continuing will overwrite that file.  Proceed anyway?`
+    ).then( sure => {
+        if ( !sure ) return
+        const LD = new LurchDocument( editor )
+        writeFile( filename, LD.getDocument() )
+        LD.setFileID( filename )
+        Dialog.notify( editor, 'success', `Saved over ${filename}.` )
     } )
 }
 
@@ -265,6 +106,14 @@ const silentFileSave = editor => {
     writeFile( LD.getFileID(), LD.getDocument() )
 }
 
+/**
+ * Install into a TinyMCE editor instance five new menu items intended for the
+ * File menu: New, Open, Save, Save as..., and Delete a saved document.
+ * 
+ * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
+ *   menu item should be installed
+ * @function
+ */
 export const install = editor => {
     editor.ui.registry.addMenuItem( 'newlurchdocument', {
         text : 'New',
@@ -275,30 +124,98 @@ export const install = editor => {
     } )
     editor.ui.registry.addMenuItem( 'opendocument', {
         text : 'Open',
-        tooltip : 'Open file from browser storage',
+        tooltip : 'Open file',
         shortcut : 'meta+O',
-        onAction : () => showFileOpenDialog( editor )
-    } )
-    editor.ui.registry.addMenuItem( 'savedocumentas', {
-        text : 'Save as...',
-        tooltip : 'Choose name and save file to browser storage',
-        shortcut : 'meta+shift+S',
-        onAction : () => showSaveAsDialog( editor )
+        onAction : () => {
+            Dialog.loadFile( editor, 'Open file' ).then( result => {
+                const LD = new LurchDocument( editor )
+                LD.setDocument( result.content )
+                LD.setFileID( result.filename )
+                Dialog.notify( editor, 'success', `Loaded ${result.filename}.` )
+            } )
+        }
     } )
     editor.ui.registry.addMenuItem( 'savedocument', {
         text : 'Save',
         icon : 'save',
-        tooltip : 'Save file to browser storage',
+        tooltip : 'Save or download file',
         shortcut : 'meta+S',
-        onAction : () =>
-            ( new LurchDocument( editor ).getFileID() ?
-                silentFileSave : showSaveAsDialog )( editor )
+        onAction : () => {
+            if ( new LurchDocument( editor ).getFileID() )
+                silentFileSave( editor )
+            else
+                Dialog.saveFile( editor, 'Save file' )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'savedocumentas', {
+        text : 'Save as...',
+        tooltip : 'Save or download file',
+        shortcut : 'meta+shift+S',
+        onAction : () => Dialog.saveFile( editor, 'Save file' )
     } )
     editor.ui.registry.addMenuItem( 'deletesaved', {
         text : 'Delete a saved document',
         tooltip : 'Delete a file currently stored in browser storage',
-        onAction : () => showDeleteDialog( editor )
+        onAction : () => {
+            const filenames = allFileNames()
+            if ( filenames.length == 0 )
+                return Dialog.notify( editor, 'error',
+                    'There are not yet any files saved, so there are none to delete.' )
+            const dialog = new Dialog( 'Delete file from browser storage', editor )
+            dialog.addItem( new ChooseLocalFileItem( 'localFile' ) )
+            dialog.show().then( userHitOK => {
+                if ( !userHitOK ) return
+                const filename = dialog.get( 'localFile' ).filename
+                deleteFile( filename )
+                Dialog.notify( editor, 'success', `Deleted ${filename}.` )
+            } )
+        }
     } )
+}
+
+/**
+ * An item that can be used in a {@link Dialog} to let the user choose a file
+ * stored in the browser's local storage.  This is a simple drop-down list input
+ * control, populated with all the files currently in the browser's local
+ * storage.
+ */
+export class ChooseLocalFileItem {
+
+    /**
+     * Construct a new file open input control.
+     * 
+     * @param {string} name - the key to use to identify this input control's
+     *   content in the dialog's key-value mapping for all input controls
+     */
+    constructor ( name ) {
+        this.name = name
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        this.names = allFileNames()
+        return this.names.length == 0 ? [ {
+            type : 'htmlpanel',
+            html : 'No files are currently stored in the browser\'s local storage.'
+        } ] : [ {
+            type : 'selectbox',
+            name : this.name,
+            label : 'Choose a file:',
+            items : this.names.map( name => {
+                return { value : name, text : name }
+            } )
+        } ]
+    }
+
+    // internal use only; returns a filename-and-content object if requested by
+    // the dialog's get() function
+    get ( key, data ) {
+        if ( key == this.name && this.names && this.names.length > 0 ) return {
+            filename : data[key],
+            content : readFile( data[key] )
+        }
+    }
+
 }
 
 export default { install }

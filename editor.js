@@ -10,8 +10,6 @@ import { loadScript } from './utilities.js'
 import Settings from './settings-install.js'
 // import GoogleDrive from './google-drive-ui.js'
 import LocalStorageDrive from './local-storage-drive.js'
-import UploadDownload from './upload-download.js'
-import Importer from './load-from-url.js'
 import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
@@ -19,6 +17,7 @@ import Expressions from './expressions.js'
 import Dependencies from './dependency.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
+import { loadFromQueryString } from './load-from-url.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -36,7 +35,6 @@ const buildMenu = ( title, ...list ) => {
 const menuData = {
     file : buildMenu( 'File',
         'newlurchdocument opendocument savedocument savedocumentas deletesaved',
-        'upload download import',
         'print'
     ),
     edit : buildMenu( 'Edit',
@@ -106,8 +104,6 @@ loadScript( TinyMCEURL ).then( () => {
             } )
             // Install all tools the editor always needs:
             Settings.install( editor )
-            UploadDownload.install( editor )
-            Importer.install( editor )
             Atoms.install( editor )
             Expressions.install( editor )
             Shells.install( editor )
@@ -119,7 +115,7 @@ loadScript( TinyMCEURL ).then( () => {
                 LocalStorageDrive.install( editor )
                 Headers.install( editor )
                 DocSettings.install( editor )
-                editor.on( 'init', () => Importer.loadFromQueryString( editor ) )
+                editor.on( 'init', () => loadFromQueryString( editor ) )
             } else {
                 // Install tools we need only if we are the secondary app window:
                 Headers.listen( editor )

@@ -1,8 +1,7 @@
 
 /**
- * This file installs two tools into the user interface, one menu item for
- * downloading the current Lurch document to the user's computer and another for
- * uploading a new Lurch document into the editor.
+ * This file provides a function for initiating the download of a file, plus a
+ * {@link Dialog} component for initiating the upload of a file.
  * 
  * @module DownloadUpload
  */
@@ -10,106 +9,133 @@
 import { LurchDocument } from './lurch-document.js'
 
 /**
- * Install into a TinyMCE editor instance two new menu items: Download and
- * Upload, both intended for the File menu.  The download menu item allows the
- * user to download the current Lurch document to their computer, assuming that
- * the TinyMCE initialization code includes the "download" item on one of the
- * menus.  The upload menu item pops up a dialog into which the user can drag a
- * file to upload it into the editor.
+ * Immediately initiates the download of the contents of the Lurch document
+ * stored in the given TinyMCE editor.  Technically, it creates an invisible
+ * link that would initiate the download, clicks that link, and then discards
+ * it.
  * 
- * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
- *   menu items should be installed
- * @function
+ * @param {tinymce.editor} editor - the editor whose contents should be
+ *   downloaded
  */
-export const install = editor => {
-    editor.ui.registry.addMenuItem( 'download', {
-        text : 'Download',
-        icon : 'export',
-        tooltip : 'Download document',
-        onAction : () => {
-            const content = new LurchDocument( editor ).getDocument()
-            const anchor = document.createElement( 'a' )
-            anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
-                + encodeURIComponent( content ) ) 
-            anchor.setAttribute( 'download', 'lurch-document.html' )
-            document.body.appendChild( anchor )
-            anchor.click()
-            anchor.remove()
-        }
-    } )
-    editor.ui.registry.addMenuItem( 'upload', {
-        text : 'Upload',
-        icon : 'upload',
-        tooltip : 'Upload document',
-        onAction : () => {
-            let uploadedContent = null
-            const dialog = editor.windowManager.open( {
-                title : 'Upload a file to edit',
-                body : {
-                    type : 'panel',
-                    items : [
-                        {
-                            type : 'htmlpanel',
-                            html : `<div id='fileUploadZone'>Drag a Lurch document here to open it.</div>`
-                        },
-                        {
-                            type : 'alertbanner',
-                            level : 'warn',
-                            icon : 'warning',
-                            text : 'This will overwrite the current contents of the editor.'
-                        }
-                    ]
-                },
-                buttons : [
-                    { text : 'Open', type : 'submit', enabled : false, name : 'openButton' },
-                    { text : 'Cancel', type : 'cancel' }
-                ],
-                onSubmit : () => {
-                    // This can be done only if the user has actually dragged a
-                    // file in; see the code below that enables the Open button.
-                    // That same code stores the uploaded file in the
-                    // uploadedContent variable, for us to access here.
-                    const LD = new LurchDocument( editor )
-                    LD.setDocument( uploadedContent )
-                    LD.clearFileID()
-                    dialog.close()
-                }
-            } )
-            // Style the zone appropriately
-            const zone = document.getElementById( 'fileUploadZone' )
-            zone.style.width = '100%'
-            zone.style.height = '200px'
-            zone.style.border = '1px dashed black'
-            zone.style.display = 'flex'
-            zone.style.justifyContent = 'center'
-            zone.style.alignContent = 'center'
-            zone.style.flexDirection = 'column'
-            zone.style.textAlign = 'center'
-            // Handle basic events for styling and preventing file opening
-            zone.addEventListener( 'dragover', event => event.preventDefault() )
-            zone.addEventListener( 'dragenter', _ =>
-                zone.style.background = '#eeeeff' )
-            zone.addEventListener( 'dragleave', _ =>
-                zone.style.removeProperty( 'background' ) )
-            // If the user drops a file, upload it into a local variable and
-            // enable the Open button on the dialog footer.
-            zone.addEventListener( 'drop', event => {
-                event.preventDefault()
-                const dropped = event.dataTransfer.items ?
-                    Array.from( event.dataTransfer.items )
-                        .filter( item => item.kind == 'file' ) :
-                    Array.from( event.dataTransfer.files )
-                if ( dropped.length > 0 ) {
-                    const file = dropped[0].getAsFile()
-                    file.text().then( content => {
-                        uploadedContent = content
-                        zone.innerHTML = 'File uploaded.<br>Confirm or cancel below.'
-                        dialog.setEnabled( 'openButton', true )
-                    } )
-                }
-            } )
-        }
-    } )
+export const downloadFile = editor => {
+    const LD = new LurchDocument( editor )
+    const content = LD.getDocument()
+    const anchor = document.createElement( 'a' )
+    anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
+        + encodeURIComponent( content ) ) 
+    anchor.setAttribute( 'download', LD.getFileID() || 'lurch-document.html' )
+    document.body.appendChild( anchor )
+    anchor.click()
+    anchor.remove()
 }
 
-export default { install }
+/**
+ * An item that can be used in a {@link Dialog} to allow the user to upload a
+ * file.  It creates HTML content with two DIVs, one that permits dragging and
+ * dropping of files onto the dialog to upload them, and the other of which
+ * contains a button you can click to choose a file.
+ */
+export class UploadItem {
+
+    /**
+     * Construct an upload control/area, as described above.
+     * 
+     * @param {string} name - the key to use to identify this input control's
+     *   content in the dialog's key-value mapping for all input controls
+     */
+    constructor ( name ) {
+        this.name = name
+        this.style = `
+            width: 100%;
+            height: 100px;
+            border: 1px solid #aaaaaa;
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            flex-direction: column;
+            padding: 1em;
+        `.replace( /\n/g, ' ' )
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        return [ {
+            type : 'htmlpanel',
+            html : `
+                <div id='drop_${this.name}' style='${this.style}'></div>
+                <div style='${this.style}'>
+                    <p>Option 2:
+                    <input type='file' id='choose_${this.name}' accept=".html,text/html"/></p>
+                </div>
+            `
+        } ]
+    }
+
+    // internal use only for finding/manipulating HTML elements unique to this class
+    zone () { return document.getElementById( `drop_${this.name}` ) }
+    // internal use only for finding/manipulating HTML elements unique to this class
+    resetZone () {
+        this.zone().innerHTML = 'Option 1: Drag and drop a file here.'
+        this.zone().style.removeProperty( 'background' )
+    }
+    // internal use only for finding/manipulating HTML elements unique to this class
+    input () { return document.getElementById( `choose_${this.name}` ) }
+    // internal use only for finding/manipulating HTML elements unique to this class
+    resetInput () {
+        this.input().value = null
+    }
+
+    // internal use only for storing a file the user uploaded, for later retrieval
+    setFile ( file ) {
+        return file.text().then( content => {
+            this.uploadedName = file.name
+            this.uploadedContent = content
+        } )
+    }
+
+    // internal use only; styles the HTML components and installs event handlers
+    onShow () {
+        const zone = this.zone()
+        // Handle basic events for styling and preventing file opening
+        zone.addEventListener( 'dragover', event => event.preventDefault() )
+        zone.addEventListener( 'dragenter', _ =>
+            zone.style.background = '#eeeeff' )
+        zone.addEventListener( 'dragleave', _ =>
+            zone.style.removeProperty( 'background' ) )
+        // If the user drops a file, upload it into a local variable
+        zone.addEventListener( 'drop', event => {
+            event.preventDefault()
+            const dropped = event.dataTransfer.items ?
+                Array.from( event.dataTransfer.items )
+                    .filter( item => item.kind == 'file' ) :
+                Array.from( event.dataTransfer.files )
+            if ( dropped.length > 0 ) {
+                this.setFile( dropped[0].getAsFile() ).then( () => {
+                    zone.innerHTML = 'File uploaded.'
+                    this.resetInput()
+                } )
+            }
+        } )
+        this.resetZone()
+        const input = this.input()
+        // If the user chooses a file, store it in a local variable
+        input.addEventListener( 'change', () => {
+            if ( input.files.length > 0 ) {
+                this.setFile( input.files[0] ).then( () => {
+                    this.resetZone()
+                } )
+            }
+        } )
+        this.resetInput()
+    }
+
+    // internal use only; returns a filename-and-content object if requested by
+    // the dialog's get() function
+    get ( key ) {
+        if ( key == this.name ) return {
+            filename : this.uploadedName,
+            content : this.uploadedContent
+        }
+    }
+
+}
