@@ -22,6 +22,7 @@
 import { appURL } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
 import { appSettings } from './settings-install.js'
+import { Dialog } from './dialog.js'
 
 /**
  * The metadata element for a document is stored in the editor rather than the
@@ -97,13 +98,9 @@ export const install = editor => {
         icon : 'new-tab',
         tooltip : 'Edit document header',
         onAction : () => {
-            if ( hasEditorOpen() ) {
-                editor.notificationManager.open( {
-                    type : 'warning',
-                    text : 'You are already editing this document\'s header in another window.'
-                } )
-                return
-            }
+            if ( hasEditorOpen() )
+                return Dialog.notify( editor, 'warning',
+                    'You are already editing this document\'s header in another window.' )
             window.headerEditorWindow = window.open(
                 `${appURL()}?${headerFlag}=true`, '_blank' )
             window.headerEditorWindow.addEventListener( 'load', () =>
@@ -112,11 +109,7 @@ export const install = editor => {
             window.addEventListener( 'message', event => {
                 if ( event.source != window.headerEditorWindow ) return
                 setHeader( editor, event.data )
-                editor.notificationManager.open( {
-                    type : 'success',
-                    text : 'Header updated from other window.',
-                    timeout : 5000
-                } )
+                Dialog.notify( editor, 'success', 'Header updated from other window.', 5000 )
             }, false )
         }
     } )
@@ -125,21 +118,13 @@ export const install = editor => {
         icon : 'chevron-down',
         tooltip : 'Extract header to top of document',
         onAction : () => {
-            if ( hasEditorOpen() ) {
-                editor.notificationManager.open( {
-                    type : 'error',
-                    text : 'You cannot extract the header while editing it in another window.'
-                } )
-                return
-            }
+            if ( hasEditorOpen() )
+                return Dialog.notify( editor, 'error',
+                    'You cannot extract the header while editing it in another window.' )
             const header = getHeaderHTML( editor )
-            if ( header == '' ) {
-                editor.notificationManager.open( {
-                    type : 'warning',
-                    text : 'This document\'s header is currently empty.'
-                } )
-                return
-            }
+            if ( header == '' )
+                return Dialog.notify( editor, 'warning',
+                    'This document\'s header is currently empty.' )
             appSettings.load()
             appSettings.showWarning( 'warn before extract header', editor )
             .then( () => {
@@ -156,21 +141,13 @@ export const install = editor => {
         icon : 'chevron-up',
         tooltip : 'Embed selection from document to end of header',
         onAction : () => {
-            if ( hasEditorOpen() ) {
-                editor.notificationManager.open( {
-                    type : 'error',
-                    text : 'You cannot extend the header while editing it in another window.'
-                } )
-                return
-            }
+            if ( hasEditorOpen() )
+                return Dialog.notify( editor, 'error',
+                    'You cannot extract the header while editing it in another window.' )
             const toEmbed = editor.selection.getContent()
-            if ( toEmbed == '' ) {
-                editor.notificationManager.open( {
-                    type : 'warning',
-                    text : 'You do not currently have any content selected.'
-                } )
-                return
-            }
+            if ( hasEditorOpen() )
+                return Dialog.notify( editor, 'error',
+                    'You do not currently have any content selected.' )
             appSettings.load()
             appSettings.showWarning( 'warn before embed header', editor )
             .then( () => {
@@ -206,11 +183,8 @@ export const listen = editor => {
         mainEditor = event.source
         editor.setContent( event.data )
         editor.mode.set( 'design' )
-        editor.notificationManager.open( {
-            type : 'success',
-            text : 'Opened header data for editing.\nDon\'t forget to save before closing.',
-            timeout : 2000
-        } )
+        Dialog.notify( editor, 'success',
+            'Opened header data for editing.\nDon\'t forget to save before closing.' )
     }, false )
     editor.ui.registry.addMenuItem( 'savedocument', {
         text : 'Save',
