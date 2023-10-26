@@ -12,6 +12,7 @@ import {
     showOpenFilePicker, showSaveFolderPicker
 } from './google-drive-utilities.js'
 import { LurchDocument } from './lurch-document.js'
+import { Dialog } from './dialog.js'
 
 // Global variable for tracking the unique Google Drive ID of the last loaded
 // file, so we can save back into its location if the user asks us to.
@@ -35,15 +36,10 @@ const showFileOpenDialog = editor => {
         lastUsedFileId = pickedFileId
         readFileFromDrive( pickedFileId ).then( response => {
             new LurchDocument( editor ).setDocument( response.body )
-            editor.notificationManager.open( {
-                type : 'success',
-                text : 'File opened.',
-                timeout : 2000
-            } )
-        } ).catch( error => editor.notificationManager.open( {
-            type : 'error',
-            text : `Error opening file: ${error}`
-        } ) )
+            Dialog.notify( editor, 'success', 'File opened.' )
+        } ).catch( error =>
+            Dialog.notify( editor, 'error', `Error opening file: ${error}` )
+        )
     } )
 }
 
@@ -91,17 +87,11 @@ const showSaveAsDialog = editor => {
                 dialog.close()
                 writeNewFileToDrive(
                     filename, folder.id, content
-                ).then( _ => {
-                    editor.notificationManager.open( {
-                        type : 'success',
-                        text : 'File saved.',
-                        timeout : 2000
-                    } )
-                } )
-                .catch( error => editor.notificationManager.open( {
-                    type : 'error',
-                    text : `Error saving file: ${error}`
-                } ) )
+                ).then( () =>
+                    Dialog.notify( editor, 'success', 'File saved.' )
+                ).catch( error =>
+                    Dialog.notify( editor, 'error', `Error saving file: ${error}` )
+                )
             }
         } )
         setTimeout( () => dialog.focus( 'filename' ), 0 )
@@ -123,17 +113,11 @@ const showSaveAsDialog = editor => {
  */
 const silentFileSave = ( editor, fileId ) => {
     updateFileInDrive( fileId, new LurchDocument( editor ).getDocument() )
-    .then( () => {
-        editor.notificationManager.open( {
-            type : 'success',
-            text : 'File saved.',
-            timeout : 2000
-        } )
-    } )
-    .catch( error => editor.notificationManager.open( {
-        type : 'error',
-        text : `Error saving file: ${error}`
-    } ) )
+    .then( () =>
+        Dialog.notify( editor, 'success', 'File saved.' )
+    ).catch( error => 
+        Dialog.notify( editor, 'error', `Error saving file: ${error}` )
+    )
 }
 
 /**
