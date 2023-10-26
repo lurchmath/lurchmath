@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Notation</title>
+    <title>Lurch Web User Interface: local-storage-drive.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,337 +34,241 @@
 </header>
 
 
-<main class="layout-main ">
+<main class="layout-main  layout-content--source">
   <div class="container">
-    <p class="page-kind">Module</p>
-    <h1 class="page-title">Notation</h1>
+    <p class="page-kind">source</p>
+    <h1 class="page-title">local-storage-drive.js</h1>
     
 
 
 
+    
 
 <section>
-
-
-<header class="not-class">
-
-
-    
-</header>
-
-<article>
-    <div class="container-overview">
-
-
-
-    
-        
-            <div class="description"><p>For the purposes of this module, a <em>notation</em> will be any way in which one
-can encode, as a text string, a non-environment Logic Concept.  (For the
-definition of Logic Concepts, or LCs, refer to the documentation in
-<a href="https://lurchmath.github.io/lde/LogicConcept.html">another repository</a>.)
-For example, putdown notation, as
-<a href="https://lurchmath.github.io/lde/LogicConcept.html#.fromPutdown">defined in that repository</a>, is an example of a &quot;notation,&quot; according to this
-definition.</p>
-<p>A <em>notation function</em> will be a function that inspects a text string and does
-the following two things:</p>
-<ol>
-<li>If the text string does not correctly express one, single,
-non-environment Logic Concept in the expected notation, return an error
-object as described below.</li>
-<li>Otherwise, return the Logic Concept instance described by the input.</li>
-</ol>
-<p>An error object must have a <code>message</code> field, containing a string describing
-the problem in a human-readable way.  It may optionally also have a
-<code>position</code> field, an integer between 0 and the length of the input
-(inclusive) indicating where the problem occurred.  Indexes into the input
-range from 0 to one less than its length, and so an error position equal to
-the input length can be used to express that something was missing at the end
-of the input, such as a close grouper.</p>
-<p>This module installs one notation function, one supporting putdown notation,
-as described above.  It also provides functions clients can use to install
-additional notation functions, or query the set of currently installed ones.</p></div>
-        
-
-        
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-     
-
-    
-
-    
-
-
-    
-        <h3 class="subtitle">Members</h3>
-
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".addFunction">addFunction<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Install a new notation function into this module.  Provide the name of the
-notation, together with a function whose behavior works as documented
-<a href="module-Notation.html">at the top of this module</a>.  If you call this function
-more than once with the same name, you will overwrite any function you
-installed in the past for the same name with the new function.</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.53">, line 53</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".names">names<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>This function returns a list of all the installed notation functions, which
-is just a list of their names, each one a string.</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.61">, line 61</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".parse">parse<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Apply the parser for a given notation to some text input.  Return either a
-Logic Concept (if the input was understandable as an expression in the given
-notation, according to the rules <a href="module-Notation.html">at the top of this module</a>), or an error object otherwise (also structured according to that
-same documentation).</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.76">, line 76</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-    
-
-    
-
-    
-
-    
-</article>
-
+    <article>
+        <pre id="source" class="source-page line-numbers"><code class="language-js">
+/**
+ * This file creates functions for accessing the browser's local storage as if
+ * it were a collection of files.  It also provides file open, save, and save as
+ * menu items that can be used not only for loading files from and saving files
+ * to the browser's local storage, but also uploading and downloading files or
+ * importing them from the web.  It also provides a file menu item for deleting
+ * files from the browser's local storage.
+ * 
+ * @module LocalStorageDrive
+ */
+
+import { LurchDocument } from './lurch-document.js'
+import { Dialog } from './dialog.js'
+
+// Internal use only
+// Prefix for distinguishing which LocalStorage keys are for Lurch files
+const prefix = 'lurch-file-'
+
+// Internal use only
+// Get a list of all files in LocalStorage
+const allFileNames = () => {
+    let result = [ ]
+    for ( let i = 0 ; i &lt; window.localStorage.length ; i++ )
+        if ( window.localStorage.key( i ).startsWith( prefix ) )
+            result.push( window.localStorage.key( i ).substring( prefix.length ) )
+    return result
+}
+
+/**
+ * Test whether the given file currently exists in the browser's local storage.
+ * 
+ * @param {string} name - the name of the file whose presence is to be tested
+ * @returns {boolean} whether a file with that name is currently stored in the
+ *   browser's localStorage
+ */
+export const fileExists = name => allFileNames().includes( name )
+
+/**
+ * Read the contents of a file from the browser's local storage.
+ * 
+ * @param {string} name - the name of the file whose contents are to be read
+ * @returns {string} the contents of the file (or undefined if the file does not
+ *   exist)
+ */
+export const readFile = name => window.localStorage.getItem( prefix + name )
+
+/**
+ * Write new contents into a file in the browser's local storage.
+ * 
+ * @param {string} name - the name of the file whose contents are to be written
+ * @param {string} content - the new contents to write
+ */
+export const writeFile = ( name, content ) =>
+    window.localStorage.setItem( prefix + name, content )
+
+/**
+ * Delete a file from the browser's local storage.
+ * 
+ * @param {string} name - the name of the file to be deleted
+ */
+export const deleteFile = name => window.localStorage.removeItem( prefix + name )
+
+/**
+ * Save the contents of the given editor into the given file.  However, if a
+ * file with that name already exists, pop up a dialog prompting the user to
+ * decide if they really want to overwrite the file, and proceed only if they
+ * accept.
+ * 
+ * @param {tinymce.Editor} editor - the editor whose contents are to be saved
+ * @param {string} filename - the filename into which to save those contents
+ */
+export const saveAs = ( editor, filename ) => {
+    if ( !fileExists( filename ) ) {
+        const LD = new LurchDocument( editor )
+        writeFile( filename, LD.getDocument() )
+        LD.setFileID( filename )
+        return Dialog.notify( editor, 'success', `Saved ${filename}.` )
+    }
+    Dialog.areYouSure( editor,
+        `A file named ${filename} already exists.
+        Continuing will overwrite that file.  Proceed anyway?`
+    ).then( sure => {
+        if ( !sure ) return
+        const LD = new LurchDocument( editor )
+        writeFile( filename, LD.getDocument() )
+        LD.setFileID( filename )
+        Dialog.notify( editor, 'success', `Saved over ${filename}.` )
+    } )
+}
+
+/**
+ * Silently (i.e., without asking the user anything in a dialog box) save the
+ * given new content into the existing file with the given name in the user's
+ * `LocalStorage`.  If it succeeds, pop up a brief success notification.  If it
+ * fails, show a failure notification containing the error and wait for the user
+ * to dismiss it.
+ * 
+ * @param {tinymce.Editor} editor the editor to use for any notifications
+ * @param {string} filename the filename whose content should be updated
+ * @function
+ * @see {@link module:LocalStorageDrive.showSaveAsDialog showSaveAsDialog()}
+ */
+const silentFileSave = editor => {
+    const LD = new LurchDocument( editor )
+    writeFile( LD.getFileID(), LD.getDocument() )
+}
+
+/**
+ * Install into a TinyMCE editor instance five new menu items intended for the
+ * File menu: New, Open, Save, Save as..., and Delete a saved document.
+ * 
+ * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
+ *   menu item should be installed
+ * @function
+ */
+export const install = editor => {
+    editor.ui.registry.addMenuItem( 'newlurchdocument', {
+        text : 'New',
+        icon : 'new-document',
+        tooltip : 'New document',
+        shortcut : 'meta+N',
+        onAction : () => new LurchDocument( editor ).newDocument()
+    } )
+    editor.ui.registry.addMenuItem( 'opendocument', {
+        text : 'Open',
+        tooltip : 'Open file',
+        shortcut : 'meta+O',
+        onAction : () => {
+            Dialog.loadFile( editor, 'Open file' ).then( result => {
+                const LD = new LurchDocument( editor )
+                LD.setDocument( result.content )
+                LD.setFileID( result.filename )
+                Dialog.notify( editor, 'success', `Loaded ${result.filename}.` )
+            } )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'savedocument', {
+        text : 'Save',
+        icon : 'save',
+        tooltip : 'Save or download file',
+        shortcut : 'meta+S',
+        onAction : () => {
+            if ( new LurchDocument( editor ).getFileID() )
+                silentFileSave( editor )
+            else
+                Dialog.saveFile( editor, 'Save file' )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'savedocumentas', {
+        text : 'Save as...',
+        tooltip : 'Save or download file',
+        shortcut : 'meta+shift+S',
+        onAction : () => Dialog.saveFile( editor, 'Save file' )
+    } )
+    editor.ui.registry.addMenuItem( 'deletesaved', {
+        text : 'Delete a saved document',
+        tooltip : 'Delete a file currently stored in browser storage',
+        onAction : () => {
+            const filenames = allFileNames()
+            if ( filenames.length == 0 )
+                return Dialog.notify( editor, 'error',
+                    'There are not yet any files saved, so there are none to delete.' )
+            const dialog = new Dialog( 'Delete file from browser storage', editor )
+            dialog.addItem( new ChooseLocalFileItem( 'localFile' ) )
+            dialog.show().then( userHitOK => {
+                if ( !userHitOK ) return
+                const filename = dialog.get( 'localFile' ).filename
+                deleteFile( filename )
+                Dialog.notify( editor, 'success', `Deleted ${filename}.` )
+            } )
+        }
+    } )
+}
+
+/**
+ * An item that can be used in a {@link Dialog} to let the user choose a file
+ * stored in the browser's local storage.  This is a simple drop-down list input
+ * control, populated with all the files currently in the browser's local
+ * storage.
+ */
+export class ChooseLocalFileItem {
+
+    /**
+     * Construct a new file open input control.
+     * 
+     * @param {string} name - the key to use to identify this input control's
+     *   content in the dialog's key-value mapping for all input controls
+     */
+    constructor ( name ) {
+        this.name = name
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        this.names = allFileNames()
+        return this.names.length == 0 ? [ {
+            type : 'htmlpanel',
+            html : 'No files are currently stored in the browser\'s local storage.'
+        } ] : [ {
+            type : 'selectbox',
+            name : this.name,
+            label : 'Choose a file:',
+            items : this.names.map( name => {
+                return { value : name, text : name }
+            } )
+        } ]
+    }
+
+    // internal use only; returns a filename-and-content object if requested by
+    // the dialog's get() function
+    get ( key, data ) {
+        if ( key == this.name &amp;&amp; this.names &amp;&amp; this.names.length > 0 ) return {
+            filename : data[key],
+            content : readFile( data[key] )
+        }
+    }
+
+}
+
+export default { install }
+</code></pre>
+    </article>
 </section>
 
 

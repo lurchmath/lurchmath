@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Shell</title>
+    <title>Lurch Web User Interface: Dialog</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Class</p>
-    <h1 class="page-title">Shell</h1>
+    <h1 class="page-title">Dialog</h1>
     
 
 
@@ -51,13 +51,19 @@
 
     
         
-        <!-- <h2>
-            <span class="ancestors"><a href="module-Shells.html">Shells</a>.</span>Shell</h2> -->
+        <!-- <h2>Dialog</h2> -->
 
         
 
         
 
+        
+            
+            <div class="class-description"><p>This class makes it easier to create and use TinyMCE dialogs that have
+components that work well with Lurch.  It handles a lot of the boilerplate
+code that TinyMCE demands and it allows us to work in a more object-oriented
+way, rather than passing around large pieces of JSON and writing all of a
+dialog's code in one big function call.</p></div>
         
     
 </header>
@@ -78,12 +84,14 @@
 
 
     
+    <h3 class="subtitle">Constructor</h3>
+    
 
     <div class="method-type">
     
     </div>
 
-    <h4 class="method-name" id="Shell">new Shell<span class="signature">(element, editor)</span><span class="return-type-signature"></span>
+    <h4 class="method-name" id="Dialog">new Dialog<span class="signature">(title, editor)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -92,14 +100,7 @@
 
 <div class="method-description">
     
-    <p>Construct a new instance of this class corresponding to the shell
-represented by the given <code>HTMLDivElement</code>.  Recall that the purpose of
-this class, as documented above, is to provide an API for consistent and
-convenient use of shells, an API that is not part of the <code>HTMLDivElement</code>
-API.  Thus to use that API, you use this constructor and then call
-functions on the resulting object.  The intent is for such instances to
-be ephemeral, in the sense that you can create one, use it, and let it be
-garbage collected immediately thereafter, with little performance cost.</p>
+    <p>Create (but do not yet show) a dialog box associated with a given editor.</p>
 </div>
 
 
@@ -118,7 +119,7 @@ garbage collected immediately thereafter, with little performance cost.</p>
 
         <li>
             
-                <span class="param-name">element</span>
+                <span class="param-name">title</span>
             
 
             
@@ -126,7 +127,7 @@ garbage collected immediately thereafter, with little performance cost.</p>
 
 
     <span class="param-type">
-        <code>HTMLDivElement</code>
+        <code>string</code>
     </span>
     
 
@@ -136,8 +137,7 @@ garbage collected immediately thereafter, with little performance cost.</p>
 
             
 
-            <div class="param-description"><p>the element in the editor representing
-the shell</p></div>
+            <div class="param-description"><p>the title to display at the top of the dialog</p></div>
             
         </li>
 
@@ -163,7 +163,7 @@ the shell</p></div>
 
             
 
-            <div class="param-description"><p>the editor in which the element sits</p></div>
+            <div class="param-description"><p>the editor in which to create the dialog</p></div>
             
         </li>
 
@@ -226,7 +226,7 @@ the shell</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.85">, line 85</a>
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.14">, line 14</a>
         </li>
     </ul>
 
@@ -237,6 +237,13 @@ the shell</p></div>
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="Dialog.html">Dialog</a></dt>
+            <dd></dd>
+        </dl>
     
 
      
@@ -269,7 +276,7 @@ the shell</p></div>
     
     </div>
 
-    <h4 class="method-name" id="getType">getType<span class="signature">()</span><span class="return-type-signature"> &rarr; nullable{string}</span>
+    <h4 class="method-name" id="addItem">addItem<span class="signature">(item, tabTitle)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -278,11 +285,306 @@ the shell</p></div>
 
 <div class="method-description">
     
-    <p>Each shell may have a type, which is a string that allows for
-partitioning the set of shells into categories that behave differently.
-To see how to assign different behaviors to each type of shell, see the
-<a href="module-Shells.Shell.html#.addType">addType() static function</a>.  This
-function gets the type of this shell.</p>
+    <p>Add an item to the dialog.  There is not a specific class defined for
+dialog items, because they need provide only a <code>.json()</code> method that
+creates the JSON code for all the body components the item adds to the
+dialog.  However, items can optionally also provide <code>.onAction()</code> and
+<code>.onShow()</code> event handlers, as well as a <code>.get()</code> event that can be more
+flexible than <code>dialog.getData()['arg']</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">item</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Object</code>
+    </span>
+    
+
+            
+
+            
+
+            
+                
+            
+
+            <div class="param-description"><p>the item to add, any object that has a <code>.json()</code>
+method that creates JSON code appropriate for TinyMCE dialogs</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">tabTitle</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+                
+                    <span class="param-default">
+                        null
+                    </span>
+                
+            
+
+            <div class="param-description"><p>the tab into which to insert the item, if the
+dialog is split into tabs; leave this blank if it is not</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="AlertItem.html">AlertItem</a></li>
+            
+                <li><a href="HTMLItem.html">HTMLItem</a></li>
+            
+                <li><a href="TextInputItem.html">TextInputItem</a></li>
+            
+                <li><a href="ButtonItem.html">ButtonItem</a></li>
+            
+                <li>ImportFromURLItem</li>
+            
+                <li>ChooseLocalFileItem</li>
+            
+                <li>UploadItem</li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.214">, line 214</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="close">close<span class="signature">()</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Close this dialog box and resolve any open promise with a &quot;false&quot;
+argument, as if the user had canceled the dialog.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.60">, line 60</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="currentTabTitle">currentTabTitle<span class="signature">()</span><span class="return-type-signature"> &rarr; {string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>If you have split your dialog into tabs using the <a href="Dialog.html#setTabs">setTabs()</a> function, and shown your dialog, this function will report the
+title shown on the top of the currently visible tab.</p>
 </div>
 
 
@@ -328,9 +630,9 @@ function gets the type of this shell.</p>
         <h4 class="method-heading">See</h4>
         <ul>
             
-                <li><a href="module-Shells.Shell.html#.addType">addType()</a></li>
+                <li><a href="Dialog.html#setTabs">setTabs()</a></li>
             
-                <li><a href="module-Shells.Shell.html#setType">setType()</a></li>
+                <li><a href="Dialog.html#showTab">showTab()</a></li>
             
         </ul>
     
@@ -348,7 +650,7 @@ function gets the type of this shell.</p>
                 <code>string</code>
             
             
-                <p>the type of this shell</p>
+                <p>the title of the currently shown tab</p>
             
         </li>
     
@@ -372,7 +674,7 @@ function gets the type of this shell.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.103">, line 103</a>
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.173">, line 173</a>
         </li>
     </ul>
 
@@ -398,7 +700,7 @@ function gets the type of this shell.</p>
     
     </div>
 
-    <h4 class="method-name" id="isGiven">isGiven<span class="signature">()</span><span class="return-type-signature"> &rarr; {boolean}</span>
+    <h4 class="method-name" id="get">get<span class="signature">(key)</span><span class="return-type-signature"> &rarr; {any}</span>
     </h4>
 
 
@@ -407,11 +709,1121 @@ function gets the type of this shell.</p>
 
 <div class="method-description">
     
-    <p>In Lurch, elements can be classified as either <em>givens</em> or <em>claims,</em> for
-validation purposes.  A <em>given</em> means exactly what it does in high school
-geometry---a hypothesis from which other conclusions will probably be
-drawn.  Shells can be marked as givens, and if they are not, they default
-to being claims.</p>
+    <p>This is similar to TinyMCE's <code>dialog.getData()[key]</code> syntax, but more
+flexible in that before resorting to that fallback method, it first asks
+each item in the dialog if it wants to return a value for the given key.
+This lets those items behave in a more sophisticated and flexible manner
+if they choose to.  If none of them returns a value different from
+<code>undefined</code>, then we fall back on the standard TinyMCE method shown
+above.  If the dialog is not shown, this returns undefined.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">key</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the key whose value should be looked up</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>any</code>
+            
+            
+                <p>the corresponding value</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.269">, line 269</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="reload">reload<span class="signature">()</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Ask TinyMCE to regenerate the dialog's content from its JSON encoding.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.283">, line 283</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="removeButton">removeButton<span class="signature">(text)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Remove one of the buttons in this dialog.  Especially useful if the
+dialog is for informational purposes only, and doesn't need a &quot;cancel&quot;
+button.  You could call <code>myDialog.removeButton( 'Cancel' )</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the text shown on the button to be removed</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#setButtons">setButtons()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.98">, line 98</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="removeTabs">removeTabs<span class="signature">()</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>This is the reverse operation of <a href="Dialog.html#setTabs">setTabs()</a>.  It
+removes all tabs, thus collapsing all items onto one pane of the dialog.
+This is almost never needed, because you typically set up a dialog once,
+then use it, and don't need to change its structure in this way.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#setTabs">setTabs()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.160">, line 160</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="setButtons">setButtons<span class="signature">(&hellip;buttons)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>TinyMCE dialogs allow you to specify any set of buttons for the dialog's
+footer.  By default, every dialog this class displays will have an OK
+button for submitting the dialog and a Cancel button for canceling it.
+You can replace those buttons by calling this function, passing an array
+of JSON objects, one for each button you wish to define.</p>
+<p>For example, to use just an OK button, you might do the following
+(although you could accomplish it more easily with
+<a href="Dialog.html#removeButton">removeButton()</a> instead).</p>
+<pre class="prettyprint source lang-js"><code>myDialog.setButtons( [
+    { text : 'OK', type : 'submit', buttonType : 'primary' }
+] )
+</code></pre>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">buttons</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Array.&lt;any></code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                    &lt;repeatable&gt;<br>
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the JSON code for the buttons in the dialog's
+footer</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#removeButton">removeButton()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.86">, line 86</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="setInitialData">setInitialData<span class="signature">(data)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Any TinyMCE dialog can have an object mapping control IDs to values, to
+fill the dialog's input controls with their initial values.  To specify
+that mapping, use this function.  Its keys should be the names of any
+input controls you've added to this dialog using
+<a href="Dialog.html#addItem">addItem()</a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">data</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Object</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the mapping from control names to values</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.125">, line 125</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="setOK">setOK<span class="signature">(text)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>If you want to keep a submit button but not have it named with its
+default text of &quot;OK&quot; you can use this function to rename that default
+button.  It will still function as a submit button.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the new text to use in place of &quot;OK&quot;</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.110">, line 110</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="setTabs">setTabs<span class="signature">(&hellip;titles)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Dialogs are not, by default, split into tabs, but are just one large
+panel of controls.  You can split them into a set of tabs by calling
+this function and providing the names of the tabs you want created.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">titles</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Array.&lt;string></code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                    &lt;repeatable&gt;<br>
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the titles of the tabs</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#currentTabTitle">currentTabTitle()</a></li>
+            
+                <li><a href="Dialog.html#showTab">showTab()</a></li>
+            
+                <li><a href="Dialog.html#removeTabs">removeTabs()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.139">, line 139</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="show">show<span class="signature">()</span><span class="return-type-signature"> &rarr; {Promise}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Show the dialog, run any <code>.onShow()</code> event handlers in any items in the
+dialog, and return a promise.  That promise resolves when the user
+submits or cancels the dialog, and returns true if it was a submit and
+false if it was a cancel.</p>
 </div>
 
 
@@ -465,10 +1877,11 @@ to being claims.</p>
     
         <li class="method-returns">
             
-                <code>boolean</code>
+                <code>Promise</code>
             
             
-                <p>whether this shell is a given</p>
+                <p>a promise that resolves when the dialog closes or
+encounters an error</p>
             
         </li>
     
@@ -492,7 +1905,7 @@ to being claims.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.129">, line 129</a>
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.235">, line 235</a>
         </li>
     </ul>
 
@@ -518,7 +1931,7 @@ to being claims.</p>
     
     </div>
 
-    <h4 class="method-name" id="setType">setType<span class="signature">(type<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"></span>
+    <h4 class="method-name" id="showTab">showTab<span class="signature">(title)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -527,12 +1940,8 @@ to being claims.</p>
 
 <div class="method-description">
     
-    <p>Each shell may have a type, which is a string that allows for
-partitioning the set of shells into categories that behave differently.
-To see how to assign different behaviors to each type of shell, see the
-<a href="module-Shells.Shell.html#.addType">addType() static function</a>.  This
-function changes the type of this shell to whatever you pass as the
-parameter.</p>
+    <p>If you have split your dialog into tabs using the <a href="Dialog.html#setTabs">setTabs()</a> function, and shown your dialog, you can call this function to
+change which tab is visible, specifying the new one to show by its title.</p>
 </div>
 
 
@@ -551,7 +1960,7 @@ parameter.</p>
 
         <li>
             
-                <span class="param-name">type</span>
+                <span class="param-name">title</span>
             
 
             
@@ -566,21 +1975,174 @@ parameter.</p>
             
 
             
-                <span class="param-attributes">
+
+            
+
+            <div class="param-description"><p>the title of the tab you want to switch to</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.187">, line 187</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".areYouSure">areYouSure<span class="signature">(editor, text)</span><span class="return-type-signature"> &rarr; {Promise}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>A static method that creates a dialog entitled &quot;Are you sure?&quot; and
+prompting the user with a warning containing the given text.  The return
+value is a promise that resolves with a boolean argument indicating
+whether the user clicked yes/I'm sure (true) or no/Cancel (false).</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
                 
 
-                
-                    &lt;nullable&gt;<br>
-                
 
-                
-                </span>
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
             
 
             
 
-            <div class="param-description"><p>the type to set (or undefined to clear out the
-old type value, resetting it to undefined)</p></div>
+            
+
+            <div class="param-description"><p>the editor over which to show the dialog</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the question to be displayed</p></div>
             
         </li>
 
@@ -622,9 +2184,9 @@ old type value, resetting it to undefined)</p></div>
         <h4 class="method-heading">See</h4>
         <ul>
             
-                <li><a href="module-Shells.Shell.html#.addType">addType()</a></li>
+                <li><a href="Dialog.html#.success">Dialog.success()</a></li>
             
-                <li><a href="module-Shells.Shell.html#getType">getType()</a></li>
+                <li><a href="Dialog.html#.failure">Dialog.failure()</a></li>
             
         </ul>
     
@@ -633,6 +2195,21 @@ old type value, resetting it to undefined)</p></div>
 </div>
 
 
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Promise</code>
+            
+            
+                <p>a promise that resolves when the dialog closes, the
+result of a call to <a href="Dialog.html#show">show()</a></p>
+            
+        </li>
+    
+    </ul>
 
 
 
@@ -652,7 +2229,7 @@ old type value, resetting it to undefined)</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.118">, line 118</a>
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.342">, line 342</a>
         </li>
     </ul>
 
@@ -678,7 +2255,7 @@ old type value, resetting it to undefined)</p></div>
     <span class="method-type-signature is-static">static</span>
     </div>
 
-    <h4 class="method-name" id=".accessibles">accessibles<span class="signature">(editor, target, predicate<span class="signature-attributes">nullable</span>, className<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"> &rarr; {Array.&lt;Node>}</span>
+    <h4 class="method-name" id=".failure">failure<span class="signature">(editor, text, title<span class="signature-attributes">opt</span>)</span><span class="return-type-signature"> &rarr; {Promise}</span>
     </h4>
 
 
@@ -687,18 +2264,10 @@ old type value, resetting it to undefined)</p></div>
 
 <div class="method-description">
     
-    <p>For the meaning of accessibility, see
-<a href="module-Shells.Shell.html#.isAccessibleTo">isAccessibleTo()</a>.
-This function returns the array of all HTML nodes that are accessible to
-the given <code>target</code> in the given <code>editor</code>, as long as they have the given
-<code>className</code> and satisfy the given <code>predicate</code>.  HTML nodes that appear in
-dependencies and in the document header are also included.  All nodes are
-returned in the order that they appear in the document (counting the
-header as earliest).</p>
-<p>The predicate can be omitted and defaults to an accessibility check
-relative to the given <code>target</code> node.  The class name can be omitted and
-defaults to the class name used to mark nodes as being part of the
-<a href="module-Atoms.Atom.html">Atoms module</a>.</p>
+    <p>A static method that creates a dialog with just an OK button and a
+failure message in it.  This is a convenience method that makes it
+possible to show a failure message in a modal dialog using just one line
+of code.</p>
 </div>
 
 
@@ -745,7 +2314,7 @@ defaults to the class name used to mark nodes as being part of the
                 
             
 
-            <div class="param-description"><p>the editor in which to search</p></div>
+            <div class="param-description"><p>the editor over which to show the dialog</p></div>
             
         </li>
 
@@ -753,7 +2322,7 @@ defaults to the class name used to mark nodes as being part of the
 
         <li>
             
-                <span class="param-name">target</span>
+                <span class="param-name">text</span>
             
 
             
@@ -761,7 +2330,7 @@ defaults to the class name used to mark nodes as being part of the
 
 
     <span class="param-type">
-        <code>Node</code>
+        <code>string</code>
     </span>
     
 
@@ -781,7 +2350,7 @@ defaults to the class name used to mark nodes as being part of the
                 
             
 
-            <div class="param-description"><p>the node to use for filtering the result list</p></div>
+            <div class="param-description"><p>the failure message to be displayed</p></div>
             
         </li>
 
@@ -789,7 +2358,7 @@ defaults to the class name used to mark nodes as being part of the
 
         <li>
             
-                <span class="param-name">predicate</span>
+                <span class="param-name">title</span>
             
 
             
@@ -797,7 +2366,7 @@ defaults to the class name used to mark nodes as being part of the
 
 
     <span class="param-type">
-        <code>function</code>
+        <code>string</code>
     </span>
     
 
@@ -806,9 +2375,9 @@ defaults to the class name used to mark nodes as being part of the
             
                 <span class="param-attributes">
                 
-
+                    &lt;optional&gt;<br>
                 
-                    &lt;nullable&gt;<br>
+
                 
 
                 
@@ -818,13 +2387,193 @@ defaults to the class name used to mark nodes as being part of the
             
                 
                     <span class="param-default">
-                        null
+                        "Failure"
                     </span>
                 
             
 
-            <div class="param-description"><p>a function that takes a node and returns
-true if that node should be included in the results</p></div>
+            <div class="param-description"><p>an optional title for the dialog</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#.success">Dialog.success()</a></li>
+            
+                <li><a href="Dialog.html#.areYouSure">Dialog.areYouSure()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Promise</code>
+            
+            
+                <p>a promise that resolves when the dialog closes, the
+result of a call to <a href="Dialog.html#show">show()</a></p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.322">, line 322</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".loadFile">loadFile<span class="signature">(editor, title<span class="signature-attributes">opt</span>)</span><span class="return-type-signature"> &rarr; {Promise}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>This static function shows a dialog for loading a file.  The dialog
+contains three tabs, one for loading a file from browser storage, one for
+letting the user upload from their computer, and one for letting the user
+import a file from a web URL.  The user can choose their preferred method
+and import the file.</p>
+<p>The function returns a promise that resolves when the user closes the
+dialog.  If the user canceled and did not choose or accept a file, the
+handler will be passed no arguments.  If the user did choose and accept a
+file, the argument passed to the handler will be an object with two
+fields, of the form <code>{ filename : '...', content : '...' }</code>, where the
+filename will be the filename or URL and the content will be the entirety
+of the file's content, which may be large.  Both are strings.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+                
+            
+
+            <div class="param-description"><p>the editor instance in which to display
+the dialog</p></div>
             
         </li>
 
@@ -832,7 +2581,658 @@ true if that node should be included in the results</p></div>
 
         <li>
             
-                <span class="param-name">className</span>
+                <span class="param-name">title</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+                    &lt;optional&gt;<br>
+                
+
+                
+
+                
+                </span>
+            
+
+            
+                
+                    <span class="param-default">
+                        "File"
+                    </span>
+                
+            
+
+            <div class="param-description"><p>the title to show at the top of the dialog</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#.saveFile">Dialog.saveFile()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Promise</code>
+            
+            
+                <p>a promise that resolves to the file information as
+specified above, or rejects if an error occurs</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.371">, line 371</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".notify">notify<span class="signature">(editor, type, text, timeout)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Pop up a notification over the editor.  This can be done with TinyMCE's
+<code>NotificationManager</code> class, but this function just makes it slightly
+more convenient, because the parameters are named, and one does not need
+to remember the JSON encoding of them.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the editor in which to show the
+notification</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">type</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the type of notification to show, which TinyMCE
+requires must be one of &quot;success&quot;, &quot;info&quot;, &quot;warning&quot;, or &quot;error&quot;</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the content of the notification</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">timeout</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>integer</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>how long (in ms) until the notification
+disappears (optional; defaults to 2000 for success notifications and
+no timeout for everything else)</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.472">, line 472</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".saveFile">saveFile<span class="signature">(editor, title<span class="signature-attributes">opt</span>)</span><span class="return-type-signature"> &rarr; {Promise}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>This static function shows a dialog for saving a file.  The dialog
+contains two tabs, one for saving a file to browser storage and one for
+letting the user download to their computer.  The user can choose their
+preferred method and save the file.</p>
+<p>The function returns a promise that resolves when the user closes the
+dialog.  If the user canceled and did not choose or accept a file, the
+handler will be passed a boolean false.  If the downloaded the file, the
+handler will be passed a boolean true.  If the user saved the file to the
+browser's local storage, the handler will be passed a string containing
+the chosen filename.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+                
+            
+
+            <div class="param-description"><p>the editor instance in which to display
+the dialog</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">title</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+                    &lt;optional&gt;<br>
+                
+
+                
+
+                
+                </span>
+            
+
+            
+                
+                    <span class="param-default">
+                        "File"
+                    </span>
+                
+            
+
+            <div class="param-description"><p>the title to show at the top of the dialog</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Dialog.html#.loadFile">Dialog.loadFile()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Promise</code>
+            
+            
+                <p>a promise that resolves as specified above, or rejects
+if an error occurs</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.428">, line 428</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".success">success<span class="signature">(editor, text, title<span class="signature-attributes">opt</span>)</span><span class="return-type-signature"> &rarr; {Promise}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>A static method that creates a dialog with just an OK button and a
+success message in it.  This is a convenience method that makes it
+possible to show a success message in a modal dialog using just one line
+of code.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+                
+            
+
+            <div class="param-description"><p>the editor over which to show the dialog</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
             
 
             
@@ -851,8 +3251,6 @@ true if that node should be included in the results</p></div>
                 
 
                 
-                    &lt;nullable&gt;<br>
-                
 
                 
                 </span>
@@ -862,143 +3260,15 @@ true if that node should be included in the results</p></div>
                 
             
 
-            <div class="param-description"><p>the class name of the nodes to include</p></div>
+            <div class="param-description"><p>the success message to be displayed</p></div>
             
         </li>
 
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Array.&lt;Node></code>
-            
-            
-                <p>the ordered array of accessible nodes satisfying all of
-the given criteria</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.285">, line 285</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".addType">addType<span class="signature">(type, handler)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This class will watch for click events on shells in the editor, and will
-call appropriate event handlers based on the type of shell that was
-clicked.  To register a click event handler, call this function.  The
-handler will be called with one parameter, the Shell instance that was
-clicked.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
     
 
         <li>
             
-                <span class="param-name">type</span>
+                <span class="param-name">title</span>
             
 
             
@@ -1013,567 +3283,26 @@ clicked.</p>
             
 
             
-
-            
-
-            <div class="param-description"><p>the type of shell for which to register an event
-handler</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">handler</span>
-            
-
-            
+                <span class="param-attributes">
+                
+                    &lt;optional&gt;<br>
                 
 
-
-    <span class="param-type">
-        <code>function</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the event handler being registered</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.69">, line 69</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".allIn">allIn<span class="signature">(editor)</span><span class="return-type-signature"> &rarr; {Array.&lt;Atom>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Find all elements in the given TinyMCE editor that represent shells, and
-return each one, transformed into an instance of the Shell class.  They
-are returned in the order they appear in the document.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
                 
 
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the editor in which to search</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Array.&lt;Atom></code>
-            
-            
-                <p>the array of shell elements in the editor's document</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.211">, line 211</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".createElement">createElement<span class="signature">(editor, type, content)</span><span class="return-type-signature"> &rarr; {HTMLDivElement}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Create an HTMLDivElement that can be placed into the given <code>editor</code> and
-that represents a shell, whose type is given by the parameter.  The
-element will be given an HTML/CSS class that marks it as representing a
-shell.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
                 
-
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-                
-            
-
-            <div class="param-description"><p>the TinyMCE editor in which to create
-the element</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">type</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
-            
-
-            
-                
-            
-
-            <div class="param-description"><p>the type of the shell to create</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">content</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
+                </span>
             
 
             
                 
                     <span class="param-default">
-                        &lt;br data-mce-bogus="1">
+                        "Success"
                     </span>
                 
             
 
-            <div class="param-description"><p>the content of the new shell (defaults to a
-single non-breaking space)</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>HTMLDivElement</code>
-            
-            
-                <p>the element constructed</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.195">, line 195</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".findAbove">findAbove<span class="signature">(node, editor)</span><span class="return-type-signature"> &rarr; nullable{Shell}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function can take any DOM node and walk up its ancestor chain and
-find whether any element in that chain represents a shell.  If so, it
-returns the corresponding Shell instance.  If not, it returns null.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">node</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Node</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the DOM node from which to begin searching</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>tinymce.Editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the editor in which the node sits</p></div>
+            <div class="param-description"><p>an optional title for the dialog</p></div>
             
         </li>
 
@@ -1615,7 +3344,9 @@ returns the corresponding Shell instance.  If not, it returns null.</p>
         <h4 class="method-heading">See</h4>
         <ul>
             
-                <li><a href="module-Shells.Shell.html#.isShellElement">isShellElement()</a></li>
+                <li><a href="Dialog.html#.failure">Dialog.failure()</a></li>
+            
+                <li><a href="Dialog.html#.areYouSure">Dialog.areYouSure()</a></li>
             
         </ul>
     
@@ -1630,194 +3361,11 @@ returns the corresponding Shell instance.  If not, it returns null.</p>
     
         <li class="method-returns">
             
-                <code>Shell</code>
+                <code>Promise</code>
             
             
-                <p>the nearest Shell enclosing the given <code>node</code></p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.226">, line 226</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".isAccessibleTo">isAccessibleTo<span class="signature">(earlier, later)</span><span class="return-type-signature"> &rarr; {boolean}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Accessibility of HTML nodes sitting inside a hierarchy of Shells is
-analogous to accessibility of <code>MathConcept</code> or <code>LogicConcept</code> instances
-inside their own hierarchy.  The shells create the hierarchy/tree and the
-HTML nodes within them act as leaves of the tree.</p>
-<p>Of course, one HTML node is not accessible to another if it comes later
-in the document, so this function assumes that you are asking about
-accessibility of an earlier node to a later node.  It does not check to
-be sure that this is true; the client must ensure that.</p>
-<p>It returns true if the <code>earlier</code> node is accessible to the <code>later</code> node.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">earlier</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Node</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the earlier of the two DOM nodes to compare</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">later</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Node</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the later of the two DOM nodes to compare</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>boolean</code>
-            
-            
-                <p>whether the <code>earlier</code> node is accessible to the
-<code>later</code> node</p>
+                <p>a promise that resolves when the dialog closes, the
+result of a call to <a href="Dialog.html#show">show()</a></p>
             
         </li>
     
@@ -1841,169 +3389,7 @@ be sure that this is true; the client must ensure that.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.250">, line 250</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".isShellElement">isShellElement<span class="signature">(element)</span><span class="return-type-signature"> &rarr; {boolean}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>One can construct an instance of the Shell class to interface with an
-element in the editor only if that element actually represents a shell,
-as defined in <a href="module-Shells.html">the documentation for the Shells module</a>.  This function checks to see if the element in question does.
-To create elements that do represent shells, see
-<a href="module-Shells.Shell.html#.createElement">createElement()</a>.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">element</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>HTMLElement</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the element to check</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="module-Shells.Shell.html#.createElement">createElement()</a></li>
-            
-                <li><a href="module-Shells.Shell.html#.findAbove">findAbove()</a></li>
-            
-        </ul>
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>boolean</code>
-            
-            
-                <p>whether the element represents a shell</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="shells.js.html">shells.js</a><a href="shells.js.html#source.177">, line 177</a>
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.301">, line 301</a>
         </li>
     </ul>
 

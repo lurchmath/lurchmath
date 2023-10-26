@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Notation</title>
+    <title>Lurch Web User Interface: LocalStorageDrive</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Module</p>
-    <h1 class="page-title">Notation</h1>
+    <h1 class="page-title">LocalStorageDrive</h1>
     
 
 
@@ -59,31 +59,12 @@
 
     
         
-            <div class="description"><p>For the purposes of this module, a <em>notation</em> will be any way in which one
-can encode, as a text string, a non-environment Logic Concept.  (For the
-definition of Logic Concepts, or LCs, refer to the documentation in
-<a href="https://lurchmath.github.io/lde/LogicConcept.html">another repository</a>.)
-For example, putdown notation, as
-<a href="https://lurchmath.github.io/lde/LogicConcept.html#.fromPutdown">defined in that repository</a>, is an example of a &quot;notation,&quot; according to this
-definition.</p>
-<p>A <em>notation function</em> will be a function that inspects a text string and does
-the following two things:</p>
-<ol>
-<li>If the text string does not correctly express one, single,
-non-environment Logic Concept in the expected notation, return an error
-object as described below.</li>
-<li>Otherwise, return the Logic Concept instance described by the input.</li>
-</ol>
-<p>An error object must have a <code>message</code> field, containing a string describing
-the problem in a human-readable way.  It may optionally also have a
-<code>position</code> field, an integer between 0 and the length of the input
-(inclusive) indicating where the problem occurred.  Indexes into the input
-range from 0 to one less than its length, and so an error position equal to
-the input length can be used to express that something was missing at the end
-of the input, such as a close grouper.</p>
-<p>This module installs one notation function, one supporting putdown notation,
-as described above.  It also provides functions clients can use to install
-additional notation functions, or query the set of currently installed ones.</p></div>
+            <div class="description"><p>This file creates functions for accessing the browser's local storage as if
+it were a collection of files.  It also provides file open, save, and save as
+menu items that can be used not only for loading files from and saving files
+to the browser's local storage, but also uploading and downloading files or
+importing them from the web.  It also provides a file menu item for deleting
+files from the browser's local storage.</p></div>
         
 
         
@@ -128,6 +109,13 @@ additional notation functions, or query the set of currently installed ones.</p>
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="module-LocalStorageDrive.ChooseLocalFileItem.html">ChooseLocalFileItem</a></dt>
+            <dd></dd>
+        </dl>
     
 
      
@@ -147,17 +135,13 @@ additional notation functions, or query the set of currently installed ones.</p>
     <div class="method-type">
         <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-<h4 class="member-name" id=".addFunction">addFunction<span class="type-signature"></span></h4>
+<h4 class="member-name" id=".deleteFile">deleteFile<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>Install a new notation function into this module.  Provide the name of the
-notation, together with a function whose behavior works as documented
-<a href="module-Notation.html">at the top of this module</a>.  If you call this function
-more than once with the same name, you will overwrite any function you
-installed in the past for the same name with the new function.</p>
+    <p>Delete a file from the browser's local storage.</p>
 </div>
 
 
@@ -207,7 +191,7 @@ installed in the past for the same name with the new function.</p>
     <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.53">, line 53</a>
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.62">, line 62</a>
         </li>
     </ul>
 
@@ -220,14 +204,13 @@ installed in the past for the same name with the new function.</p>
     <div class="method-type">
         <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-<h4 class="member-name" id=".names">names<span class="type-signature"></span></h4>
+<h4 class="member-name" id=".fileExists">fileExists<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>This function returns a list of all the installed notation functions, which
-is just a list of their names, each one a string.</p>
+    <p>Test whether the given file currently exists in the browser's local storage.</p>
 </div>
 
 
@@ -277,7 +260,7 @@ is just a list of their names, each one a string.</p>
     <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.61">, line 61</a>
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.37">, line 37</a>
         </li>
     </ul>
 
@@ -290,16 +273,13 @@ is just a list of their names, each one a string.</p>
     <div class="method-type">
         <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
     </div>
-<h4 class="member-name" id=".parse">parse<span class="type-signature"></span></h4>
+<h4 class="member-name" id=".readFile">readFile<span class="type-signature"></span></h4>
 
 
 
 
 <div class="description">
-    <p>Apply the parser for a given notation to some text input.  Return either a
-Logic Concept (if the input was understandable as an expression in the given
-notation, according to the rules <a href="module-Notation.html">at the top of this module</a>), or an error object otherwise (also structured according to that
-same documentation).</p>
+    <p>Read the contents of a file from the browser's local storage.</p>
 </div>
 
 
@@ -349,7 +329,148 @@ same documentation).</p>
     <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.76">, line 76</a>
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.46">, line 46</a>
+        </li>
+    </ul>
+
+
+</article>
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id=".saveAs">saveAs<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Save the contents of the given editor into the given file.  However, if a
+file with that name already exists, pop up a dialog prompting the user to
+decide if they really want to overwrite the file, and proceed only if they
+accept.</p>
+</div>
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    <h4>Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.73">, line 73</a>
+        </li>
+    </ul>
+
+
+</article>
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id=".writeFile">writeFile<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Write new contents into a file in the browser's local storage.</p>
+</div>
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    <h4>Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.54">, line 54</a>
         </li>
     </ul>
 
@@ -358,6 +479,319 @@ same documentation).</p>
         
     
 
+    
+        <h3 class="subtitle">Methods</h3>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".install">install<span class="signature">(editor)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Install into a TinyMCE editor instance five new menu items intended for the
+File menu: New, Open, Save, Save as..., and Delete a saved document.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the TinyMCE editor instance into which the new
+menu item should be installed</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.117">, line 117</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-inner">inner</span>
+    </div>
+
+    <h4 class="method-name" id="~silentFileSave">silentFileSave<span class="signature">(editor, filename)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Silently (i.e., without asking the user anything in a dialog box) save the
+given new content into the existing file with the given name in the user's
+<code>LocalStorage</code>.  If it succeeds, pop up a brief success notification.  If it
+fails, show a failure notification containing the error and wait for the user
+to dismiss it.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the editor to use for any notifications</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">filename</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the filename whose content should be updated</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li>showSaveAsDialog()</li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="local-storage-drive.js.html">local-storage-drive.js</a><a href="local-storage-drive.js.html#source.104">, line 104</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
     
 
     

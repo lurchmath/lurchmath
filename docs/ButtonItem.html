@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Notation</title>
+    <title>Lurch Web User Interface: ButtonItem</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -36,8 +36,8 @@
 
 <main class="layout-main ">
   <div class="container">
-    <p class="page-kind">Module</p>
-    <h1 class="page-title">Notation</h1>
+    <p class="page-kind">Class</p>
+    <h1 class="page-title">ButtonItem</h1>
     
 
 
@@ -46,9 +46,23 @@
 <section>
 
 
-<header class="not-class">
+<header class="class">
 
 
+    
+        
+        <!-- <h2>ButtonItem</h2> -->
+
+        
+
+        
+
+        
+            
+            <div class="class-description"><p>An item that can be used in a <a href="Dialog.html">Dialog</a> and shows up as a clickable
+button.  This corresponds to the &quot;button&quot; type of body component in a TinyMCE
+dialog.</p></div>
+        
     
 </header>
 
@@ -59,34 +73,104 @@
 
     
         
-            <div class="description"><p>For the purposes of this module, a <em>notation</em> will be any way in which one
-can encode, as a text string, a non-environment Logic Concept.  (For the
-definition of Logic Concepts, or LCs, refer to the documentation in
-<a href="https://lurchmath.github.io/lde/LogicConcept.html">another repository</a>.)
-For example, putdown notation, as
-<a href="https://lurchmath.github.io/lde/LogicConcept.html#.fromPutdown">defined in that repository</a>, is an example of a &quot;notation,&quot; according to this
-definition.</p>
-<p>A <em>notation function</em> will be a function that inspects a text string and does
-the following two things:</p>
-<ol>
-<li>If the text string does not correctly express one, single,
-non-environment Logic Concept in the expected notation, return an error
-object as described below.</li>
-<li>Otherwise, return the Logic Concept instance described by the input.</li>
-</ol>
-<p>An error object must have a <code>message</code> field, containing a string describing
-the problem in a human-readable way.  It may optionally also have a
-<code>position</code> field, an integer between 0 and the length of the input
-(inclusive) indicating where the problem occurred.  Indexes into the input
-range from 0 to one less than its length, and so an error position equal to
-the input length can be used to express that something was missing at the end
-of the input, such as a close grouper.</p>
-<p>This module installs one notation function, one supporting putdown notation,
-as described above.  It also provides functions clients can use to install
-additional notation functions, or query the set of currently installed ones.</p></div>
-        
 
-        
+
+
+
+
+    
+
+
+    
+    <h3 class="subtitle">Constructor</h3>
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="ButtonItem">new ButtonItem<span class="signature">(text, action)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Construct a button.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the text shown on the button</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">action</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>function</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the function to call when the button is
+clicked; it will be passed the <a href="Dialog.html">Dialog</a> instance</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
 
 
 <div class="details">
@@ -122,12 +206,43 @@ additional notation functions, or query the set of currently installed ones.</p>
 </div>
 
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.584">, line 584</a>
+        </li>
+    </ul>
+
+
+
     
     </div>
 
     
 
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="ButtonItem.html">ButtonItem</a></dt>
+            <dd></dd>
+        </dl>
     
 
      
@@ -137,225 +252,6 @@ additional notation functions, or query the set of currently installed ones.</p>
     
 
 
-    
-        <h3 class="subtitle">Members</h3>
-
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".addFunction">addFunction<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Install a new notation function into this module.  Provide the name of the
-notation, together with a function whose behavior works as documented
-<a href="module-Notation.html">at the top of this module</a>.  If you call this function
-more than once with the same name, you will overwrite any function you
-installed in the past for the same name with the new function.</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.53">, line 53</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".names">names<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>This function returns a list of all the installed notation functions, which
-is just a list of their names, each one a string.</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.61">, line 61</a>
-        </li>
-    </ul>
-
-
-</article>
-        
-            
-
-<article class="member">
-    <div class="method-type">
-        <span class="method-type-signature is-static">static</span><span class="method-type-signature is-constant">constant</span>
-    </div>
-<h4 class="member-name" id=".parse">parse<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Apply the parser for a given notation to some text input.  Return either a
-Logic Concept (if the input was understandable as an expression in the given
-notation, according to the rules <a href="module-Notation.html">at the top of this module</a>), or an error object otherwise (also structured according to that
-same documentation).</p>
-</div>
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-    <h4>Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="notation.js.html">notation.js</a><a href="notation.js.html#source.76">, line 76</a>
-        </li>
-    </ul>
-
-
-</article>
-        
     
 
     
