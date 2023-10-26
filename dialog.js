@@ -341,7 +341,7 @@ export class Dialog {
      */
     static areYouSure ( editor, text ) {
         const dialog = new Dialog( 'Are you sure?', editor )
-        dialog.addItem( new AlertItem( 'warning', text ) )
+        dialog.addItem( new AlertItem( 'warn', text ) )
         dialog.setOK( 'I\'m sure' )
         return dialog.show()
     }
