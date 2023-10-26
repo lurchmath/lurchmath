@@ -61,13 +61,15 @@ export class LurchDocument {
     /**
      * Clear out the contents of the editor given at construction time.  This
      * includes clearing out its content as well as any metdata, including
-     * document settings and dependencies.
+     * document settings and dependencies.  It also clears the editor's dirty
+     * flag.
      */
     newDocument () {
         this.clearDocument()
         this.clearMetadata()
         this.clearFileID()
         this.editor.undoManager.clear()
+        this.editor.setDirty( false )
     }
 
     /**
@@ -135,7 +137,8 @@ export class LurchDocument {
      * Load the given document into the editor given at construction time.  This
      * will replace what's visible in the UI with the visible portion of the
      * given document, and will also replace the invisible document settings and
-     * dependencies with those of the given document.
+     * dependencies with those of the given document.  It also clears the
+     * editor's dirty flag.
      * 
      * @param {string} document - the document as it was retrieved from a
      *   filesystem, ready to be loaded into this editor
@@ -154,6 +157,7 @@ export class LurchDocument {
         else
             this.clearDocument()
         this.editor.undoManager.clear()
+        this.editor.setDirty( false )
     }
     
     /**

@@ -89,12 +89,23 @@ export const saveAs = ( editor, filename ) => {
     } )
 }
 
+// Internal use only
+// Checks whether the user minds discarding their recent work before proceeding.
+const ensureWorkIsSaved = editor => new Promise( ( resolve, reject ) => {
+    if ( !editor.isDirty() )
+        return resolve( true )
+    Dialog.areYouSure(
+        editor,
+        'You will lose any unsaved work.  Continue anyway?'
+    ).then( resolve, reject )
+} )
+
 /**
  * Silently (i.e., without asking the user anything in a dialog box) save the
  * given new content into the existing file with the given name in the user's
  * `LocalStorage`.  If it succeeds, pop up a brief success notification.  If it
  * fails, show a failure notification containing the error and wait for the user
- * to dismiss it.
+ * to dismiss it.  It also clears the editor's dirty flag.
  * 
  * @param {tinymce.Editor} editor the editor to use for any notifications
  * @param {string} filename the filename whose content should be updated
@@ -104,6 +115,7 @@ export const saveAs = ( editor, filename ) => {
 const silentFileSave = editor => {
     const LD = new LurchDocument( editor )
     writeFile( LD.getFileID(), LD.getDocument() )
+    editor.setDirty( false )
 }
 
 /**
@@ -120,20 +132,22 @@ export const install = editor => {
         icon : 'new-document',
         tooltip : 'New document',
         shortcut : 'meta+N',
-        onAction : () => new LurchDocument( editor ).newDocument()
+        onAction : () => ensureWorkIsSaved( editor ).then( saved => {
+            if ( saved ) new LurchDocument( editor ).newDocument()
+        } )
     } )
     editor.ui.registry.addMenuItem( 'opendocument', {
         text : 'Open',
         tooltip : 'Open file',
         shortcut : 'meta+O',
-        onAction : () => {
-            Dialog.loadFile( editor, 'Open file' ).then( result => {
+        onAction : () => ensureWorkIsSaved( editor ).then( saved => {
+            if ( saved ) Dialog.loadFile( editor, 'Open file' ).then( result => {
                 const LD = new LurchDocument( editor )
                 LD.setDocument( result.content )
                 LD.setFileID( result.filename )
                 Dialog.notify( editor, 'success', `Loaded ${result.filename}.` )
             } )
-        }
+        } )
     } )
     editor.ui.registry.addMenuItem( 'savedocument', {
         text : 'Save',
@@ -144,14 +158,18 @@ export const install = editor => {
             if ( new LurchDocument( editor ).getFileID() )
                 silentFileSave( editor )
             else
-                Dialog.saveFile( editor, 'Save file' )
+                Dialog.saveFile( editor, 'Save file' ).then( saved => {
+                    if ( saved ) editor.setDirty( false )
+                } )
         }
     } )
     editor.ui.registry.addMenuItem( 'savedocumentas', {
         text : 'Save as...',
         tooltip : 'Save or download file',
         shortcut : 'meta+shift+S',
-        onAction : () => Dialog.saveFile( editor, 'Save file' )
+        onAction : () => Dialog.saveFile( editor, 'Save file' ).then( saved => {
+            if ( saved ) editor.setDirty( false )
+        } )
     } )
     editor.ui.registry.addMenuItem( 'deletesaved', {
         text : 'Delete a saved document',
