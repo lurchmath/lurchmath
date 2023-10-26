@@ -47,6 +47,19 @@ export const appSettings = new Settings(
                 'Width of application in browser window',
                 [ 'Fixed size', 'Full width' ]
             )
+        ),
+        new SettingsCategoryMetadata(
+            'File load/save',
+            new CategorySettingMetadata(
+                'default open dialog tab',
+                'Default source for loading files',
+                [ 'From browser storage', 'From your computer', 'From the web' ]
+            ),
+            new CategorySettingMetadata(
+                'default save dialog tab',
+                'Default destination for saving files',
+                [ 'To browser storage', 'To your computer' ]
+            )
         )
     )
 )
