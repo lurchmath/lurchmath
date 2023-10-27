@@ -45,7 +45,8 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'application width in window',
                 'Width of application in browser window',
-                [ 'Fixed size', 'Full width' ]
+                [ 'Fixed size', 'Full width' ],
+                'Full width'
             )
         ),
         new SettingsCategoryMetadata(
@@ -53,12 +54,14 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'default open dialog tab',
                 'Default source for loading files',
-                [ 'From browser storage', 'From your computer', 'From the web' ]
+                [ 'From browser storage', 'From your computer', 'From the web' ],
+                'From browser storage'
             ),
             new CategorySettingMetadata(
                 'default save dialog tab',
                 'Default destination for saving files',
-                [ 'To browser storage', 'To your computer' ]
+                [ 'To browser storage', 'To your computer' ],
+                'To browser storage'
             )
         )
     )
