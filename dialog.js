@@ -401,7 +401,9 @@ export class Dialog {
                     reject( 'Unknown tab: ' + title )
                 }
             } ).catch( reject )
-            dialog.showTab( appSettings.get( 'default open dialog tab' ) )
+            setTimeout( () => {
+                dialog.showTab( appSettings.get( 'default open dialog tab' ) )
+            }, 0 )
         } )
     }
 
@@ -450,7 +452,9 @@ export class Dialog {
                     reject( 'Unknown tab: ' + title )
                 }
             } ).catch( reject )
-            dialog.showTab( appSettings.get( 'default save dialog tab' ) )
+            setTimeout( () => {
+                dialog.showTab( appSettings.get( 'default save dialog tab' ) )
+            }, 0 )
         } )
     }
 
