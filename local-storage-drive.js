@@ -167,10 +167,12 @@ export const install = editor => {
         shortcut : 'meta+O',
         onAction : () => ensureWorkIsSaved( editor ).then( saved => {
             if ( saved ) Dialog.loadFile( editor, 'Open file' ).then( result => {
-                const LD = new LurchDocument( editor )
-                LD.setDocument( result.content )
-                LD.setFileID( result.filename )
-                Dialog.notify( editor, 'success', `Loaded ${result.filename}.` )
+                if ( result ) {
+                    const LD = new LurchDocument( editor )
+                    LD.setDocument( result.content )
+                    LD.setFileID( result.filename )
+                    Dialog.notify( editor, 'success', `Loaded ${result.filename}.` )
+                }
             } )
         } )
     } )

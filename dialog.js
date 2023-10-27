@@ -44,12 +44,12 @@ export class Dialog {
                 this.resolver?.( false )
             },
             onTabChange : ( _, details ) => {
-                this.currentTab = details.newTabName
+                this.currentTabName = details.newTabName
                 this.runItemShowHandlers()
             }
         }
         this.dialog = null
-        this.currentTab = null
+        this.currentTabName = null
         this.items = [ ]
     }
 
@@ -173,7 +173,7 @@ export class Dialog {
     currentTabTitle () {
         const n = this.json.body.tabs ? this.json.body.tabs.length : 0
         for ( let i = 0 ; i < n ; i++ )
-            if ( this.json.body.tabs[i].name == this.currentTab )
+            if ( this.json.body.tabs[i].name == this.currentTabName )
                 return this.json.body.tabs[i].title
     }
 
@@ -234,7 +234,7 @@ export class Dialog {
      */
     show () {
         if ( this.json.body.tabs )
-            this.currentTab = this.json.body.tabs[0].title
+            this.currentTabName = this.json.body.tabs[0].name
         this.dialog = this.editor.windowManager.open( this.json )
         return new Promise( ( resolve, reject ) => {
             this.resolver = resolve
@@ -247,7 +247,7 @@ export class Dialog {
     runItemShowHandlers () {
         if ( this.json.body.tabs )
             this.items.forEach( item => {
-                if ( item.tab == this.currentTab )
+                if ( item.tab == this.currentTabName )
                     item.onShow?.( this.dialog )
             } )
         else
