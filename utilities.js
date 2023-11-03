@@ -93,6 +93,19 @@ export const escapeHTML = ( text = '' ) =>
         .replaceAll( "'", '&#039;' )
 
 /**
+ * The following function takes as input an string containing HTML code and
+ * removes from it all script tags, so that the code can be used safely within
+ * the app itself, knowing that no malicious code will be executed.
+ * 
+ * @param {string} html - the HTML code from which to remove script tags
+ * @returns {string} the same HTML code, but with all script tags removed
+ */
+export const removeScriptTags = html => {
+    const regex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi
+    return html.replace( regex, '' )
+}
+
+/**
  * This function makes it easy to construct two-column tables of HTML content,
  * which is something that several types of {@link module:Atoms.Atom Atoms} will
  * want to do.  The arguments to the function are the rows of the table, and
@@ -125,13 +138,12 @@ export const escapeHTML = ( text = '' ) =>
  */
 export const simpleHTMLTable = ( ...rows ) => {
     let result = '<table><colgroup><col><col></colgroup>'
-    const row = inside => `<tr>${inside}</tr>`
-    const cell = inside =>
-        `<td>${inside}</td>`
+    const row = inside => `<tr>${removeScriptTags( inside )}</tr>`
+    const cell = inside => `<td>${removeScriptTags( inside )}</td>`
     const bigCell = inside =>
-        `<td colspan='2'><b>${inside}</b></td>`
+        `<td colspan='2'><b>${removeScriptTags( inside )}</b></td>`
     const error = inside =>
-        `<td><font color=red>${inside}</font></td>`
+        `<td><font color=red>${removeScriptTags( inside )}</font></td>`
     rows.forEach( rowData => {
         if ( typeof( rowData ) == 'string' ) {
             result += row( bigCell( rowData ) )

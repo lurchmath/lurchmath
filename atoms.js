@@ -35,6 +35,8 @@
  * @see {@link module:Shells the Shells module}
  */
 
+import { removeScriptTags } from './utilities.js'
+
 /**
  * Class name used to distinguish HTML elements representing atoms.  (For an
  * explanation of what an atom is, see the documentation for
@@ -365,11 +367,11 @@ export class Atom {
             throw new Error( 'Inline atoms cannot have HTML metadata' )
         const child = this.findMetadataElement( key )
         if ( child ) {
-            child.innerHTML = value.innerHTML || value
+            child.innerHTML = removeScriptTags( value.innerHTML || value )
         } else {
             const newDatum = this.element.ownerDocument.createElement( 'div' )
             newDatum.dataset.key = key
-            newDatum.innerHTML = value.innerHTML || value
+            newDatum.innerHTML = removeScriptTags( value.innerHTML || value )
             this.getChild( 'metadata', true ).appendChild( newDatum )
         }
     }
