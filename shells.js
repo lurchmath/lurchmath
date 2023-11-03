@@ -287,7 +287,7 @@ export class Shell {
     ) {
         return [
             // dependencies in header:
-            ...getHeader( editor ).querySelectorAll( `.${className}` ),
+            ...( getHeader( editor )?.querySelectorAll( `.${className}` ) || [ ] ),
             // nodes in document preceding target:
             ...onlyBefore( editor.dom.doc.querySelectorAll( `.${className}` ), target )
         ].filter( predicate || ( node => Shell.isAccessibleTo( node, target ) ) )
