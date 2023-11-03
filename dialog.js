@@ -616,3 +616,30 @@ export class ButtonItem {
     }
 
 }
+
+/**
+ * An item that can be used in a {@link Dialog} and shows up as a dropdown list
+ * of options.  This corresponds to the "selectbox" type of body component in
+ * a TinyMCE dialog.
+ */
+export class SelectBoxItem {
+    
+    constructor ( name, label, items ) {
+        this.name = name
+        this.label = label
+        this.items = items
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        return [ {
+            type : 'selectbox',
+            name : this.name,
+            label : this.label,
+            items : this.items.map( name => {
+                return { value : name, text : name }
+            } )
+        } ]
+    }
+
+}
