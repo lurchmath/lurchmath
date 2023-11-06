@@ -56,17 +56,22 @@ export class Shell {
     static handlers = new Map()
 
     /**
-     * This class will watch for click events on shells in the editor, and will
-     * call appropriate event handlers based on the type of shell that was
-     * clicked.  To register a click event handler, call this function.  The
-     * handler will be called with one parameter, the Shell instance that was
-     * clicked.
+     * This class will watch for various UI events on shells in the editor, and
+     * will call appropriate event handlers based on the type of shell that was
+     * involved.  To register one or more event handlers, call this function.
+     * The set of event handlers and their signatures are documented below, and
+     * may grow with time.
+     * 
+     *  * "Edit" event signature: one parameter, the Shell instance for which
+     *    editing was initiated (by a click or by highlighting it and pressing
+     *    the Enter key)
      * 
      * @param {string} type - the type of shell for which to register an event
      *   handler
-     * @param {function} handler - the event handler being registered
+     * @param {function} handlers - an object mapping event types (strings like
+     *   "edit") to event handlers (functions)
      */
-    static addType ( type, handler ) { Shell.handlers.set( type, handler ) }
+    static addType ( type, handlers ) { Shell.handlers.set( type, handlers ) }
 
     /**
      * Construct a new instance of this class corresponding to the shell
@@ -87,6 +92,12 @@ export class Shell {
             throw new Error( 'This is not a shell element: ' + element )
         this.element = element
         this.editor = editor
+        const type = this.getMetadata( 'type' )
+        if ( Shell.handlers.has( type ) ) {
+            const handlers = Shell.handlers.get( type )
+            Object.keys( handlers ).forEach( eventName =>
+                this[eventName] = handlers[eventName] )
+        }
     }
 
     /**
@@ -127,6 +138,20 @@ export class Shell {
      * @returns {boolean} whether this shell is a given
      */
     isGiven () { return this.element.classList.contains( givenClassName ) }
+
+    /**
+     * Convert this shell into an LC representing it.  It will be a single
+     * Environment, optionally with its given flag set, based on the result of
+     * {@link module:Shells.Shell#isGiven isGiven()}.
+     * 
+     * @returns {Environment} an Environment instance representing this shell
+     * @see {@link module:Shells.Shell#isGiven isGiven()}
+     */
+    toLC () {
+        const result = new Environment()
+        if ( this.isGiven() ) result.makeIntoA( 'given' )
+        return result
+    }
 
     // Internal use only:
     // Default handler for environments.  Allows toggling given/claim status.
@@ -326,10 +351,15 @@ export const install = editor => {
             if ( Shell.isShellElement( event.target ) ) {
                 const receiver = new Shell( event.target, editor )
                 const type = receiver.getType()
-                if ( Shell.handlers.has( type ) )
-                    Shell.handlers.get( type )( receiver )
-                else
+                if ( Shell.handlers.has( type ) ) {
+                    const handlers = Shell.handlers.get( type )
+                    if ( handlers.hasOwnProperty( 'edit' ) )
+                        handlers['edit']( receiver )
+                    else
+                        receiver.edit() // default handler
+                } else {
                     receiver.edit() // default handler
+                }
             }
         } )
     } )

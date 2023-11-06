@@ -1,9 +1,8 @@
 
 import { Atom, className as atomClassName } from './atoms.js'
 import { Shell, className as shellClassName } from './shells.js'
-import { LogicConcept, Environment }
-    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { getHeader } from './header-editor.js'
+import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
 /**
  * This class simplifies communication between the main thread and worker
@@ -215,43 +214,48 @@ export class Message {
             Message.idToElement.set( `${counter}`, element )
             counter++
         }
-        // Convert an array of HTMLElements into an LC representing the document.
-        // These HTMLElements must be those that represent atoms or shells,
-        // and must appear in the same order that they do in the document.
-        const elementsToLC = ( array, context = new Environment() ) => {
+        // Convert an array of Atom or Shell instances into an LC representing
+        // the document.  They must appear in the same order that their elements
+        // do in the document.
+        const documentLC = ( array, context = new Environment() ) => {
+            // no children? we're done.
             if ( array.length == 0 ) return context
+            // first child is an atom? have it serialize itself, add IDs to all
+            // the results, and then recur on the rest of the children.
             const head = array.shift()
             if ( head instanceof Atom ) {
-                const code = head.getMetadata( 'code' )
-                if ( code ) { // because some atoms don't want to be putdown-ified
-                    const headLCs = LogicConcept.fromPutdown( code )
-                    if ( headLCs.length != 1 )
-                        throw new Error( `Not a single putdown expression: ${code}` )
-                    assignID( headLCs[0], head.element )
-                    context.pushChild( headLCs[0] )
-                }
-                return elementsToLC( array, context )
+                head.toLCs?.()?.forEach( LC => {
+                    assignID( LC, head.element )
+                    context.pushChild( LC )
+                } )
+                return documentLC( array, context )
             }
-            const innerContext = new Environment()
-            if ( head.isGiven() ) innerContext.makeIntoA( 'given' )
-            assignID( innerContext, head.element )
+            // first child is a shell, so first let's figure out which of the
+            // subsequent children are inside vs. outside it.
             const after = array.findIndex( entry =>
                 !head.element.contains( entry.element ) )
             const inside = after == -1 ? array : array.slice( 0, after )
             const outside = after == -1 ? [ ] : array.slice( after )
-            context.pushChild( elementsToLC( inside, innerContext ) )
-            return elementsToLC( outside, context )
+            // now let's convert the shell to an LC, then recur on the inside,
+            // then recur on the outside.
+            const innerContext = head.toLC()
+            assignID( innerContext, head.element )
+            context.pushChild( documentLC( inside, innerContext ) )
+            return documentLC( outside, context )
         }
-        // Run the elementsToLC function on all the elements in the document that
+        // Run the documentLC function on all the elements in the document that
         // represent atoms and shells, including any that appear in the header.
+        // Note that, because dependencies are just hidden parts of the DOM,
+        // this will capture their contents just the same as it does any other
+        // document content.
         const selector = `.${shellClassName},.${atomClassName}`
-        const LC = elementsToLC(
+        const LC = documentLC(
             [
-                ...getHeader( editor ).querySelectorAll( selector ),
+                ...( getHeader( editor )?.querySelectorAll( selector ) || [ ] ),
                 ...editor.dom.doc.querySelectorAll( selector )
             ].map( element =>
                 element.classList.contains( atomClassName ) ?
-                new Atom( element ) : new Shell( element )
+                new Atom( element, editor ) : new Shell( element, editor )
             )
         )
         // Create a message that could be sent to the validation worker, including

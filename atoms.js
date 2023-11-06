@@ -26,10 +26,9 @@
  * 
  * This module contains tools for working with atoms, including the
  * {@link module:Atoms.className class name} we use to distinguish them, the
- * {@link module:Atoms.install function} we use to install their
- * mouse event handlers, and most importantly, the
- * {@link module:Atoms.Atom class} we use to create an API for working with
- * individual atoms.
+ * {@link module:Atoms.install function} we use to install their event handlers,
+ * and most importantly, the {@link module:Atoms.Atom class} we use to create an
+ * API for working with individual atoms.
  *
  * @module Atoms
  * @see {@link module:Shells the Shells module}
@@ -71,17 +70,22 @@ export class Atom {
     static handlers = new Map()
 
     /**
-     * This class will watch for click events on atoms in the editor, and will
-     * call appropriate event handlers based on the type of atom that was
-     * clicked.  To register a click event handler, call this function.  The
-     * handler will be called with one parameter, the Atom instance that was
-     * clicked.
+     * This class will watch for various UI events on atoms in the editor, and
+     * will call appropriate event handlers based on the type of atom that was
+     * involved.  To register one or more event handlers, call this function.
+     * The set of event handlers and their signatures are documented below, and
+     * may grow with time.
+     * 
+     *  * "Edit" event signature: one parameter, the Atom instance for which
+     *    editing was initiated (by a click or by highlighting it and pressing
+     *    the Enter key)
      * 
      * @param {string} type - the type of atom for which to register an event
      *   handler
-     * @param {function} handler - the event handler being registered
+     * @param {Object} handlers - an object mapping event types (strings like
+     *   "edit") to event handlers (functions)
      */
-    static addType ( type, handler ) { Atom.handlers.set( type, handler ) }
+    static addType ( type, handlers ) { Atom.handlers.set( type, handlers ) }
 
     /**
      * Construct a new instance of this class corresponding to the atom
@@ -102,6 +106,12 @@ export class Atom {
             throw new Error( 'This is not an atom element: ' + element )
         this.element = element
         this.editor = editor
+        const type = this.getMetadata( 'type' )
+        if ( Atom.handlers.has( type ) ) {
+            const handlers = Atom.handlers.get( type )
+            Object.keys( handlers ).forEach( eventName =>
+                this[eventName] = handlers[eventName] )
+        }
     }
 
     /**
@@ -408,21 +418,6 @@ export class Atom {
     }
 
     /**
-     * Handle a click event for this atom, using whatever handler was installed
-     * for this atom's type, if any.  If there is none, print a message to the
-     * console indicating that there is no click handler for this type.
-     * 
-     * @see {@link module:Atoms.Atom.addType addType()}
-     */
-    handleClick () {
-        const type = this.getMetadata( 'type' )
-        if ( Atom.handlers.has( type ) )
-            Atom.handlers.get( type )( this )
-        else
-            console.log( `No atom click handler installed for type "${type}"` )
-    }
-
-    /**
      * When inserting an atom into an editor, we do so by placing its HTML
      * content into the document using TinyMCE's `insertContent()` function.
      * This makes it difficult to get the newly inserted atom as an Atom or an
@@ -618,13 +613,13 @@ export class Atom {
 export const install = editor => {
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
-            Atom.findAbove( event.target, editor )?.handleClick() ) )
+            Atom.findAbove( event.target, editor )?.edit?.() ) )
     editor.on( 'keydown', event => {
         if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
             return
         const selected = editor.selection.getNode()
         if ( Atom.isAtomElement( selected ) )
-            new Atom( selected, editor ).handleClick()
+            new Atom( selected, editor ).edit?.()
     } )
 }
 

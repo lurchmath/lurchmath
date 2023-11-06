@@ -9,16 +9,47 @@
  */
 
 import { Atom } from './atoms.js'
+import { Shell } from './shells.js'
 import { lookup } from './document-settings.js'
+import { Dialog, TextInputItem, SelectBoxItem, HTMLItem, AlertItem } from './dialog.js'
 import { parse, names as notationNames } from './notation.js'
-import { LogicConcept }
-    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { escapeHTML } from './utilities.js'
+import { LogicConcept } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+
+// Internal use only.  Given an atom, find all accessible math phrase definitions.
+const phraseDefsAccessibleTo = atom => {
+    const result = [ ]
+    Shell.accessibles( atom.editor, atom.element ).forEach(
+        atomElement => {
+            const atom = new Atom( atomElement )
+            if ( atom.getMetadata( 'type' ) == 'mathphrasedef' )
+                result.push( atom )
+        }
+    )
+    return result
+}
 
 // Internal use only.  Given an expression-type atom, updates its HTML code so
 // that the appearance of the atom is its code/notation, in fixed-width font.
 const updateAppearance = expressionAtom => {
-    expressionAtom.fillChild( 'body',
-        `${expressionAtom.getMetadata( 'code' )}` )
+    const notation = expressionAtom.getMetadata( 'notation' )
+    const phrase = phraseDefsAccessibleTo( expressionAtom ).find(
+        phrase => phrase.getMetadata( 'name' ) == notation )
+    if ( !phrase ) {
+        expressionAtom.fillChild( 'body',
+            `${expressionAtom.getMetadata( 'code' )}` )
+        return
+    }
+    let html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+    expressionAtom.getMetadataKeys().forEach( key => {
+        if ( key.startsWith( 'param-' ) ) {
+            const param = key.substring( 6 )
+            const value = expressionAtom.getMetadata( key )
+            while ( html.indexOf( param ) >= 0 )
+                html = html.replace( param, escapeHTML( value ) )
+        }
+    } )
+    expressionAtom.fillChild( 'body', html )
 }
 
 /**
@@ -49,79 +80,119 @@ export const install = editor => {
             } )
             updateAppearance( atom )
             // Insert the atom and immediately begin editing it.
-            atom.insertAndReturnCopy( editor ).handleClick()
+            atom.insertAndReturnCopy( editor ).edit?.()
         }
     } )
 }
 
 // Internal use only: Show the dialog whose behavior is described above.
-Atom.addType( 'notation', clickedAtom => {
-    const dialog = clickedAtom.editor.windowManager.open( {
-        title : 'Edit expression',
-        body : {
-            type : 'panel',
-            items : [
-                {
-                    type : 'selectbox',
-                    name : 'notation',
-                    label : 'Choose the notation in which you will write:',
-                    items : notationNames().map( name => {
-                        return { value : name, text : name }
-                    } )
-                },
-                {
-                    type : 'input',
-                    name : 'code',
-                    label : 'Code for expression or declaration in that notation:'
-                },
-                {
-                    type : 'htmlpanel',
-                    html : '<span id="notation-feedback"></span>'
-                }
-            ]
-        },
-        buttons : [
-            {
-                text : 'Save',
-                type : 'submit',
-                name : 'save',
-                buttonType : 'primary'
-            },
-            {
-                text : 'Cancel',
-                type : 'cancel',
-                name : 'cancel'
+Atom.addType( 'notation', {
+    edit : function () {
+        const dialog = new Dialog( 'Edit expression', this.editor )
+        const accessiblePhrases = phraseDefsAccessibleTo( this )
+        const notationsAndPhrases = [
+            ...notationNames().map( name => `${name} expression` ),
+            ...accessiblePhrases.map( phrase => phrase.getMetadata( 'name' ) )
+        ]
+        let notation = this.getMetadata( 'notation' )
+        const setUpDialog = () => {
+            while ( dialog.items.length > 0 )
+                dialog.removeItem( 0 )
+            dialog.addItem( new SelectBoxItem(
+                'notation', 'Type of expression', notationsAndPhrases ) )
+            dialog.onChange = ( _, component ) => {
+                if ( component.name != 'notation' ) return
+                notation = dialog.get( 'notation' )
+                setUpDialog()
+                dialog.reload()
             }
-        ],
-        initialData : {
-            code : clickedAtom.getMetadata( 'code' ),
-            notation : clickedAtom.getMetadata( 'notation' )
-        },
-        onChange : dialog => {
-            const code = dialog.getData()['code']
-            const lang = dialog.getData()['notation']
-            const result = parse( code, lang )
-            if ( result instanceof LogicConcept ) {
-                document.body.querySelector( '#notation-feedback' )
-                    .innerHTML = ''
-                dialog.setEnabled( 'save', true )
-            } else {
-                document.body.querySelector( '#notation-feedback' )
-                    .innerHTML = result.message
-                if ( result.hasOwnProperty( 'position' ) )
-                    document.body.querySelector( '#notation-feedback' )
-                        .innerHTML += `<br>Error is at position ${result.position}.`
-                dialog.setEnabled( 'save', false )
+            if ( notationNames().includes( notation ) ) {
+                dialog.addItem( new TextInputItem( 'code', 'Code for expression' ) )
+                dialog.setInitialData( {
+                    code : this.getMetadata( 'code' ),
+                    notation : this.getMetadata( 'notation' )
+                } )    
+                return
             }
-        },
-        onSubmit : () => {
-            clickedAtom.setMetadata( 'code', dialog.getData()['code'] )
-            clickedAtom.setMetadata( 'notation', dialog.getData()['notation'] )
-            updateAppearance( clickedAtom )
-            dialog.close()
+            const phrase = accessiblePhrases.find(
+                phrase => phrase.getMetadata( 'name' ) == notation )
+            if ( !phrase ) {
+                dialog.addItem( new AlertItem( 'error', `Invalid type: ${notation}` ) )
+                return
+            }
+            const html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+            const internal = phrase.getMetadata( 'codeTemplate' )
+            const paramNotation = phrase.getMetadata( 'notation' )
+            dialog.addItem( new HTMLItem( `
+                <div style='margin-top: 1em; margin-bottom: 1em;'>
+                    <p>External representation: ${html}</p>
+                    <p>Internal representation (in ${paramNotation}):
+                        ${escapeHTML(internal)}</p>
+                </div>
+            ` ) )
+            const initialData = { notation }
+            const params = phrase.getMetadata( 'paramNames' ).split( ',' )
+                .map( name => name.trim() )
+            params.forEach( param => {
+                const key = `param-${param}`
+                dialog.addItem( new TextInputItem( key,
+                    `${param} (written in ${paramNotation})`, param ) )
+                initialData[key] = this.getMetadata( key ) || ''
+            } )
+            dialog.setInitialData( initialData )
         }
-    } )
-    setTimeout( () => dialog.focus( 'code' ), 0 )
+        setUpDialog()
+        dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return
+            this.setMetadata( 'notation', notation )
+            if ( notationNames().includes( notation ) ) {
+                this.setMetadata( 'code', dialog.get( 'code' ) )
+                updateAppearance( this )
+                return
+            }
+            const phrase = accessiblePhrases.find(
+                phrase => phrase.getMetadata( 'name' ) == notation )
+            if ( !phrase ) return
+            const params = phrase.getMetadata( 'paramNames' ).split( ',' )
+                .map( name => name.trim() )
+            params.forEach( param => {
+                const key = `param-${param}`
+                this.setMetadata( key, dialog.get( key ) )
+            } )
+            updateAppearance( this )
+        } )
+    },
+    toLCs : function () {
+        // Ensure this expression wants to be included in the output
+        const code = this.getMetadata( 'code' )
+        const notation = this.getMetadata( 'notation' )
+        if ( !code || !notation ) return [ ]
+        // If this expression is just plain code, parse it and return the result
+        const phrase = phraseDefsAccessibleTo( this ).find(
+            phrase => phrase.getMetadata( 'name' ) == notation )
+        if ( !phrase ) {
+            const result = parse( code, notation )
+            if ( !( result instanceof LogicConcept ) )
+                throw new Error( result.message )
+            return [ result ]
+        }
+        // If this expression is a math phrase, build its code and parse that
+        let template = phrase.getMetadata( 'codeTemplate' )
+        this.getMetadataKeys().forEach( key => {
+            if ( key.startsWith( 'param-' ) ) {
+                const param = key.substring( 6 )
+                const value = this.getMetadata( key )
+                while ( template.indexOf( param ) >= 0 )
+                    template = template.replace( param, value )
+            }
+        } )
+        const paramNotation = phrase.getMetadata( 'notation' )
+        if ( ![ 'putdown', 'smackdown' ].includes( paramNotation ) )
+            throw new Error( `Invalid notation: ${paramNotation}` )
+        return paramNotation == 'putdown' ?
+            LogicConcept.fromPutdown( template ) :
+            LogicConcept.fromSmackdown( template )
+    }
 } )
 
 export default { install }

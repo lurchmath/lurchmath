@@ -62,7 +62,7 @@ export const install = editor => {
                 { type : 'dependency', description : 'none' } )
             updateAppearance( atom )
             // Insert the atom and immediately begin editing it.
-            atom.insertAndReturnCopy( editor ).handleClick()
+            atom.insertAndReturnCopy( editor ).edit?.()
         }
     } )
 }
@@ -70,27 +70,29 @@ export const install = editor => {
 // Internal use only: Show a dialog that lets the user edit the dependency's
 // description, or change its content by loading any file over top of the old
 // content, or preview the current content in a new window.
-Atom.addType( 'dependency', clickedAtom => {
-    const description = clickedAtom.getMetadata( 'description' )
-    const origContent = clickedAtom.getHTMLMetadata( 'content' ).innerHTML
-    let newContent = origContent
-    const dialog = new Dialog( 'Edit dependency', clickedAtom.editor )
-    dialog.addItem( new TextInputItem( 'description', 'Description' ) )
-    dialog.addItem( new ButtonItem( 'Load new contents (overwriting old)', () => {
-        Dialog.loadFile( clickedAtom.editor, 'Load dependency contents' )
-        .then( loaded => newContent = loaded.content ) // save for below
-        .catch( () => { } ) // it's ok to cancel
-    } ) )
-    dialog.addItem( new ButtonItem( 'Preview contents in new window', () => {
-        openFileInNewWindow( newContent )
-    } ) )
-    dialog.setInitialData( { 'description' : description } )
-    dialog.show().then( userHitOK => {
-        if ( !userHitOK ) return
-        clickedAtom.setMetadata( 'description', dialog.get( 'description' ) )
-        clickedAtom.setHTMLMetadata( 'content', newContent ) // save loaded content
-        updateAppearance( clickedAtom )
-    } )
+Atom.addType( 'dependency', {
+    edit : function () {
+        const description = this.getMetadata( 'description' )
+        const origContent = this.getHTMLMetadata( 'content' ).innerHTML
+        let newContent = origContent
+        const dialog = new Dialog( 'Edit dependency', this.editor )
+        dialog.addItem( new TextInputItem( 'description', 'Description' ) )
+        dialog.addItem( new ButtonItem( 'Load new contents (overwriting old)', () => {
+            Dialog.loadFile( this.editor, 'Load dependency contents' )
+            .then( loaded => newContent = loaded.content ) // save for below
+            .catch( () => { } ) // it's ok to cancel
+        } ) )
+        dialog.addItem( new ButtonItem( 'Preview contents in new window', () => {
+            openFileInNewWindow( newContent )
+        } ) )
+        dialog.setInitialData( { 'description' : description } )
+        dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return
+            this.setMetadata( 'description', dialog.get( 'description' ) )
+            this.setHTMLMetadata( 'content', newContent ) // save loaded content
+            updateAppearance( this )
+        } )
+    }
 } )
 
 export default { install }
