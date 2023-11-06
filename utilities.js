@@ -190,7 +190,7 @@ export const onlyBefore = ( nodes, point ) => {
         throw new Error( 'Cannot compare document positions' )
     }
     try {
-        if ( !lt( nodes[0], point ) ) return [ ]
+        if ( nodes.length == 0 || !lt( nodes[0], point ) ) return [ ]
         if ( lt( nodes[nodes.length-1], point ) ) return nodes
         let indexLT = 0
         let indexGE = nodes.length - 1
