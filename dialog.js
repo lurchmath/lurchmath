@@ -210,17 +210,41 @@ export class Dialog {
      * @see {@link ImportFromURLItem}
      * @see {@link ChooseLocalFileItem}
      * @see {@link UploadItem}
+     * @see {@link SelectBoxItem}
+     * @see {@link Dialog#removeItem removeItem()}
      */
     addItem ( item, tabTitle = null ) {
         if ( !this.items.includes( item ) ) this.items.push( item )
-        const items = item.json()
+        item._generated_json = item.json()
         if ( !tabTitle )
-            return items.forEach( item => this.json.body.items.push( item ) )
+            return item._generated_json.forEach(
+                item => this.json.body.items.push( item ) )
         const tab = this.json.body.tabs.find( tab => tab.title == tabTitle )
         if ( !tab )
             throw new Error( `Invalid tab: ${tabTitle}` )
         item.tab = tab.name
-        items.forEach( item => tab.items.push( item ) )
+        item._generated_json.forEach( item => tab.items.push( item ) )
+    }
+
+    /**
+     * Remove an item from the dialog, and also remove from the dialog's
+     * internal JSON data structure any JSON items created from the item that
+     * is being removed.
+     * 
+     * @param {integer} index - the index of the item to remove
+     * @see {@link Dialog#addItem addItem()}
+     */
+    removeItem ( index ) {
+        if ( this.json.body.tabs ) {
+            const tab = this.json.body.tabs.find(
+                tab => tab.name == this.items[index].tab )
+            tab.items = tab.items.filter( item =>
+                !this.items[index]._generated_json.includes( item ) )
+        } else {
+            this.json.body.items = this.json.body.items.filter( item =>
+                !this.items[index]._generated_json.includes( item ) )
+        }
+        this.items.splice( index, 1 )
     }
 
     /**
