@@ -69,7 +69,7 @@ export class Message {
         } else {
             throw new Error( `Cannot create a Message from this: ${content}` )
         }
-        if ( this.is( 'feedback' ) ) {
+        if ( this.is( 'feedback' ) || this.is( 'error' ) ) {
             const id = this.content.id || this.content.ancestorID
             if ( id && Message.idToElement.has( id ) )
                 this.element = Message.idToElement.get( id )
@@ -79,7 +79,7 @@ export class Message {
     /**
      * The content of a message, given at construction time, may include a
      * `type` field, which should be a string, if present.  It can indicate
-     * whether the message is apiece of feedback, an error, or some other type
+     * whether the message is a piece of feedback, an error, or some other type
      * of message.  Any string is permitted; there is no official list.  A
      * message is not required to have a `type` field.
      * 
@@ -224,7 +224,20 @@ export class Message {
             // the results, and then recur on the rest of the children.
             const head = array.shift()
             if ( head instanceof Atom ) {
-                head.toLCs?.()?.forEach( LC => {
+                let LCs
+                try {
+                    LCs = head.toLCs?.() || [ ]
+                } catch ( e ) {
+                    const tmp = new Environment() // any LC is fine
+                    assignID( tmp, head.element )
+                    setTimeout( () => Message.error( e.message, {
+                        id : tmp.ID(),
+                        errorType : 'parsing error',
+                        valid : false
+                    } ), 0 )
+                    LCs = [ ]
+                }
+                LCs.forEach( LC => {
                     assignID( LC, head.element )
                     context.pushChild( LC )
                 } )

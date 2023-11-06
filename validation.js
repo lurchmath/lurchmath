@@ -55,6 +55,7 @@ const clearValidation = target => {
     if ( !( target instanceof Atom ) )
         throw new Error( `Invalid validation target: ${target}` )
     target.removeChild( 'suffix' )
+    target.setHoverText( null )
 }
 
 // Internal use only
@@ -79,25 +80,37 @@ const addValidation = ( target, marker ) => {
 
 // Internal use only
 // Install event handler so that we can decorate the document correctly upon
-// receiving validation feedback.
-worker.addEventListener( 'message', event => {
-    const message = new Message( event )
-    if ( message.is( 'feedback' ) ) {
-        if ( message.element ) {
+// receiving validation feedback.  We install it on both the worker and this
+// window, becauase when parsing errors happen, we send feedback about them from
+// this window itself before even sending anything to the worker.
+[ worker, window ].forEach( context =>
+    context.addEventListener( 'message', event => {
+        const message = new Message( event )
+        if ( message.is( 'feedback' ) ) {
+            if ( message.element ) {
+                if ( Atom.isAtomElement( message.element ) ) {
+                    addValidation( new Atom( message.element ), markerHTML( message ) )
+                } else {
+                    throw new Error( 'Feedback message for non-atoms not supported' )
+                }
+            } else {
+                throw new Error( 'Feedback message received with no element as target' )
+            }
+        } else if ( message.is( 'error' ) && message.element ) {
             if ( Atom.isAtomElement( message.element ) ) {
-                addValidation( new Atom( message.element ), markerHTML( message ) )
+                const atom = new Atom( message.element )
+                addValidation( atom, markerHTML( message ) )
+                atom.setHoverText( message.content.text )
             } else {
                 throw new Error( 'Feedback message for non-atoms not supported' )
             }
+        } else if ( message.is( 'done' ) ) {
+            // pass
         } else {
-            throw new Error( 'Feedback message received with no element as target' )
+            console.log( 'Ignoring this message:', message )
         }
-    } else if ( message.is( 'done' ) ) {
-        // pass
-    } else {
-        console.log( 'Ignoring this message:', message )
-    }
-} )
+    } )
+)
 
 // Internal use only
 // Remove all validation markers from all atom element suffixes in the given
