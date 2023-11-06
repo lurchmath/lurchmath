@@ -6,14 +6,6 @@
   logo is stored in lurchhome.css.
 ***************************************************************************/
 
-/* Tables with no border get this class. Tinymce puts a dotted border around
-   borderless tables by default, so we do that here and then override it in 
-   special cases. This class is defined in the tinymce.init.
-*/
-.lurch-borderless-table {
-    border: 1px dashed #bbb;
-}
-
 /* Expression atoms */
 span.lurch-atom {
     font-size : 12pt;
