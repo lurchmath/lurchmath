@@ -180,12 +180,12 @@ export const simpleHTMLTable = ( ...rows ) => {
 export const onlyBefore = ( nodes, point ) => {
     const lt = ( a, b ) => {
         const comparison = a.compareDocumentPosition( b )
-        if ( ( comparison & Node.DOCUMENT_POSITION_PRECEDING )
-          || ( comparison & Node.DOCUMENT_POSITION_CONTAINS ) )
+        if ( ( comparison & Node.DOCUMENT_POSITION_FOLLOWING ) // b follows a
+          || ( comparison & Node.DOCUMENT_POSITION_CONTAINED_BY ) ) // a contains b
             return true
-        if ( ( comparison & Node.DOCUMENT_POSITION_FOLLOWING )
-          || ( comparison & Node.DOCUMENT_POSITION_CONTAINED_BY )
-          || ( comparison == 0 ) ) // 0 means a == b
+        if ( ( comparison & Node.DOCUMENT_POSITION_PRECEDING ) // b precedes a
+          || ( comparison & Node.DOCUMENT_POSITION_CONTAINS ) // b contains a
+          || ( comparison == 0 ) ) // a is the same node as b
             return false
         throw new Error( 'Cannot compare document positions' )
     }
@@ -199,7 +199,7 @@ export const onlyBefore = ( nodes, point ) => {
             if ( lt( nodes[midIndex], point ) ) indexLT = midIndex
             else indexGE = midIndex
         }
-        return nodes.slice( 0, indexGE )
+        return Array.from( nodes ).slice( 0, indexGE )
     } catch ( e ) {
         console.log( 'DEBUG:', e )
         return nodes
