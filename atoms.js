@@ -124,6 +124,20 @@ export class Atom {
     getHTML () { return this.element.outerHTML }
 
     /**
+     * Set (or clear) the hover text on this atom.  Hover text is what's shown
+     * in a small popup when the user hovers over the atom in the editor.
+     * 
+     * @param {string?} text - the text to set as the hover text for this atom's
+     *   HTMLElement, or `null` to remove the hover text
+     */
+    setHoverText ( text ) {
+        if ( text )
+            this.element.setAttribute( 'title', text )
+        else
+            this.element.removeAttribute( 'title' )
+    }
+
+    /**
      * An atom has the following three or four internal parts, called children.
      * If the atom is inline (a span) then each of the children is represented
      * as an inner span, but if the atom is a block (a div) then each of the
