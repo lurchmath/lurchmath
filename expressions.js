@@ -9,25 +9,12 @@
  */
 
 import { Atom } from './atoms.js'
-import { Shell } from './shells.js'
 import { lookup } from './document-settings.js'
 import { Dialog, TextInputItem, SelectBoxItem, HTMLItem, AlertItem } from './dialog.js'
 import { parse, names as notationNames } from './notation.js'
 import { escapeHTML } from './utilities.js'
 import { LogicConcept } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
-
-// Internal use only.  Given an atom, find all accessible math phrase definitions.
-const phraseDefsAccessibleTo = atom => {
-    const result = [ ]
-    Shell.accessibles( atom.editor, atom.element ).forEach(
-        atomElement => {
-            const atom = new Atom( atomElement )
-            if ( atom.getMetadata( 'type' ) == 'mathphrasedef' )
-                result.push( atom )
-        }
-    )
-    return result
-}
+import { phrasesInForceAt } from './math-phrases.js'
 
 /**
  * Install into a TinyMCE editor instance a new menu item:
@@ -70,7 +57,7 @@ const replaceAll = ( target, search, replacement ) =>
 Atom.addType( 'notation', {
     edit : function () {
         const dialog = new Dialog( 'Edit expression', this.editor )
-        const accessiblePhrases = phraseDefsAccessibleTo( this )
+        const accessiblePhrases = phrasesInForceAt( this )
         const notationsAndPhrases = [
             ...notationNames().map( name => `${name} expression` ),
             ...accessiblePhrases.map( phrase => phrase.getMetadata( 'name' ) )
@@ -152,7 +139,7 @@ Atom.addType( 'notation', {
         const notation = this.getMetadata( 'notation' )
         if ( !code || !notation ) return [ ]
         // If this expression is just plain code, parse it and return the result
-        const phrase = phraseDefsAccessibleTo( this ).find(
+        const phrase = phrasesInForceAt( this ).find(
             phrase => phrase.getMetadata( 'name' ) == notation )
         if ( !phrase ) {
             const result = parse( code, notation )
@@ -178,7 +165,7 @@ Atom.addType( 'notation', {
     },
     update : function () {
         const notation = this.getMetadata( 'notation' )
-        const phrase = phraseDefsAccessibleTo( this ).find(
+        const phrase = phrasesInForceAt( this ).find(
             phrase => phrase.getMetadata( 'name' ) == notation )
         if ( !phrase ) {
             this.fillChild( 'body',

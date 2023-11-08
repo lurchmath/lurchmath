@@ -15,7 +15,8 @@
  */
 
 import { Atom } from './atoms.js'
-import { simpleHTMLTable, escapeHTML } from './utilities.js'
+import { Shell } from './shells.js'
+import { simpleHTMLTable, escapeHTML, editorForNode } from './utilities.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
 
 const validParamNames = text => {
@@ -25,6 +26,26 @@ const validParamNames = text => {
 }
 const notationNames = [ 'putdown', 'json' ]
 const validNotation = notation => notationNames.includes( notation.toLowerCase() )
+
+/**
+ * Find all math phrases accessible to a given element in its editor.
+ * 
+ * @param {Atom|Node} target - the location whose accessibles should be found;
+ *   this can be an Atom instance of a DOM Node
+ */
+export const phrasesInForceAt = target => {
+    const result = [ ]
+    const editor = target instanceof Atom ? target.editor : editorForNode( target )
+    const element = target instanceof Atom ? target.element : target
+    Shell.accessibles( editor, element ).forEach(
+        atomElement => {
+            const atom = new Atom( atomElement )
+            if ( atom.getMetadata( 'type' ) == 'mathphrasedef' )
+                result.push( atom )
+        }
+    )
+    return result
+}
 
 /**
  * Install into a TinyMCE editor instance a new menu item: Define math phrase,
