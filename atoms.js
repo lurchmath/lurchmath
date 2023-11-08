@@ -204,7 +204,7 @@ export class Atom {
             throw new Error( 'Inline atoms cannot have a metadata child' )
         // return an existing child if there is one with the requested type
         const result = Array.from( this.element.childNodes ).find(
-            child => child.matches( childSelector( type ) ) )
+            child => child.matches?.( childSelector( type ) ) )
         if ( result ) return result
         // if we are not allowed to create a new child, stop here
         if ( !createIfNeeded ) return undefined
