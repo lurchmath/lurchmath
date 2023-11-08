@@ -57,6 +57,11 @@ export const phrasesInForceAt = target => {
  * This assumes that the TinyMCE initialization code includes the
  * "mathphrasedef" item on one of the menus.
  * 
+ * This function also installs into the TinyMCE editor an autocomplete handler,
+ * so that if the user types an opening backslash, it will give them the
+ * opportunity to insert a math phrase definition, from the list of any phrases
+ * defined at that point in the document.
+ * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
  *   menu item should be installed
  * @function
