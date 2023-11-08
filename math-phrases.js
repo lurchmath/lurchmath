@@ -18,6 +18,7 @@ import { Atom } from './atoms.js'
 import { Shell } from './shells.js'
 import { simpleHTMLTable, escapeHTML, editorForNode } from './utilities.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
+import { phraseHTML } from './expressions.js'
 
 const validParamNames = text => {
     if ( /^\s*$/.test( text ) ) return true
@@ -75,6 +76,30 @@ export const install = editor => {
             atom.setHTMLMetadata( 'htmlTemplate', 'X and Y are equal' )
             atom.update()
             atom.editThenInsert( editor )
+        }
+    } )
+    editor.ui.registry.addAutocompleter( 'mathphrasecompleter', {
+        trigger : '\\',
+        minChars : 0,
+        columns : 1,
+        onAction : ( autocompleter, range, newContent ) => {
+            editor.selection.setRng( range )
+            editor.insertContent( newContent )
+            autocompleter.hide()
+        },
+        fetch : pattern => {
+            const node = editor.selection.getNode()
+            return Promise.resolve( phrasesInForceAt( node ).map( phrase => ( {
+                type : 'cardmenuitem',
+                value : phraseHTML( phrase, editor ),
+                label : phrase.getMetadata( 'name' ),
+                items : [
+                    {
+                        type : 'cardtext',
+                        text : phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+                    }
+                ]
+            } ) ).filter( cardmenuitem => cardmenuitem.label.startsWith( pattern ) ) )
         }
     } )
 }

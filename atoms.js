@@ -521,7 +521,7 @@ export class Atom {
     static createElement ( editor, tagName = 'div' ) {
         if ( tagName.toLowerCase() != 'div' && tagName.toLowerCase() != 'span' )
             throw new Error( 'Invalid tag name for atom element: ' + tagName )
-        const result = editor.dom.doc.createElement( tagName )
+        const result = editor.contentDocument.createElement( tagName )
         result.classList.add( className )
         result.setAttribute( 'contenteditable', false )
         return result

@@ -53,6 +53,52 @@ export const install = editor => {
 const replaceAll = ( target, search, replacement ) =>
     target.split( search ).join( replacement )
 
+/**
+ * Create the HTML for an expression atom with the given content and notation.
+ * This type of expression atom is written in the given notation, and is not an
+ * instance of any math phrase.
+ * 
+ * @param {string} content - the content of the expression, written in the
+ *   notation named in the second argument
+ * @param {string} notation - the name of the notation that should be used
+ *   (e.g., putdown or smackdown)
+ * @param {tinymce.Editor} editor - the TinyMCE editor instance into which the
+ *   expression may eventually be inserted (used primarily for constructing
+ *   HTML elements using its document object)
+ * @function
+ * @see {@link module:NotationAtoms.phraseHTML phraseHTML()}
+ */
+export const expressionHTML = ( content, notation, editor ) => {
+    const atom = Atom.newInline( editor, '', {
+        type: 'notation',
+        code: content,
+        notation: notation
+    } )
+    atom.update()
+    return atom.element.outerHTML
+}
+
+/**
+ * Create the HTML for an expression atom that is the default instantiation of
+ * the given math phrase.
+ * 
+ * @param {Atom} phrase - the Atom representing the math phrase to instantiate
+ *   (as defined in {@link module:MathPhrases Math Phrases})
+ * @param {tinymce.Editor} editor - the TinyMCE editor instance into which the
+ *   expression may eventually be inserted (used primarily for constructing
+ *   HTML elements using its document object)
+ * @function
+ * @see {@link module:NotationAtoms.expressionHTML expressionHTML()}
+ */
+export const phraseHTML = ( phrase, editor ) => {
+    const notation = phrase.getMetadata( 'name' )
+    const atom = Atom.newInline( editor, '', { type : 'notation', notation } )
+    const paramNames = phrase.getMetadata( 'paramNames' ).split( /\s*,\s*/ )
+    paramNames.forEach( param => atom.setMetadata( `param-${param}`, param ) )
+    atom.update()
+    return atom.element.outerHTML
+}
+
 // Internal use only: Show the dialog whose behavior is described above.
 Atom.addType( 'notation', {
     edit : function () {
