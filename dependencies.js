@@ -27,18 +27,6 @@ import { openFileInNewWindow } from './load-from-url.js'
 import { simpleHTMLTable, escapeHTML } from './utilities.js'
 import { Dialog, ButtonItem, TextInputItem } from './dialog.js'
 
-// Internal use only.  Given a dependency-type atom, updates its body HTML code
-// to correctly represent it to the user, using its description.
-const updateAppearance = dependencyAtom => {
-    dependencyAtom.element.style.border = 'solid 1px gray'
-    dependencyAtom.element.style.padding = '0 1em 0 1em'
-    const description = dependencyAtom.getMetadata( 'description' )
-    dependencyAtom.fillChild( 'body', simpleHTMLTable(
-        'Imported dependency document',
-        [ 'Description:', `<tt>${escapeHTML( description )}</tt>` ]
-    ) )
-}
-
 /**
  * Install into a TinyMCE editor instance a new menu item: Import dependency,
  * intended for the Document menu.  It adds a dependency atom (with no content
@@ -60,7 +48,7 @@ export const install = editor => {
         onAction : () => {
             const atom = Atom.newBlock( editor, '',
                 { type : 'dependency', description : 'none' } )
-            updateAppearance( atom )
+            atom.update()
             atom.editThenInsert( editor )
         }
     } )
@@ -89,9 +77,18 @@ Atom.addType( 'dependency', {
             if ( !userHitOK ) return false
             this.setMetadata( 'description', dialog.get( 'description' ) )
             this.setHTMLMetadata( 'content', newContent ) // save loaded content
-            updateAppearance( this )
+            this.update()
             return true
         } )
+    },
+    update : function () {
+        this.element.style.border = 'solid 1px gray'
+        this.element.style.padding = '0 1em 0 1em'
+        const description = this.getMetadata( 'description' )
+        this.fillChild( 'body', simpleHTMLTable(
+            'Imported dependency document',
+            [ 'Description:', `<tt>${escapeHTML( description )}</tt>` ]
+        ) )
     }
 } )
 

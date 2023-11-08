@@ -29,29 +29,6 @@ const phraseDefsAccessibleTo = atom => {
     return result
 }
 
-// Internal use only.  Given an expression-type atom, updates its HTML code so
-// that the appearance of the atom is its code/notation, in fixed-width font.
-const updateAppearance = expressionAtom => {
-    const notation = expressionAtom.getMetadata( 'notation' )
-    const phrase = phraseDefsAccessibleTo( expressionAtom ).find(
-        phrase => phrase.getMetadata( 'name' ) == notation )
-    if ( !phrase ) {
-        expressionAtom.fillChild( 'body',
-            `${expressionAtom.getMetadata( 'code' )}` )
-        return
-    }
-    let html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
-    expressionAtom.getMetadataKeys().forEach( key => {
-        if ( key.startsWith( 'param-' ) ) {
-            const param = key.substring( 6 )
-            const value = expressionAtom.getMetadata( key )
-            while ( html.indexOf( param ) >= 0 )
-                html = html.replace( param, escapeHTML( value ) )
-        }
-    } )
-    expressionAtom.fillChild( 'body', html )
-}
-
 /**
  * Install into a TinyMCE editor instance a new menu item:
  * "Expression," intended for the Insert menu.  It adds an inline atom to the
@@ -78,7 +55,7 @@ export const install = editor => {
                 // use the notation language specified in the document settings:
                 notation : lookup( editor, 'notation' )
             } )
-            updateAppearance( atom )
+            atom.update()
             atom.editThenInsert( editor )
         }
     } )
@@ -147,7 +124,7 @@ Atom.addType( 'notation', {
             this.setMetadata( 'notation', notation )
             if ( notationNames().includes( notation ) ) {
                 this.setMetadata( 'code', dialog.get( 'code' ) )
-                updateAppearance( this )
+                this.update()
                 return true
             }
             const phrase = accessiblePhrases.find(
@@ -160,7 +137,7 @@ Atom.addType( 'notation', {
                 const key = `param-${param}`
                 this.setMetadata( key, dialog.get( key ) )
             } )
-            updateAppearance( this )
+            this.update()
             return true
         } )
     },
@@ -194,6 +171,26 @@ Atom.addType( 'notation', {
         return paramNotation == 'putdown' ?
             LogicConcept.fromPutdown( template ) :
             LogicConcept.fromSmackdown( template )
+    },
+    update : function () {
+        const notation = this.getMetadata( 'notation' )
+        const phrase = phraseDefsAccessibleTo( this ).find(
+            phrase => phrase.getMetadata( 'name' ) == notation )
+        if ( !phrase ) {
+            this.fillChild( 'body',
+                `${this.getMetadata( 'code' )}` )
+            return
+        }
+        let html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+        this.getMetadataKeys().forEach( key => {
+            if ( key.startsWith( 'param-' ) ) {
+                const param = key.substring( 6 )
+                const value = this.getMetadata( key )
+                while ( html.indexOf( param ) >= 0 )
+                    html = html.replace( param, escapeHTML( value ) )
+            }
+        } )
+        this.fillChild( 'body', html )
     }
 } )
 

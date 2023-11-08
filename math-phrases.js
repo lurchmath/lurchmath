@@ -26,42 +26,6 @@ const validParamNames = text => {
 const notationNames = [ 'putdown', 'json' ]
 const validNotation = notation => notationNames.includes( notation.toLowerCase() )
 
-// Internal use only.  Given a math phrase definition atom, updates its body
-// HTML code to correctly represent it to the user, based on all of its
-// parameters.
-const updateAppearance = mathPhraseDefAtom => {
-    mathPhraseDefAtom.element.style.border = 'solid 1px blue'
-    mathPhraseDefAtom.element.style.padding = '1em'
-    const name = mathPhraseDefAtom.getMetadata( 'name' )
-    const paramNames = mathPhraseDefAtom.getMetadata( 'paramNames' )
-    const htmlTemplate = mathPhraseDefAtom.getHTMLMetadata( 'htmlTemplate' ).innerHTML
-    const codeTemplate = mathPhraseDefAtom.getMetadata( 'codeTemplate' )
-    const notation = mathPhraseDefAtom.getMetadata( 'notation' )
-    mathPhraseDefAtom.fillChild( 'body', simpleHTMLTable(
-        'Define a new math phrase with the following properties.',
-        [
-            'Name:', escapeHTML( name ),
-            name == '' && `Math phrase must have a name`
-        ],
-        [
-            'Parameters:', escapeHTML( paramNames ),
-            !validParamNames( paramNames ) && `Not a valid list of parameters`
-        ],
-        [
-            'External representation (in HTML):', `<tt>${escapeHTML( htmlTemplate )}</tt>`,
-            htmlTemplate == '' && `Math phrase must have an HTML representation`
-        ],
-        [
-            'Internal representation notation:', `<tt>${escapeHTML( notation )}</tt>`,
-            !validNotation( notation ) && `Not a valid notation`
-        ],
-        [
-            'Internal representation:', `<tt>${escapeHTML( codeTemplate )}</tt>`,
-            codeTemplate == '' && `Math phrase must have a code representation`
-        ]
-    ) )
-}
-
 /**
  * Install into a TinyMCE editor instance a new menu item: Define math phrase,
  * intended for the Document menu.  It adds a math phrase definition atom (with
@@ -88,7 +52,7 @@ export const install = editor => {
                 notation : 'putdown'
             } )
             atom.setHTMLMetadata( 'htmlTemplate', 'X and Y are equal' )
-            updateAppearance( atom )
+            atom.update()
             atom.editThenInsert( editor )
         }
     } )
@@ -117,9 +81,41 @@ Atom.addType( 'mathphrasedef', {
             this.setHTMLMetadata( 'htmlTemplate', dialog.get( 'htmlTemplate' ) )
             this.setMetadata( 'codeTemplate', dialog.get( 'codeTemplate' ) )
             this.setMetadata( 'notation', dialog.get( 'notation' ) )
-            updateAppearance( this )
+            this.update()
             return true
         } )
+    },
+    update : function () {
+        this.element.style.border = 'solid 1px blue'
+        this.element.style.padding = '1em'
+        const name = this.getMetadata( 'name' )
+        const paramNames = this.getMetadata( 'paramNames' )
+        const htmlTemplate = this.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+        const codeTemplate = this.getMetadata( 'codeTemplate' )
+        const notation = this.getMetadata( 'notation' )
+        this.fillChild( 'body', simpleHTMLTable(
+            'Define a new math phrase with the following properties.',
+            [
+                'Name:', escapeHTML( name ),
+                name == '' && `Math phrase must have a name`
+            ],
+            [
+                'Parameters:', escapeHTML( paramNames ),
+                !validParamNames( paramNames ) && `Not a valid list of parameters`
+            ],
+            [
+                'External representation (in HTML):', `<tt>${escapeHTML( htmlTemplate )}</tt>`,
+                htmlTemplate == '' && `Math phrase must have an HTML representation`
+            ],
+            [
+                'Internal representation notation:', `<tt>${escapeHTML( notation )}</tt>`,
+                !validNotation( notation ) && `Not a valid notation`
+            ],
+            [
+                'Internal representation:', `<tt>${escapeHTML( codeTemplate )}</tt>`,
+                codeTemplate == '' && `Math phrase must have a code representation`
+            ]
+        ) )
     }
 } )
 
