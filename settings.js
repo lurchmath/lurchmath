@@ -1,5 +1,6 @@
 
 import { ShowWarningSettingMetadata } from './settings-metadata.js'
+import { Dialog } from './dialog.js'
 
 /**
  * A class representing the values of the user's settings in an app.  Instances
@@ -85,6 +86,7 @@ export class Settings extends Map {
      * with its default value instead (as given by the metadata).
      * 
      * @see {@link Settings#save save()}
+     * @see {@link Settings#reset reset()}
      */
     load () {
         const allowedKeys = this.keys()
@@ -106,12 +108,28 @@ export class Settings extends Map {
      * browser's `localStorage` object.
      * 
      * @see {@link Settings#load load()}
+     * @see {@link Settings#reset reset()}
      */
     save () {
         this.keys().forEach( key => {
             if ( this.has( key ) )
                 localStorage.setItem( `lurch-${key}`, this.get( key ) )
         } )
+    }
+
+    /**
+     * This does not clear only this object, but also erases all the user's
+     * saved settings.  It should be used if the user wants to reset the
+     * application to its default settings by erasing any customization they
+     * have made so far, so that every setting returns to its default value.
+     * 
+     * @see {@link Settings#load load()}
+     * @see {@link Settings#save save()}
+     */
+    reset () {
+        this.keys().forEach( key => localStorage.removeItem( `lurch-${key}` ) )
+        this.clear()
+        this.load()
     }
 
     /**
@@ -149,7 +167,13 @@ export class Settings extends Map {
                 body : this.metadata.control(),
                 buttons : [
                     { text : 'OK', type : 'submit' },
-                    { text : 'Cancel', type : 'cancel' }
+                    { text : 'Cancel', type : 'cancel' },
+                    {
+                        text : 'Reset all',
+                        type : 'custom',
+                        align : 'start',
+                        name : 'reset-all'
+                    }
                 ],
                 initialData : originalSettings,
                 onSubmit : () => {
@@ -160,7 +184,24 @@ export class Settings extends Map {
                     changedKeys.forEach( key => this.set( key, results[key] ) )
                     resolve( changedKeys )
                 },
-                onCancel : () => resolve( [ ] ) // nothing changed (cancel)
+                onCancel : () => resolve( [ ] ), // nothing changed (cancel)
+                onAction : ( _, details ) => {
+                    if ( details.name == 'reset-all' ) {
+                        Dialog.areYouSure(
+                            editor,
+                            'Clear all your settings and reset them to the defaults?'
+                        ).then( userHitOK => {
+                            if ( userHitOK ) {
+                                dialog.close()
+                                resolve( [ ] )
+                                setTimeout( () => {
+                                    this.reset()
+                                    this.userEdit( editor )
+                                }, 0 )
+                            }
+                        } )
+                    }
+                }
             } )
         } )
     }
