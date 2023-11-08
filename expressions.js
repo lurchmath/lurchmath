@@ -74,7 +74,7 @@ export const install = editor => {
         onAction : () => {
             const atom = Atom.newInline( editor, '', {
                 type : 'notation',
-                code : 'expression',
+                code : '',
                 // use the notation language specified in the document settings:
                 notation : lookup( editor, 'notation' )
             } )
@@ -106,7 +106,8 @@ Atom.addType( 'notation', {
                 dialog.reload()
             }
             if ( notationNames().includes( notation ) ) {
-                dialog.addItem( new TextInputItem( 'code', 'Code for expression' ) )
+                dialog.addItem( new TextInputItem(
+                    'code', 'Code for expression', 'expression' ) )
                 dialog.setInitialData( {
                     code : this.getMetadata( 'code' ),
                     notation : this.getMetadata( 'notation' )
