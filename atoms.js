@@ -106,6 +106,16 @@ export class Atom {
             throw new Error( 'This is not an atom element: ' + element )
         this.element = element
         this.editor = editor
+        this.setupHandlers()
+    }
+
+    // Internal use only
+    // Install any event handlers for this atom's type into this atom itself.
+    // This is called by the constructor (because most Atom instances are
+    // created from atoms already in the document that already have a type) and
+    // it is also called by one of the convenience static methods later that
+    // constructs an Atom from metadata, after its type has been assigned.
+    setupHandlers () {
         const type = this.getMetadata( 'type' )
         if ( Atom.handlers.has( type ) ) {
             const handlers = Atom.handlers.get( type )
@@ -432,38 +442,23 @@ export class Atom {
     }
 
     /**
-     * When inserting an atom into an editor, we do so by placing its HTML
-     * content into the document using TinyMCE's `insertContent()` function.
-     * This makes it difficult to get the newly inserted atom as an Atom or an
-     * HTMLElement, because TinyMCE does not provide those objects as a result
-     * of the insertion operation.
+     * The standard way to insert a new atom into the editor is to create it off
+     * screen, open up an editing dialog for that atom, and then if the user
+     * saves their edits, insert the new atom into the document, in the final
+     * state that represents the user's edits.  If, however, the user cancels
+     * their edit of the atom, don't insert anything into the document.
      * 
-     * This function fills that gap by inserting the atom's HTML into the
-     * document and returning a new Atom instance for the newly inserted
-     * content.  This instance of the Atom class is unaffected, because it is
-     * never actually inserted anywhere; only its HTML content is, and hence the
-     * word "copy" in the name of this function.  The return value of this
-     * function will be a different instance of the Atom class than this
-     * instance.
+     * This function does exactly that, when called on an offscreen atom,
+     * passing the editor into which to insert the atom as the first parameter.
      * 
-     * @param {tinymce.Editor} editor - the editor into which to insert a copy
-     *   of this atom
-     * @returns {Atom} an Atom instance for the newly inserted content
+     * @param {tinymce.Editor} editor - the editor into which to insert the atom
      */
-    insertAndReturnCopy ( editor ) {
-        const tempClass = 'temp_Lurch_new_atom_class'
-        this.element.classList.add( tempClass )
-        editor.insertContent( this.getHTML() )
-        this.element.classList.remove( tempClass )
-        const elements = Array.from(
-            editor.dom.doc.getElementsByClassName( tempClass )
-        ).filter( element =>
-            !element.parentNode.classList.contains( 'mce-offscreen-selection' )
-        )
-        if ( elements.length != 1 )
-            throw new Error( 'Failed to insert atom HTML' )
-        elements[0].classList.remove( tempClass )
-        return new Atom( elements[0], editor )
+    editThenInsert ( editor ) {
+        if ( !this.edit )
+            throw new Error( `No edit event handler for atom ${this}` )
+        this.edit().then( userSaved => {
+            if ( userSaved ) editor.insertContent( this.getHTML() )
+        } )
     }
 
     /**
@@ -555,6 +550,7 @@ export class Atom {
         result.fillChild( 'body', content )
         Object.keys( metadata ).forEach( key =>
             result.setMetadata( key, metadata[key] ) )
+        result.setupHandlers()
         return result
     }
 

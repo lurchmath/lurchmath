@@ -79,8 +79,7 @@ export const install = editor => {
                 notation : lookup( editor, 'notation' )
             } )
             updateAppearance( atom )
-            // Insert the atom and immediately begin editing it.
-            atom.insertAndReturnCopy( editor ).edit?.()
+            atom.editThenInsert( editor )
         }
     } )
 }
@@ -142,17 +141,18 @@ Atom.addType( 'notation', {
             dialog.setInitialData( initialData )
         }
         setUpDialog()
-        dialog.show().then( userHitOK => {
-            if ( !userHitOK ) return
+        return dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return false
             this.setMetadata( 'notation', notation )
             if ( notationNames().includes( notation ) ) {
                 this.setMetadata( 'code', dialog.get( 'code' ) )
                 updateAppearance( this )
-                return
+                return true
             }
             const phrase = accessiblePhrases.find(
                 phrase => phrase.getMetadata( 'name' ) == notation )
-            if ( !phrase ) return
+            if ( !phrase )
+                throw new Error( `No such math phrase: ${notation}` )
             const params = phrase.getMetadata( 'paramNames' ).split( ',' )
                 .map( name => name.trim() )
             params.forEach( param => {
@@ -160,6 +160,7 @@ Atom.addType( 'notation', {
                 this.setMetadata( key, dialog.get( key ) )
             } )
             updateAppearance( this )
+            return true
         } )
     },
     toLCs : function () {

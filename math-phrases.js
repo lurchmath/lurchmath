@@ -89,8 +89,7 @@ export const install = editor => {
             } )
             atom.setHTMLMetadata( 'htmlTemplate', 'X and Y are equal' )
             updateAppearance( atom )
-            // Insert the atom and immediately begin editing it.
-            atom.insertAndReturnCopy( editor ).edit?.()
+            atom.editThenInsert( editor )
         }
     } )
 }
@@ -111,14 +110,15 @@ Atom.addType( 'mathphrasedef', {
             codeTemplate : this.getMetadata( 'codeTemplate' ),
             notation : this.getMetadata( 'notation' )
         } )
-        dialog.show().then( userHitOK => {
-            if ( !userHitOK ) return
+        return dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return false
             this.setMetadata( 'name', dialog.get( 'name' ) )
             this.setMetadata( 'paramNames', dialog.get( 'paramNames' ) )
             this.setHTMLMetadata( 'htmlTemplate', dialog.get( 'htmlTemplate' ) )
             this.setMetadata( 'codeTemplate', dialog.get( 'codeTemplate' ) )
             this.setMetadata( 'notation', dialog.get( 'notation' ) )
             updateAppearance( this )
+            return true
         } )
     }
 } )

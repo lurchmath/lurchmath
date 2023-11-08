@@ -61,8 +61,7 @@ export const install = editor => {
             const atom = Atom.newBlock( editor, '',
                 { type : 'dependency', description : 'none' } )
             updateAppearance( atom )
-            // Insert the atom and immediately begin editing it.
-            atom.insertAndReturnCopy( editor ).edit?.()
+            atom.editThenInsert()
         }
     } )
 }
@@ -86,11 +85,12 @@ Atom.addType( 'dependency', {
             openFileInNewWindow( newContent )
         } ) )
         dialog.setInitialData( { 'description' : description } )
-        dialog.show().then( userHitOK => {
-            if ( !userHitOK ) return
+        return dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return false
             this.setMetadata( 'description', dialog.get( 'description' ) )
             this.setHTMLMetadata( 'content', newContent ) // save loaded content
             updateAppearance( this )
+            return true
         } )
     }
 } )
