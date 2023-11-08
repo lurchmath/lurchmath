@@ -3,6 +3,7 @@ import { ChooseLocalFileItem, saveAs } from './local-storage-drive.js'
 import { UploadItem, downloadFile } from './upload-download.js'
 import { ImportFromURLItem, loadFromURL } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
+import { appURL } from './utilities.js'
 
 /**
  * This class makes it easier to create and use TinyMCE dialogs that have
