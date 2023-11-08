@@ -61,6 +61,11 @@ export const install = editor => {
     } )
 }
 
+// Internal use only.
+// Replace all occurrences of one string with a replacement string in a target string.
+const replaceAll = ( target, search, replacement ) =>
+    target.split( search ).join( replacement )
+
 // Internal use only: Show the dialog whose behavior is described above.
 Atom.addType( 'notation', {
     edit : function () {
@@ -161,8 +166,7 @@ Atom.addType( 'notation', {
             if ( key.startsWith( 'param-' ) ) {
                 const param = key.substring( 6 )
                 const value = this.getMetadata( key )
-                while ( template.indexOf( param ) >= 0 )
-                    template = template.replace( param, value )
+                template = template.replaceAll( param, value )
             }
         } )
         const paramNotation = phrase.getMetadata( 'notation' )
@@ -186,8 +190,7 @@ Atom.addType( 'notation', {
             if ( key.startsWith( 'param-' ) ) {
                 const param = key.substring( 6 )
                 const value = this.getMetadata( key )
-                while ( html.indexOf( param ) >= 0 )
-                    html = html.replace( param, escapeHTML( value ) )
+                html = html.replaceAll( param, escapeHTML( value ) )
             }
         } )
         this.fillChild( 'body', html )
