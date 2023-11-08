@@ -401,8 +401,12 @@ export class Atom {
             throw new Error( 'Inline atoms cannot have HTML metadata' )
         const child = this.findMetadataElement( key )
         if ( child ) {
-            child.innerHTML = removeScriptTags( value.innerHTML || value )
+            if ( !value )
+                child.remove()
+            else
+                child.innerHTML = removeScriptTags( value.innerHTML || value )
         } else {
+            if ( !value ) return
             const newDatum = this.element.ownerDocument.createElement( 'div' )
             newDatum.dataset.key = key
             newDatum.innerHTML = removeScriptTags( value.innerHTML || value )

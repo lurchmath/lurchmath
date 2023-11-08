@@ -61,7 +61,7 @@ export const install = editor => {
             const atom = Atom.newBlock( editor, '',
                 { type : 'dependency', description : 'none' } )
             updateAppearance( atom )
-            atom.editThenInsert()
+            atom.editThenInsert( editor )
         }
     } )
 }
@@ -72,7 +72,7 @@ export const install = editor => {
 Atom.addType( 'dependency', {
     edit : function () {
         const description = this.getMetadata( 'description' )
-        const origContent = this.getHTMLMetadata( 'content' ).innerHTML
+        const origContent = this.getHTMLMetadata( 'content' )?.innerHTML
         let newContent = origContent
         const dialog = new Dialog( 'Edit dependency', this.editor )
         dialog.addItem( new TextInputItem( 'description', 'Description' ) )
