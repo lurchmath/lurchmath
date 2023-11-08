@@ -89,17 +89,21 @@ export const install = editor => {
         },
         fetch : pattern => {
             const node = editor.selection.getNode()
-            return Promise.resolve( phrasesInForceAt( node ).map( phrase => ( {
-                type : 'cardmenuitem',
-                value : phraseHTML( phrase, editor ),
-                label : phrase.getMetadata( 'name' ),
-                items : [
-                    {
-                        type : 'cardtext',
-                        text : phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
-                    }
-                ]
-            } ) ).filter( cardmenuitem => cardmenuitem.label.startsWith( pattern ) ) )
+            return Promise.resolve( phrasesInForceAt( node ).map( phrase => {
+                const name = phrase.getMetadata( 'name' )
+                const html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+                return {
+                    type : 'cardmenuitem',
+                    value : phraseHTML( phrase, editor ),
+                    label : name,
+                    items : [
+                        {
+                            type : 'cardtext',
+                            text : `${name}: ${html}`
+                        }
+                    ]
+                }
+            } ).filter( cardmenuitem => cardmenuitem.label.startsWith( pattern ) ) )
         }
     } )
 }
