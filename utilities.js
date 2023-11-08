@@ -205,3 +205,17 @@ export const onlyBefore = ( nodes, point ) => {
         return nodes
     }
 }
+
+/**
+ * Given a DOM Node, find the TinyMCE editor containing it.
+ * 
+ * @param {Node} node - HTML node for which to find the editor
+ * @returns {tinymce.Editor} the editor whose document contains the given node
+ */
+export const editorForNode = node => {
+    const allEditors = tinymce.get()
+    for ( let i = 0 ; i < allEditors.length ; i++ )
+        if ( allEditors[i].getDoc() == node.ownerDocument )
+            return allEditors[i]
+    return null
+}
