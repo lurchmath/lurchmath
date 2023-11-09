@@ -107,7 +107,7 @@ export const install = editor => {
     } )
     editor.ui.registry.addAutocompleter( 'lurch-expression-autocomplete', {
         trigger : '$',
-        minChars : 2,
+        minChars : 1,
         columns : 1,
         onAction : ( autocompleter, range, newContent ) => {
             editor.selection.setRng( range )
