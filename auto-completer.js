@@ -79,6 +79,8 @@ export const addAutocompleteFunction = f => autocompleteFunctions.push( f )
  *   autocompletion
  */
 export const install = editor => {
+    // First, the autocompleter that is extensible using the
+    // addAutocompleteFunction() API given above:
     editor.ui.registry.addAutocompleter( 'lurch-general-complete', {
         trigger : '\\',
         minChars : 0,
@@ -105,6 +107,8 @@ export const install = editor => {
             } ) )
         )
     } )
+    // Second, the autocompleter that is just for expressions in one of the
+    // pre-installed notations from notations.js:
     editor.ui.registry.addAutocompleter( 'lurch-expression-autocomplete', {
         trigger : '$',
         minChars : 1,
