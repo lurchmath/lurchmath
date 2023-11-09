@@ -654,6 +654,17 @@ export class ButtonItem {
  */
 export class SelectBoxItem {
     
+    /**
+     * Construct a select box.
+     * 
+     * @param {string} name - the name of the control in the dialog, used for
+     *   querying its value when the dialog closes, or providing an initial
+     *   value when the dialog opens
+     * @param {string} label - the label to show next to the select box in the
+     *   user interface
+     * @param {string[]} items - the array of items to be shown in the select
+     *   box in the user interface
+     */
     constructor ( name, label, items ) {
         this.name = name
         this.label = label
@@ -669,6 +680,38 @@ export class SelectBoxItem {
             items : this.items.map( name => {
                 return { value : name, text : name }
             } )
+        } ]
+    }
+
+}
+
+/**
+ * An item that can be used in a {@link Dialog} and shows up as a checkbox.
+ * This corresponds to the "checkbox" type of body component in a TinyMCE
+ * dialog.
+ */
+export class CheckBoxItem {
+
+    /**
+     * Construct a checkbox.
+     * 
+     * @param {string} name - the name of the control in the dialog, used for
+     *   querying its value when the dialog closes, or providing an initial
+     *   value when the dialog opens
+     * @param {string} label - the label to show next to the select box in the
+     *   user interface
+     */
+    constructor ( name, label ) {
+        this.name = name
+        this.label = label
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        return [ {
+            type : 'checkbox',
+            name : this.name,
+            label : this.label
         } ]
     }
 
