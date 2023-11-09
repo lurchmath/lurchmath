@@ -93,7 +93,7 @@ export class Shell {
             throw new Error( 'This is not a shell element: ' + element )
         this.element = element
         this.editor = editor
-        const type = this.getMetadata( 'type' )
+        const type = this.getType()
         if ( Shell.handlers.has( type ) ) {
             const handlers = Shell.handlers.get( type )
             Object.keys( handlers ).forEach( eventName =>
