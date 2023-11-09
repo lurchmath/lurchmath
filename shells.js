@@ -37,6 +37,8 @@ import { getHeader } from './header-editor.js'
 import { onlyBefore } from './utilities.js'
 import { className as atomClassName } from './atoms.js'
 import { addAutocompleteFunction } from './auto-completer.js'
+import { Environment }
+    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
 /**
  * Class name used to distinguish HTML elements representing shells.  (For an
