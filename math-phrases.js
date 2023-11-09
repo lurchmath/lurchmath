@@ -38,6 +38,7 @@ const validNotation = notation => notationNames.includes( notation.toLowerCase()
 export const phrasesInForceAt = target => {
     const result = [ ]
     const editor = target instanceof Atom ? target.editor : editorForNode( target )
+    if ( !editor ) return [ ]
     const element = target instanceof Atom ? target.element : target
     Shell.accessibles( editor, element ).forEach(
         atomElement => {
