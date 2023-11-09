@@ -7,7 +7,11 @@
 ***************************************************************************/
 
 /* Expression atoms */
-span.lurch-atom {
+[data-metadata_notation='"putdown"'] {
+    font-size : 12pt;
+    font-family : 'Courier New', Courier, monospace;
+}
+[data-metadata_notation='"smackdown"'] {
     font-size : 12pt;
     font-family : 'Courier New', Courier, monospace;
 }
