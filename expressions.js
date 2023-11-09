@@ -90,7 +90,7 @@ export const phraseHTML = ( phrase, editor ) => {
     const atom = Atom.newInline( editor, '', { type : 'notation', notation } )
     const paramNames = phrase.getMetadata( 'paramNames' ).split( /\s*,\s*/ )
     paramNames.forEach( param => atom.setMetadata( `param-${param}`, param ) )
-    atom.update()
+    atom.update( phrase )
     return atom.getHTML()
 }
 
@@ -204,10 +204,15 @@ Atom.addType( 'notation', {
             LogicConcept.fromPutdown( template ) :
             LogicConcept.fromSmackdown( template )
     },
-    update : function () {
+    // this update function can optionally accept a "phrase" parameter, which
+    // will prevent us from searching for a math phrase in force at this atom;
+    // this is useful for constructing HTML of phrases that aren't actually in
+    // the document, so technically nothing is "in force" at their location.
+    update : function ( phrase ) {
         const notation = this.getMetadata( 'notation' )
-        const phrase = phrasesInForceAt( this ).find(
-            phrase => phrase.getMetadata( 'name' ) == notation )
+        if ( !phrase )
+            phrase = phrasesInForceAt( location || this ).find(
+                phrase => phrase.getMetadata( 'name' ) == notation )
         if ( !phrase ) {
             this.fillChild( 'body',
                 `${this.getMetadata( 'code' )}` )
