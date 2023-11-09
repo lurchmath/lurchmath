@@ -37,6 +37,7 @@ import { getHeader } from './header-editor.js'
 import { onlyBefore } from './utilities.js'
 import { className as atomClassName } from './atoms.js'
 import { addAutocompleteFunction } from './auto-completer.js'
+import { Dialog, CheckBoxItem } from './dialog.js'
 import { Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
@@ -159,34 +160,19 @@ export class Shell {
     // Internal use only:
     // Default handler for environments.  Allows toggling given/claim status.
     edit () {
-        const dialog = this.editor.windowManager.open( {
-            title : 'Edit environment',
-            body : {
-                type : 'panel',
-                items : [
-                    {
-                        type : 'checkbox',
-                        name : 'isGiven',
-                        label : 'This environment is an assumption/given'
-                    }
-                ]
-            },
-            initialData : {
-                isGiven : this.element.classList.contains( givenClassName )
-            },
-            buttons : [
-                { text : 'OK', type : 'submit' },
-                { text : 'Cancel', type : 'cancel' }
-            ],
-            onSubmit : dialog => {
-                if ( dialog.getData()['isGiven'] )
+        const dialog = new Dialog( 'Edit environment', this.editor )
+        dialog.addItem( new CheckBoxItem(
+            'isGiven', 'This environment is an assumption/given' ) )
+        dialog.setInitialData( { isGiven : this.isGiven() } )
+        dialog.show().then( userHitOK => {
+            if ( userHitOK ) {
+                if ( dialog.get( 'isGiven' ) )
                     this.element.classList.add( givenClassName )
                 else
                     this.element.classList.remove( givenClassName )
-                dialog.close()
+                this.update()
             }
         } )
-        setTimeout( () => dialog.focus( 'isGiven' ), 0 )
     }
 
     /**
