@@ -36,6 +36,7 @@
 import { getHeader } from './header-editor.js'
 import { onlyBefore } from './utilities.js'
 import { className as atomClassName } from './atoms.js'
+import { addAutocompleteFunction } from './auto-completer.js'
 
 /**
  * Class name used to distinguish HTML elements representing shells.  (For an
@@ -342,6 +343,8 @@ export class Shell {
  *    block, so that the user does not get stuck unable to move their cursor
  *    after the last shell in the document, or before the first, or between two
  *    adjacent ones
+ *  * an autocompleter shortcut that replaces `\{` with an "environment" (an
+ *    untyped shell)
  * 
  * @param {tinymce.Editor} editor - the editor in which to install the features
  *   described above
@@ -429,6 +432,19 @@ export const install = editor => {
                 }
             }
         }
+    } )
+    // The user can insert an environment using an autocompleter:
+    let emptyShellHTML = null
+    addAutocompleteFunction( editor => {
+        if ( !emptyShellHTML )
+            emptyShellHTML = Shell.createElement( editor, 'environment', '' ).outerHTML
+        return [
+            {
+                shortcut : '{',
+                preview : 'Empty environment',
+                content : emptyShellHTML
+            }
+        ]
     } )
 }
 

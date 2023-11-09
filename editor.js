@@ -19,6 +19,7 @@ import MathPhrases from './math-phrases.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
 import { loadFromQueryString } from './load-from-url.js'
+import AutoCompleter from './auto-completer.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
@@ -112,6 +113,7 @@ loadScript( TinyMCEURL ).then( () => {
             Dependencies.install( editor )
             MathPhrases.install( editor )
             Validation.install( editor )
+            AutoCompleter.install( editor )
             if ( !Headers.isEditor() ) {
                 // Install tools we need only if we are the primary app window:
                 // GoogleDrive.install( editor )

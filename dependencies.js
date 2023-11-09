@@ -26,6 +26,7 @@ import { Atom } from './atoms.js'
 import { openFileInNewWindow } from './load-from-url.js'
 import { simpleHTMLTable, escapeHTML } from './utilities.js'
 import { Dialog, ButtonItem, TextInputItem } from './dialog.js'
+import { addAutocompleteFunction } from './auto-completer.js'
 
 /**
  * Install into a TinyMCE editor instance a new menu item: Import dependency,
@@ -51,6 +52,22 @@ export const install = editor => {
             atom.update()
             atom.editThenInsert( editor )
         }
+    } )
+    let emptyDependencyHTML = null
+    addAutocompleteFunction( editor => {
+        if ( !emptyDependencyHTML ) {
+            const atom = Atom.newBlock( editor, '',
+                { type: 'dependency', description : 'none' } )
+            atom.update()
+            emptyDependencyHTML = atom.getHTML()
+        }
+        return [
+            {
+                shortcut : 'dependency',
+                preview : 'Import a dependency',
+                content : emptyDependencyHTML
+            }
+        ]
     } )
 }
 

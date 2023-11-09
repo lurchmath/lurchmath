@@ -19,6 +19,7 @@ import { Shell } from './shells.js'
 import { simpleHTMLTable, escapeHTML, editorForNode } from './utilities.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
 import { phraseHTML } from './expressions.js'
+import { addAutocompleteFunction } from './auto-completer.js'
 
 const validParamNames = text => {
     if ( /^\s*$/.test( text ) ) return true
@@ -60,7 +61,8 @@ export const phrasesInForceAt = target => {
  * This function also installs into the TinyMCE editor an autocomplete handler,
  * so that if the user types an opening backslash, it will give them the
  * opportunity to insert a math phrase definition, from the list of any phrases
- * defined at that point in the document.
+ * defined at that point in the document.  The autocomplete function is
+ * installed using the {@link module:AutoComplete AutoComplete module}.
  * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
  *   menu item should be installed
@@ -83,34 +85,18 @@ export const install = editor => {
             atom.editThenInsert( editor )
         }
     } )
-    editor.ui.registry.addAutocompleter( 'mathphrasecompleter', {
-        trigger : '\\',
-        minChars : 0,
-        columns : 1,
-        onAction : ( autocompleter, range, newContent ) => {
-            editor.selection.setRng( range )
-            editor.insertContent( newContent )
-            autocompleter.hide()
-        },
-        fetch : pattern => {
-            const node = editor.selection.getNode()
-            return Promise.resolve( phrasesInForceAt( node ).map( phrase => {
-                const name = phrase.getMetadata( 'name' )
-                const html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
-                return {
-                    type : 'cardmenuitem',
-                    value : phraseHTML( phrase, editor ),
-                    label : name,
-                    items : [
-                        {
-                            type : 'cardtext',
-                            text : `${name}: ${html}`
-                        }
-                    ]
-                }
-            } ).filter( cardmenuitem => cardmenuitem.label.startsWith( pattern ) ) )
-        }
-    } )
+    addAutocompleteFunction( editor => 
+        phrasesInForceAt( editor.selection.getNode() )
+        .map( phrase => {
+            const name = phrase.getMetadata( 'name' )
+            const html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
+            return {
+                shortcut : name,
+                preview : html,
+                content : phraseHTML( phrase, editor )
+            }
+        } )
+    )
 }
 
 // Internal use only: Show the dialog whose behavior is described above.
