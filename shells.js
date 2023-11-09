@@ -269,16 +269,17 @@ export class Shell {
      * 
      * @param {Node} earlier - the earlier of the two DOM nodes to compare
      * @param {Node} later - the later of the two DOM nodes to compare
+     * @param {tinymce.Editor} - the editor in which these nodes sit
      * @returns {boolean} whether the `earlier` node is accessible to the
      *   `later` node
      */
-    static isAccessibleTo ( earlier, later ) {
+    static isAccessibleTo ( earlier, later, editor ) {
         let walk1 = earlier
         let walk2 = later
         while ( walk1 ) {
             if ( !walk2 ) return false
-            walk1 = Shell.findAbove( walk1.parentNode )
-            walk2 = Shell.findAbove( walk2.parentNode )
+            walk1 = Shell.findAbove( walk1.parentNode, editor )
+            walk2 = Shell.findAbove( walk2.parentNode, editor )
             if ( walk1 && ( walk1 !== walk2 ) ) return false
         }
         return true
@@ -310,12 +311,14 @@ export class Shell {
     static accessibles (
         editor, target, predicate = null, className = atomClassName
     ) {
+        if ( !predicate )
+            predicate = node => Shell.isAccessibleTo( node, target, editor )
         return [
             // dependencies in header:
             ...( getHeader( editor )?.querySelectorAll( `.${className}` ) || [ ] ),
             // nodes in document preceding target:
             ...onlyBefore( editor.dom.doc.querySelectorAll( `.${className}` ), target )
-        ].filter( predicate || ( node => Shell.isAccessibleTo( node, target ) ) )
+        ].filter( predicate )
     }
 
 }
