@@ -105,6 +105,7 @@ Atom.addType( 'mathphrasedef', {
     edit : function () {
         const dialog = new Dialog( 'Edit math phrase definition', this.editor )
         dialog.addItem( new TextInputItem( 'name', 'Name' ) )
+        dialog.setDefaultFocus( 'name' )
         dialog.addItem( new TextInputItem( 'paramNames', 'Parameters' ) )
         dialog.addItem( new TextInputItem( 'htmlTemplate', 'External representation (in HTML)' ) )
         dialog.addItem( new SelectBoxItem( 'notation', 'Notation for internal representation', notationNames ) )

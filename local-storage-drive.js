@@ -214,6 +214,7 @@ export const install = editor => {
                     'There are not yet any files saved, so there are none to delete.' )
             const dialog = new Dialog( 'Delete file from browser storage', editor )
             dialog.addItem( new ChooseLocalFileItem( 'localFile' ) )
+            dialog.setDefaultFocus( 'localFile' )
             dialog.show().then( userHitOK => {
                 if ( !userHitOK ) return
                 const filename = dialog.get( 'localFile' ).filename

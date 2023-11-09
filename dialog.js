@@ -52,6 +52,7 @@ export class Dialog {
         this.dialog = null
         this.currentTabName = null
         this.items = [ ]
+        this.focusItem = null
     }
 
     /**
@@ -268,6 +269,15 @@ export class Dialog {
         } )
     }
 
+    /**
+     * Specify which control should receive focus when the dialog is first
+     * shown.  You can pass `null` to clear this setting.
+     * 
+     * @param {string} name - the name of the control to focus when the dialog
+     *   is shown
+     */
+    setDefaultFocus ( name ) { this.focusItem = name }
+
     // For internal use only; see show().
     runItemShowHandlers () {
         if ( this.json.body.tabs )
@@ -277,6 +287,8 @@ export class Dialog {
             } )
         else
             this.items.forEach( item => item.onShow?.( this.dialog ) )
+        if ( this.focusItem )
+            setTimeout( () => this.dialog.focus( this.focusItem ) )
     }
 
     /**
@@ -307,6 +319,7 @@ export class Dialog {
      */
     reload () {
         this.dialog?.redial( this.json )
+        this.runItemShowHandlers()
     }
 
     /**
@@ -462,6 +475,7 @@ export class Dialog {
         dialog.setTabs( 'To browser storage', 'To your computer' )
         dialog.addItem( new TextInputItem( 'filename', 'Filename' ),
                         'To browser storage' )
+        dialog.setDefaultFocus( 'filename' )
         dialog.addItem( new HTMLItem( `
             <p>Clicking OK below will download the current Lurch document to
             your computer as an HTML file.</p>

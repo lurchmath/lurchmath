@@ -163,6 +163,7 @@ export class Shell {
         const dialog = new Dialog( 'Edit environment', this.editor )
         dialog.addItem( new CheckBoxItem(
             'isGiven', 'This environment is an assumption/given' ) )
+        dialog.setDefaultFocus( 'isGiven' )
         dialog.setInitialData( { isGiven : this.isGiven() } )
         dialog.show().then( userHitOK => {
             if ( userHitOK ) {

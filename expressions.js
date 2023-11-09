@@ -121,7 +121,8 @@ Atom.addType( 'notation', {
                 dialog.setInitialData( {
                     code : this.getMetadata( 'code' ),
                     notation : this.getMetadata( 'notation' )
-                } )    
+                } )
+                dialog.setDefaultFocus( 'code' )
                 return
             }
             const phrase = accessiblePhrases.find(
@@ -149,6 +150,10 @@ Atom.addType( 'notation', {
                     `${param} (written in ${paramNotation})`, param ) )
                 initialData[key] = this.getMetadata( key ) || ''
             } )
+            if ( params.length > 0 )
+                dialog.setDefaultFocus( `param-${params[0]}` )
+            else
+                dialog.setDefaultFocus( 'notation' )
             dialog.setInitialData( initialData )
         }
         setUpDialog()

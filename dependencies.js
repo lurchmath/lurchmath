@@ -81,6 +81,7 @@ Atom.addType( 'dependency', {
         let newContent = origContent
         const dialog = new Dialog( 'Edit dependency', this.editor )
         dialog.addItem( new TextInputItem( 'description', 'Description' ) )
+        dialog.setDefaultFocus( 'description' )
         dialog.addItem( new ButtonItem( 'Load new contents (overwriting old)', () => {
             Dialog.loadFile( this.editor, 'Load dependency contents' )
             .then( loaded => newContent = loaded.content ) // save for below
