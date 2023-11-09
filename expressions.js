@@ -70,7 +70,7 @@ export const expressionHTML = ( content, notation, editor ) => {
         notation: notation
     } )
     atom.update()
-    return atom.element.outerHTML
+    return atom.getHTML()
 }
 
 /**
@@ -91,7 +91,7 @@ export const phraseHTML = ( phrase, editor ) => {
     const paramNames = phrase.getMetadata( 'paramNames' ).split( /\s*,\s*/ )
     paramNames.forEach( param => atom.setMetadata( `param-${param}`, param ) )
     atom.update()
-    return atom.element.outerHTML
+    return atom.getHTML()
 }
 
 // Internal use only: Show the dialog whose behavior is described above.
