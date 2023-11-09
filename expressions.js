@@ -48,11 +48,6 @@ export const install = editor => {
     } )
 }
 
-// Internal use only.
-// Replace all occurrences of one string with a replacement string in a target string.
-const replaceAll = ( target, search, replacement ) =>
-    target.split( search ).join( replacement )
-
 /**
  * Create the HTML for an expression atom with the given content and notation.
  * This type of expression atom is written in the given notation, and is not an
