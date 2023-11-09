@@ -12,6 +12,7 @@ import {
     SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata,
     CategorySettingMetadata
 } from './settings-metadata.js'
+import { names as notationNames } from './notation.js'
 
 /**
  * This is a silly example of app setting metadata for now, because we have not
@@ -62,6 +63,15 @@ export const appSettings = new Settings(
                 'Default destination for saving files',
                 [ 'To browser storage', 'To your computer' ],
                 'To browser storage'
+            )
+        ),
+        new SettingsCategoryMetadata(
+            'Meaningful content',
+            new CategorySettingMetadata(
+                'notation',
+                'Default notation to use for new expressions',
+                notationNames(),
+                'putdown'
             )
         )
     )
