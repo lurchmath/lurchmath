@@ -100,7 +100,7 @@ Atom.addType( 'notation', {
         const dialog = new Dialog( 'Edit expression', this.editor )
         const accessiblePhrases = phrasesInForceAt( this )
         const notationsAndPhrases = [
-            ...notationNames().map( name => `${name} expression` ),
+            ...notationNames(),
             ...accessiblePhrases.map( phrase => phrase.getMetadata( 'name' ) )
         ]
         let notation = this.getMetadata( 'notation' )
@@ -109,18 +109,12 @@ Atom.addType( 'notation', {
                 dialog.removeItem( 0 )
             dialog.addItem( new SelectBoxItem(
                 'notation', 'Type of expression', notationsAndPhrases ) )
-            dialog.onChange = ( _, component ) => {
-                if ( component.name != 'notation' ) return
-                notation = dialog.get( 'notation' )
-                setUpDialog()
-                dialog.reload()
-            }
             if ( notationNames().includes( notation ) ) {
                 dialog.addItem( new TextInputItem(
                     'code', 'Code for expression', 'expression' ) )
                 dialog.setInitialData( {
                     code : this.getMetadata( 'code' ),
-                    notation : this.getMetadata( 'notation' )
+                    notation : notation
                 } )
                 dialog.setDefaultFocus( 'code' )
                 return
@@ -155,6 +149,12 @@ Atom.addType( 'notation', {
             else
                 dialog.setDefaultFocus( 'notation' )
             dialog.setInitialData( initialData )
+        }
+        dialog.onChange = ( _, component ) => {
+            if ( component.name != 'notation' ) return
+            notation = dialog.get( 'notation' )
+            setUpDialog()
+            dialog.reload()
         }
         setUpDialog()
         return dialog.show().then( userHitOK => {
