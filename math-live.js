@@ -238,6 +238,6 @@ const latexToMathJSON = latex => {
 export const getConverter = () => loadMathFieldClass().then( () => ( {
     mathJSONToPutdown : mathJSONToPutdown,
     latexToMathJSON : latexToMathJSON,
-    latexToPutdown : latex => latexToMathJSON( mathJSONToPutdown( latex ) ),
+    latexToPutdown : latex => mathJSONToPutdown( latexToMathJSON( latex ) ),
     latexToHTML : latex => MathLive.convertLatexToMarkup( latex )
 } ) )
