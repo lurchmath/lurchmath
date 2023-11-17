@@ -201,15 +201,8 @@ const mathJSONToPutdown = json => {
  * @see {@link module:MathLive.latexToHTML latexToHTML()}
  * @function
  */
-const latexToMathJSON = latex => {
-    const mathLiveEditor = new MathfieldElement()
-    mathLiveEditor.style.visible = 'hidden'
-    document.body.appendChild( mathLiveEditor )
-    mathLiveEditor.value = latex
-    const result = JSON.parse( mathLiveEditor.getValue( 'math-json' ) )
-    mathLiveEditor.remove()
-    return result
-}
+const latexToMathJSON = latex =>
+    MathfieldElement.computeEngine.parse( latex, { canonical: false } ).json
 
 /**
  * A converter instance is just an object that gives you access to four
