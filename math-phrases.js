@@ -20,14 +20,14 @@ import { simpleHTMLTable, escapeHTML, editorForNode } from './utilities.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
 import { phraseHTML } from './expressions.js'
 import { addAutocompleteFunction } from './auto-completer.js'
+import { names as notationNames } from './notation.js'
 
 const validParamNames = text => {
     if ( /^\s*$/.test( text ) ) return true
     const paramNames = text.split( /\s*,\s*/ )
     return paramNames.every( name => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test( name ) )
 }
-const notationNames = [ 'putdown', 'json' ]
-const validNotation = notation => notationNames.includes( notation.toLowerCase() )
+const validNotation = notation => notationNames().includes( notation.toLowerCase() )
 
 /**
  * Find all math phrases accessible to a given element in its editor.
@@ -78,8 +78,8 @@ export const install = editor => {
                 type : 'mathphrasedef',
                 name : 'equation',
                 paramNames : 'X, Y',
-                codeTemplate : '(= X Y)',
-                notation : 'putdown'
+                codeTemplate : 'X = Y',
+                notation : 'math editor'
             } )
             atom.setHTMLMetadata( 'htmlTemplate', 'X and Y are equal' )
             atom.update()
@@ -108,7 +108,7 @@ Atom.addType( 'mathphrasedef', {
         dialog.setDefaultFocus( 'name' )
         dialog.addItem( new TextInputItem( 'paramNames', 'Parameters' ) )
         dialog.addItem( new TextInputItem( 'htmlTemplate', 'External representation (in HTML)' ) )
-        dialog.addItem( new SelectBoxItem( 'notation', 'Notation for internal representation', notationNames ) )
+        dialog.addItem( new SelectBoxItem( 'notation', 'Notation for internal representation', notationNames() ) )
         dialog.addItem( new TextInputItem( 'codeTemplate', 'Internal representation' ) )
         dialog.setInitialData( {
             name : this.getMetadata( 'name' ),
