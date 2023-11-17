@@ -455,13 +455,30 @@ export class Atom {
      * This function does exactly that, when called on an offscreen atom,
      * passing the editor into which to insert the atom as the first parameter.
      * 
+     * This function also creates a new atom instance for the newly inserted
+     * HTML element, and then calls {@link module:Atoms.Atom#update update()} on
+     * that atom, because some atoms need to refresh their contents after
+     * insertion, to ensure that the relevant stylesheets are applied to their
+     * HTML content.  (Honestly, this doesn't seem like it should be necessary,
+     * but it is.  I'm still not 100% sure why.)
+     * 
      * @param {tinymce.Editor} editor - the editor into which to insert the atom
      */
     editThenInsert ( editor ) {
         if ( !this.edit )
             throw new Error( `No edit event handler for atom ${this}` )
         this.edit().then( userSaved => {
-            if ( userSaved ) editor.insertContent( this.getHTML() )
+            if ( userSaved ) {
+                const before = Array.from(
+                    editor.dom.doc.querySelectorAll( `.${className}` ) )
+                editor.insertContent( this.getHTML() )
+                const after = Array.from(
+                    editor.dom.doc.querySelectorAll( `.${className}` ) )
+                after.forEach( element => {
+                    if ( !before.includes( element ) )
+                        new Atom( element ).update()
+                } )
+            }
         } )
     }
 
