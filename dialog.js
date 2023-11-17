@@ -712,7 +712,7 @@ export class CheckBoxItem {
      * @param {string} name - the name of the control in the dialog, used for
      *   querying its value when the dialog closes, or providing an initial
      *   value when the dialog opens
-     * @param {string} label - the label to show next to the select box in the
+     * @param {string} label - the label to show next to the checkbox in the
      *   user interface
      */
     constructor ( name, label ) {
