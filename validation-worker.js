@@ -86,8 +86,15 @@ const validateDocument = LC => {
 }
 
 const floatRE = /^[+-]?(?:\d+[.]?\d*|\d*[.]?\d+)$/
-const arithmeticOperators = [ '+', '-', '*', '/' ]
-const relationalOperators = [ '=', '>', '<', '>=', '<=' ]
+const arithmeticOperators = [
+    '+', '-', '*', '/',
+    'Add', 'Subtract', 'Negate', 'Multiply', 'Divide', 'Rational'
+]
+const unaryOperators = [ '-', 'Negate']
+const relationalOperators = [
+    '=', '>', '<', '>=', '<=',
+    'Equal', 'Greater', 'Less', 'GreaterEqual', 'LessEqual'
+]
 
 const isNumber = LC =>
     ( LC instanceof LurchSymbol ) && floatRE.test( LC.text() )
@@ -109,7 +116,7 @@ const isArithmeticExpression = LC => {
     if ( !isOperation( LC ) ) return false
     // unary case: must be unary negation
     if ( LC.numChildren() == 2 )
-        return LC.firstChild().text() == "-"
+        return unaryOperators.includes( LC.firstChild().text() )
     // binary case: must be any arithmetical operator
     if ( LC.numChildren() == 3 )
         return arithmeticOperators.includes( LC.firstChild().text() )
@@ -128,15 +135,16 @@ const evaluateExpression = LC => {
     operator = operator.text()
     const args = LC.allButFirstChild().map( evaluateExpression )
     if ( args.length == 1 ) {
-        if ( operator == '-' ) return -args[0]
+        if ( operator == '-' || operator == 'Negate' ) return -args[0]
         throw new Error( `Not a unary operator: ${operator}` )
     }
     switch ( operator ) {
-        case '+': return args[0] + args[1]
-        case '-': return args[0] - args[1]
-        case '*': return args[0] * args[1]
-        case '/': return args[0] / args[1]
+        case '+': case 'Add':                       return args[0] + args[1]
+        case '-': case 'Subtract':                  return args[0] - args[1]
+        case '*': case 'Multiply':                  return args[0] * args[1]
+        case '/': case 'Divide':   case 'Rational': return args[0] / args[1]
     }
+    throw new Error( `Unknown operator: ${operator}` )
 }
 
 const checkArithmetic = LC => {
@@ -149,10 +157,10 @@ const checkArithmetic = LC => {
     operator = operator.text()
     const args = LC.allButFirstChild().map( evaluateExpression )
     switch ( operator ) {
-        case '=': return args[0] == args[1]
-        case '>': return args[0] > args[1]
-        case '<': return args[0] < args[1]
-        case '>=': return args[0] >= args[1]
-        case '<=': return args[0] <= args[1]
+        case '=':  case 'Equal':        return args[0] == args[1]
+        case '>':  case 'Greater':      return args[0] > args[1]
+        case '<':  case 'Less':         return args[0] < args[1]
+        case '>=': case 'GreaterEqual': return args[0] >= args[1]
+        case '<=': case 'LessEqual':    return args[0] <= args[1]
     }
 }
