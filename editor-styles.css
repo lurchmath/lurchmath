@@ -1,10 +1,8 @@
-/***************************************************************************
-  Lurch css
-
-  The css file for styling the editor content and anything in its iframe.
-  Styling for the container html page that contains the editor and the Lurch
-  logo is stored in lurch-home.css.
-***************************************************************************/
+/*
+ * This file styles the contents of the TinyMCE editor iframe.
+ * Styling for the main app page (which contains the editor and other things as
+ * well) is in main-app-styles.css.
+ */
 
 /* Expression atoms */
 [data-metadata_notation='"putdown"'] {

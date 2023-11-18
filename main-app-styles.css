@@ -1,9 +1,8 @@
-/*******************************************************************************
-  Lurch Home Page css
-
-  The css file for styling the html page that contains the editor and the Lurch
-  logo.  The styling for the editor content is stored in lurch-home.css.
-*******************************************************************************/
+/*
+ * This file styles the main app page in which the menu bar, toolbar, and editor
+ * iframe are installed.  This is the outermost page of the Lurch application.
+ * Styling for the editor iframe within that page is in editor-styles.css.
+ */
 
 /* import Lato font for Logo */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@900&display=swap');
