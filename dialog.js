@@ -216,7 +216,10 @@ export class Dialog {
      * @see {@link Dialog#removeItem removeItem()}
      */
     addItem ( item, tabTitle = null ) {
-        if ( !this.items.includes( item ) ) this.items.push( item )
+        if ( !this.items.includes( item ) ) {
+            this.items.push( item )
+            item.dialog = this
+        }
         item._generated_json = item.json()
         if ( !tabTitle )
             return item._generated_json.forEach(

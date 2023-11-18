@@ -103,11 +103,13 @@ export class MathItem {
         loadMathFieldClass().then( () => {
             document.body.style.setProperty( '--keyboard-zindex', '2000' )
             this.mathLiveEditor = new MathfieldElement()
-            this.mathLiveEditor.value = 'x'
+            this.mathLiveEditor.value = this.dialog.json.initialData[this.name] || ''
             this.mathLiveEditor.style.width = '100%'
             this.mathLiveEditor.style.border = 'solid 1px #cccccc'
-            document.getElementById( `math-${this.name}` )
-                .appendChild( this.mathLiveEditor )
+            const insertHere = document.getElementById( `math-${this.name}` )
+            while ( insertHere.firstChild )
+                insertHere.removeChild( insertHere.firstChild )
+            insertHere.appendChild( this.mathLiveEditor )
             delete this.mathLiveEditor.shadowRoot.querySelector(
                 '.ML__virtual-keyboard-toggle' ).dataset['ml__tooltip']
             this.saveValue()
