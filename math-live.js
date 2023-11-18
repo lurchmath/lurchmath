@@ -10,9 +10,9 @@
  * of course one can use it for many types of mathematical expressions, not just
  * equations.)
  * 
- * Second, it creates several functions for converting among various math
- * notation formats.  See {@link module:MathLive.getConverter getConverter()}
- * for details.
+ * Second, it creates a function for converting among various math notation
+ * formats.  See {@link module:MathLive.getConverter getConverter()} for
+ * details.
  * 
  * @module MathLive
  */
@@ -132,23 +132,13 @@ export class MathItem {
 
 }
 
-/**
- * MathJSON is a format invented by the author of MathLive, and documented here:
- * https://cortexjs.io/math-json/
- * 
- * This function converts the given MathJSON structure to putdown notation.
- * It is not exported by this module.  Instead, to be able to use it, you should
- * asynchronously construct a converter object using the
- * {@link module:MathLive.getConverter getConverter()} function, and then this
- * will be one of that converter object's methods.  The reason is that some of
- * the conversion functions can be run only once MathLive has been loaded, and
- * the asynchronous {@link module:MathLive.getConverter getConverter()} function
- * ensures that has happened before providing you with a converter instance.
- * 
- * @param {Object} json - the MathJSON structure to convert
- * @returns {string} the putdown notation of the given structure
- * @function
- */
+// Internal use only.
+// MathJSON is a format invented by the author of MathLive, and documented here:
+// https://cortexjs.io/math-json/
+// 
+// This function converts the given MathJSON structure to putdown notation.
+// It is not exported by this module.  Instead, to be able to use it, you should
+// asynchronously construct a converter object using getConverter(), below.
 const mathJSONToPutdown = json => {
     // MathJSON numbers come in 3 formats:
     // 1. plain numbers
@@ -182,57 +172,87 @@ const mathJSONToPutdown = json => {
     return `(unsupported_MathJSON ${JSON.stringify( json )})`
 }
 
-/**
- * MathJSON is a format invented by the author of MathLive, and documented here:
- * https://cortexjs.io/math-json/
- * 
- * This function converts the given $\LaTeX$ code to a MathJSON structure.
- * It is not exported by this module.  Instead, to be able to use it, you should
- * asynchronously construct a converter object using the
- * {@link module:MathLive.getConverter getConverter()} function, and then this
- * will be one of that converter object's methods.  The reason is that some of
- * the conversion functions can be run only once MathLive has been loaded, and
- * the asynchronous {@link module:MathLive.getConverter getConverter()} function
- * ensures that has happened before providing you with a converter instance.
- * 
- * @param {string} latex - the $\LaTeX$ code to convert into MathJSON format
- * @returns {Object} a JSON object following the MathJSON standard, linked to
- *   above
- * @see {@link module:MathLive.mathJSONToPutdown mathJSONToPutdown()}
- * @see {@link module:MathLive.latexToPutdown latexToPutdown()}
- * @see {@link module:MathLive.latexToHTML latexToHTML()}
- * @function
- */
-const latexToMathJSON = latex =>
-    MathfieldElement.computeEngine.parse( latex, { canonical: false } ).json
+// Internal use only; see getConverter(), below.
+const inputFormats = [ 'latex', 'mathjson', 'asciimath' ]
+const outputFormats = [ 'html', 'putdown', ...inputFormats ]
 
 /**
- * A converter instance is just an object that gives you access to four
- * conversion functions:
+ * A converter is a function with the following signature:
+ * `convert( data, 'input format', 'output format' )`.
+ * For example, to convert some $\LaTeX$ code to putdown, you might do the
+ * following.
  * 
- *  1. {@link module:MathLive.mathJSONToPutdown mathJSONToPutdown()}, which is
- *     defined in this module
- *  1. {@link module:MathLive.latexToMathJSON latexToMathJSON()}, which is also
- *     defined in this module
- *  1. `latexToPutdown()`, which is just the composition of the previous two
- *  1. `latexToHTML()`, which is just a convenient exposure of the
- *     `convertLatexToMarkup()` function built into MathLive.
+ * ```js
+ * getConverter().then( convert => {
+ *     const putdown = convert( someLaTeXString, 'latex', 'putdown' )
+ *     console.log( putdown )
+ * } )
+ * ```
+ * 
+ * Thre are five formats that this function knows about.  Two are output-only
+ * formats: `'html'` and `'putdown'`.  You cannot convert from these formats
+ * into any other format.  The other three are storage formats: `'latex'`,
+ * `'mathjson'`, and `'asciimath'`.  The formats are case-insensitive, so you
+ * can write `'LaTeX'` or `'MathJSON'` instead if you like.  All of the three
+ * storage formats can be converted into one another, and into any of the
+ * output formats.  So the only constraint is that the output format cannot be
+ * `'html'` or `'putdown'`.
  * 
  * The reason that this function is asynchronous is because some of those
  * conversion functions can be run only once MathLive has been loaded, and so
  * this function ensures that has happened before returning to you a converter
  * instance.  That way, the instance you receive is guaranteed to work
- * immediately, and all of its methods can be synchronous.
+ * immediately, and all of its methods can be synchronous.  Note that many of
+ * the conversion functions are built into MathLive, and I'm simply making them
+ * available here and connecting them in all the transitive ways the user might
+ * need them.
  * 
- * @returns {Promise} a promise that resolves to an object containing the
- *   four conversion functions defined in this module, as described above
- * @see {@link module:MathLive.mathJSONToPutdown mathJSONToPutdown()}
- * @see {@link module:MathLive.latexToMathJSON latexToMathJSON()}
+ * @returns {Promise} a promise that resolves to a function that behaves as above
  * @function
  */
-export const getConverter = () => loadMathFieldClass().then( () => ( {
-    mathJSONToPutdown : mathJSONToPutdown,
-    latexToMathJSON : latexToMathJSON,
-    latexToPutdown : latex => mathJSONToPutdown( latexToMathJSON( latex ) ),
-    latexToHTML : latex => MathLive.convertLatexToMarkup( latex )
-} ) )
+export const getConverter = () => loadMathFieldClass().then( () => {
+    const convert = ( data, inputFormat, outputFormat ) => {
+        inputFormat = inputFormat.toLowerCase()
+        outputFormat = outputFormat.toLowerCase()
+        if ( !inputFormats.includes( inputFormat ) )
+            throw new Error( `Invalid input format: ${inputFormat}` )
+        if ( !outputFormats.includes( outputFormat ) )
+            throw new Error( `Invalid output format: ${outputFormat}` )
+        switch ( `${inputFormat} ${outputFormat}` ) {
+            case 'latex putdown':
+                return convert( convert( data, 'latex', 'mathjson' ),
+                    'mathjson', 'putdown' )
+            case 'latex html':
+                return MathLive.convertLatexToMarkup( data )
+            case 'latex mathjson':
+                return MathfieldElement.computeEngine.parse(
+                    data, { canonical: false } ).json
+            case 'latex asciimath':
+                return MathLive.convertLatexToAsciiMath( data )
+            case 'mathjson latex':
+                return MathLive.serializeMathJsonToLatex( data )
+            case 'mathjson html':
+                return convert( convert( data, 'mathjson', 'latex' ),
+                    'latex', 'putdown' )
+            case 'mathjson putdown':
+                return mathJSONToPutdown( data )
+            case 'mathjson asciimath':
+                return convert( convert( data, 'mathjson', 'latex' ),
+                    'latex', 'asciimath' )
+            case 'asciimath latex':
+                return MathLive.convertAsciiMathToLatex( data )
+            case 'asciimath html':
+                return convert( convert( data, 'asciimath', 'latex' ),
+                    'latex', 'html' )
+            case 'asciimath putdown':
+                return convert( convert( data, 'asciimath', 'mathjson' ),
+                    'mathjson', 'putdown' )
+            case 'asciimath mathjson':
+                return convert( convert( data, 'asciimath', 'latex' ),
+                    'latex', 'mathjson' )
+            default: throw new Error(
+                `Unsupported conversion: ${inputFormat} -> ${outputFormat}` )
+        }
+    }
+    return convert
+} )

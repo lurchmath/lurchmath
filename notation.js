@@ -172,14 +172,16 @@ if ( typeof( document ) != 'undefined' )
     getConverter().then( result => mathConverter = result )
 // Installs a MathLive notation via an equation editor UI
 addParser( 'math editor', latex =>
-    parse( mathConverter?.latexToPutdown( latex ), 'putdown' ) )
-addRepresentation( 'math editor', latex => mathConverter?.latexToHTML( latex ) )
+    parse( mathConverter?.( latex, 'latex', 'putdown' ), 'putdown' ) )
+addRepresentation( 'math editor', latex =>
+    mathConverter?.( latex, 'latex', 'html' ) )
 markNameAsMath( 'math editor' )
 // Installs LaTeX as a language (that can be interpreted under the hood
 // using putdown)
 addParser( 'latex', latex =>
-    parse( mathConverter?.latexToPutdown( latex ), 'putdown' ) )
-addRepresentation( 'latex', latex => mathConverter?.latexToHTML( latex ) )
+    parse( mathConverter?.( latex, 'latex', 'putdown' ), 'putdown' ) )
+addRepresentation( 'latex', latex =>
+    mathConverter?.( latex, 'latex', 'html' ) )
 
 // Internal use only
 // Installs default notation, which is putdown
