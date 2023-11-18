@@ -219,3 +219,19 @@ export const editorForNode = node => {
             return allEditors[i]
     return null
 }
+
+/**
+ * Call a function on each element in an array, just like `array.forEach()`
+ * would do, except use a zero-second timeout between each call.
+ * 
+ * @param {Function} func - the function to call for each element
+ * @param {any[]} array - the array to iterate over
+ * @param {number} [timeout=0] - the number of milliseconds to wait between calls
+ * @function
+ */
+export const forEachWithTimeout = ( func, array, timeout = 0 ) => {
+    if ( array.length == 0 ) return
+    func( array[0] )
+    setTimeout( () =>
+        forEachWithTimeout( func, array.slice(1), timeout ), timeout )
+}

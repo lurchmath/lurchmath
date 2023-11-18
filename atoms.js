@@ -34,7 +34,7 @@
  * @see {@link module:Shells the Shells module}
  */
 
-import { removeScriptTags } from './utilities.js'
+import { removeScriptTags, forEachWithTimeout } from './utilities.js'
 
 /**
  * Class name used to distinguish HTML elements representing atoms.  (For an
@@ -455,30 +455,13 @@ export class Atom {
      * This function does exactly that, when called on an offscreen atom,
      * passing the editor into which to insert the atom as the first parameter.
      * 
-     * This function also creates a new atom instance for the newly inserted
-     * HTML element, and then calls {@link module:Atoms.Atom#update update()} on
-     * that atom, because some atoms need to refresh their contents after
-     * insertion, to ensure that the relevant stylesheets are applied to their
-     * HTML content.  (Honestly, this doesn't seem like it should be necessary,
-     * but it is.  I'm still not 100% sure why.)
-     * 
      * @param {tinymce.Editor} editor - the editor into which to insert the atom
      */
     editThenInsert ( editor ) {
         if ( !this.edit )
             throw new Error( `No edit event handler for atom ${this}` )
         this.edit().then( userSaved => {
-            if ( userSaved ) {
-                const before = Array.from(
-                    editor.dom.doc.querySelectorAll( `.${className}` ) )
-                editor.insertContent( this.getHTML() )
-                const after = Array.from(
-                    editor.dom.doc.querySelectorAll( `.${className}` ) )
-                after.forEach( element => {
-                    if ( !before.includes( element ) )
-                        new Atom( element ).update()
-                } )
-            }
+            if ( userSaved ) editor.insertContent( this.getHTML() )
         } )
     }
 
@@ -636,6 +619,19 @@ export class Atom {
  * This function should be called in the editor's setup routine.  It installs a
  * single mouse event handler into the editor that can watch for click events to
  * any atom, and route control flow to the event handler for that atom's type.
+ * It also installs a keydown event handler that watches for the Enter key
+ * being pressed on an atom, and routes control flow to the event handler for
+ * that atom's type.
+ * 
+ * Finally, it installs an event handler that calls every atom's update handler
+ * whenever the editor's content changes.  This could be slow if there are many
+ * atoms in the document, and therefore we use the
+ * {@link module:Utilities.forEachWithTimeout forEachWithTimeout()} function to
+ * let these handlers run only when the UI is idle.  We have found this to be
+ * necessary, because some atoms (especially those whose representation is
+ * generated from MathLive) are not always typeset correctly the first time that
+ * their HTML is placed into the atom.  For some reason, the stylesheet does not
+ * seem to apply correctly until the *second* insertion of the typeset HTML.
  * 
  * @param {tinymce.Editor} editor - the editor in which to install the event
  *   handlers
@@ -651,6 +647,9 @@ export const install = editor => {
         const selected = editor.selection.getNode()
         if ( Atom.isAtomElement( selected ) )
             new Atom( selected, editor ).edit?.()
+    } )
+    editor.on( 'input NodeChange Paste Change Undo Redo', () => {
+        forEachWithTimeout( atom => atom.update(), Atom.allIn( editor ) )
     } )
 }
 
