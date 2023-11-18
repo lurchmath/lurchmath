@@ -84,6 +84,7 @@ export const appURL = () => {
  * @param {string} text - text to escape for insertion into HTML
  * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
  *   `"'"`, and `'"'` replaced with character references instead
+ * @function
  */
 export const escapeHTML = ( text = '' ) =>
     text.replaceAll( '&', '&amp;' )
@@ -99,6 +100,7 @@ export const escapeHTML = ( text = '' ) =>
  * 
  * @param {string} html - the HTML code from which to remove script tags
  * @returns {string} the same HTML code, but with all script tags removed
+ * @function
  */
 export const removeScriptTags = html => {
     const regex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi
@@ -135,6 +137,7 @@ export const removeScriptTags = html => {
  * 
  * @param  {...any} rows - the data representing the rows of the table to construct
  * @returns {string} the HTML code for the table
+ * @function
  */
 export const simpleHTMLTable = ( ...rows ) => {
     let result = '<table><colgroup><col><col></colgroup>'
@@ -176,6 +179,7 @@ export const simpleHTMLTable = ( ...rows ) => {
  *   gets rerturned
  * @returns {Node[]} some initial segment of `nodes`, including precisely those
  *   that appear before `point`
+ * @function
  */
 export const onlyBefore = ( nodes, point ) => {
     const lt = ( a, b ) => {
@@ -211,6 +215,7 @@ export const onlyBefore = ( nodes, point ) => {
  * 
  * @param {Node} node - HTML node for which to find the editor
  * @returns {tinymce.Editor} the editor whose document contains the given node
+ * @function
  */
 export const editorForNode = node => {
     const allEditors = tinymce.get()

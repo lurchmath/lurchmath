@@ -21,8 +21,7 @@ import Validation from './validation.js'
 import { loadFromQueryString } from './load-from-url.js'
 import AutoCompleter from './auto-completer.js'
 
-import { Dialog } from './dialog.js'
-import { MathItem, getConverter, stylesheet as MathLiveCSS } from './math-live.js'
+import { stylesheet as MathLiveCSS } from './math-live.js'
 
 // TinyMCE's CDN URL, from which we will load it
 const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
