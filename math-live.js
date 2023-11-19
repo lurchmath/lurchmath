@@ -211,6 +211,10 @@ const outputFormats = [ 'html', 'putdown', ...inputFormats ]
  * @function
  */
 export const getConverter = () => loadMathFieldClass().then( () => {
+    // Ensure that .json doesn't convert 1/2 to "Half"
+    MathfieldElement.computeEngine.jsonSerializationOptions.exclude = [ 'Half' ]
+    // Define the function here that we will return, so that we have a name to
+    // us inside of it for recursive calls.
     const convert = ( data, inputFormat, outputFormat ) => {
         inputFormat = inputFormat.toLowerCase()
         outputFormat = outputFormat.toLowerCase()
@@ -254,5 +258,6 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                 `Unsupported conversion: ${inputFormat} -> ${outputFormat}` )
         }
     }
+    // Return the function we just built.
     return convert
 } )
