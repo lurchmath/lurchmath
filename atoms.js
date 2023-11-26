@@ -602,15 +602,29 @@ export class Atom {
 
     /**
      * Find all elements in the given TinyMCE editor that represent atoms, and
+     * return each one in the order they appear in the document.
+     * 
+     * @param {tinymce.Editor} editor - the editor in which to search
+     * @returns {HTMLElement[]} the array of atom elements in the editor's document
+     * @see {@link module:Atoms.Atom.allIn allIn()}
+     */
+    static allElementsIn ( editor ) {
+        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
+            .filter( element => element.parentNode &&
+                !element.parentNode.classList.contains( 'mce-offscreen-selection' ) )
+    }
+
+    /**
+     * Find all elements in the given TinyMCE editor that represent atoms, and
      * return each one, transformed into an instance of the Atom class.  They
      * are returned in the order they appear in the document.
      * 
      * @param {tinymce.Editor} editor - the editor in which to search
      * @returns {Atom[]} the array of atom elements in the editor's document
+     * @see {@link module:Atoms.Atom.allElementsIn allElementsIn()}
      */
     static allIn ( editor ) {
-        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
-            .map( element => new Atom( element ) )
+        return Atom.allElementsIn( editor ).map( element => new Atom( element ) )
     }
 
 }
@@ -648,8 +662,13 @@ export const install = editor => {
         if ( Atom.isAtomElement( selected ) )
             new Atom( selected, editor ).edit?.()
     } )
+    let lastAtomElementList = [ ]
     editor.on( 'input NodeChange Paste Change Undo Redo', () => {
-        forEachWithTimeout( atom => atom.update(), Atom.allIn( editor ) )
+        const thisAtomElementList = Atom.allElementsIn( editor )
+        forEachWithTimeout( element => new Atom( element ).update(),
+            thisAtomElementList.filter( element =>
+                !lastAtomElementList.includes( element ) ) )
+        lastAtomElementList = thisAtomElementList
     } )
 }
 
