@@ -43,7 +43,7 @@ export const install = editor => {
                 notation : lookup( editor, 'notation' )
             } )
             atom.update()
-            atom.editThenInsert( editor )
+            atom.editThenInsert()
         }
     } )
 }

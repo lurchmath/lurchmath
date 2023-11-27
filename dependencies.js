@@ -50,7 +50,7 @@ export const install = editor => {
             const atom = Atom.newBlock( editor, '',
                 { type : 'dependency', description : 'none' } )
             atom.update()
-            atom.editThenInsert( editor )
+            atom.editThenInsert()
         }
     } )
     let emptyDependencyHTML = null

@@ -455,13 +455,12 @@ export class Atom {
      * This function does exactly that, when called on an offscreen atom,
      * passing the editor into which to insert the atom as the first parameter.
      * 
-     * @param {tinymce.Editor} editor - the editor into which to insert the atom
      */
-    editThenInsert ( editor ) {
+    editThenInsert () {
         if ( !this.edit )
             throw new Error( `No edit event handler for atom ${this}` )
         this.edit().then( userSaved => {
-            if ( userSaved ) editor.insertContent( this.getHTML() )
+            if ( userSaved ) this.editor.insertContent( this.getHTML() )
         } )
     }
 

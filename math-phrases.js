@@ -83,7 +83,7 @@ export const install = editor => {
             } )
             atom.setHTMLMetadata( 'htmlTemplate', 'X and Y are equal' )
             atom.update()
-            atom.editThenInsert( editor )
+            atom.editThenInsert()
         }
     } )
     addAutocompleteFunction( editor => 
