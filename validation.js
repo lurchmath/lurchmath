@@ -62,8 +62,11 @@ const clearValidation = target => {
 // Create HTML for the feedback icon to place into the suffix of an atom
 // element, based on the feedback message received
 const markerHTML = message => {
-    return message.get( 'valid' ) ? '<span class="checkmark">&check;</span>'
-                                  : '<span class="redx">✗</span>'
+    if ( message.is( 'feedback' ) )
+        return message.get( 'valid' ) ? '<span class="checkmark">&check;</span>'
+                                    : '<span class="redx">✗</span>'
+    if ( message.is( 'error' ) )
+        return '<span class="errormark">!</span>'
 }
 
 // Internal use only
@@ -86,23 +89,18 @@ const addValidation = ( target, marker ) => {
 [ worker, window ].forEach( context =>
     context.addEventListener( 'message', event => {
         const message = new Message( event )
-        if ( message.is( 'feedback' ) ) {
+        if ( message.is( 'feedback' ) || message.is( 'error' ) ) {
             if ( message.element ) {
                 if ( Atom.isAtomElement( message.element ) ) {
-                    addValidation( new Atom( message.element ), markerHTML( message ) )
+                    const atom = new Atom( message.element )
+                    addValidation( atom, markerHTML( message ) )
+                    if ( message.content.text )
+                        atom.setHoverText( message.content.text )
                 } else {
                     throw new Error( 'Feedback message for non-atoms not supported' )
                 }
             } else {
                 throw new Error( 'Feedback message received with no element as target' )
-            }
-        } else if ( message.is( 'error' ) && message.element ) {
-            if ( Atom.isAtomElement( message.element ) ) {
-                const atom = new Atom( message.element )
-                addValidation( atom, markerHTML( message ) )
-                atom.setHoverText( message.content.text )
-            } else {
-                throw new Error( 'Feedback message for non-atoms not supported' )
             }
         } else if ( message.is( 'done' ) ) {
             // pass
@@ -124,7 +122,7 @@ const clearAll = editor => Atom.allIn( editor ).forEach( clearValidation )
  *  * one for running validation on the editor's current contents, and showing
  *    the results in the editor by placing suffixes on each atom that could be
  *    validated
- *  * one for removing all such validation suffixes from the eidtor's current
+ *  * one for removing all such validation suffixes from the editor's current
  *    contents
  * 
  * @param {tinymce.Editor} editor - the editor in which to install the features

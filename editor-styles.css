@@ -29,6 +29,11 @@ span.redx {
     color: red;
     font-weight: bold;
 }
+span.errormark {
+    font-family: 'Lucida Grande';
+    color: rgb(216, 180, 0);
+    font-weight: bold;
+}
 
 /* shells */
 div.lurch-shell {
