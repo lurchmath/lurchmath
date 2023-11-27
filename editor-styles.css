@@ -41,10 +41,20 @@ div.lurch-shell {
     border: 1px solid #bbb;
     border-radius: 6px;
     padding: 0 1em;
-    margin: 1ex 0;
+    margin: 2ex 0;
 }
 div.lurch-shell.lurch-given {
     border: 2px dashed #bbb;
+}
+div.lurch-shell[data-environment_type_representation]::before {
+    content: attr(data-environment_type_representation) ':';
+    color: #bbb;
+    background-color: white;
+    font-weight: bold;
+    position: absolute;
+    top: -9pt;
+    left: 6pt;
+    padding: 0 6pt;  
 }
 
 /* Dependency URL atoms  */

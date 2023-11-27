@@ -130,6 +130,7 @@ export class Atom {
      * {@link module:Atoms.Atom#fillChild fillChild()}.
      * 
      * @returns {string} the HTML representation of this atom
+     * @see {@link module:Shells.Shell#getHTML getHTML()}
      */
     getHTML () { return this.element.outerHTML }
 
@@ -455,6 +456,7 @@ export class Atom {
      * This function does exactly that, when called on an offscreen atom,
      * passing the editor into which to insert the atom as the first parameter.
      * 
+     * @see {@link module:Shells.Shell.editThenInsert editThenInsert()}
      */
     editThenInsert () {
         if ( !this.edit )

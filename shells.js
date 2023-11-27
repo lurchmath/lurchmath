@@ -37,7 +37,7 @@ import { getHeader } from './header-editor.js'
 import { onlyBefore } from './utilities.js'
 import { className as atomClassName } from './atoms.js'
 import { addAutocompleteFunction } from './auto-completer.js'
-import { Dialog, CheckBoxItem } from './dialog.js'
+import { Dialog, SelectBoxItem } from './dialog.js'
 import { Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
@@ -49,8 +49,54 @@ import { Environment }
 export const className = 'lurch-shell'
 
 // Internal use only
-// Whether this shell represents a "given" environment
-const givenClassName = 'lurch-given'
+// The shell types the user is allowed to choose when inserting one
+const shellTypes = [
+    {
+        name : 'Definition',
+        representation : 'Definition',
+        attributeName : 'rule'
+    },
+    {
+        name : 'Rule',
+        representation : 'Rule',
+        attributeName : 'rule'
+    },
+    {
+        name : 'Axiom',
+        representation : 'Axiom',
+        attributeName : 'rule'
+    },
+    {
+        name : 'Theorem',
+        representation : 'Theorem',
+        attributeName : 'theorem'
+    },
+    {
+        name : 'Lemma',
+        representation : 'Lemma',
+        attributeName : 'theorem'
+    },
+    {
+        name : 'Corollary',
+        representation : 'Corollary',
+        attributeName : 'theorem'
+    },
+    {
+        name : 'Proof',
+        representation : 'Proof',
+        attributeName : null
+    },
+    {
+        name : 'Subproof',
+        representation : null,
+        attributeName : null
+    },
+    {
+        name : 'Recall',
+        representation : 'Recall',
+        attributeName : 'hint'
+    }
+]
 
 export class Shell {
 
@@ -105,6 +151,15 @@ export class Shell {
     }
 
     /**
+     * Get the HTML representation of this shell, as it currently sits in the
+     * document.
+     * 
+     * @returns {string} the HTML representation of this shell
+     * @see {@link module:Atoms.Atom#getHTML getHTML()}
+     */
+    getHTML () { return this.element.outerHTML }
+
+    /**
      * Each shell may have a type, which is a string that allows for
      * partitioning the set of shells into categories that behave differently.
      * To see how to assign different behaviors to each type of shell, see the
@@ -132,16 +187,24 @@ export class Shell {
      */
     setType ( type ) { this.element.dataset.type = type }
 
-    /**
-     * In Lurch, elements can be classified as either *givens* or *claims,* for
-     * validation purposes.  A *given* means exactly what it does in high school
-     * geometry---a hypothesis from which other conclusions will probably be
-     * drawn.  Shells can be marked as givens, and if they are not, they default
-     * to being claims.
-     * 
-     * @returns {boolean} whether this shell is a given
-     */
-    isGiven () { return this.element.classList.contains( givenClassName ) }
+    // Internal use only:
+    // get/set what type of environment this is (Theorem, Proof, etc.)
+    getEnvironmentType () {
+        return this.element.dataset['environment_type_name']
+            || shellTypes[0].name
+    }
+    setEnvironmentType ( name ) {
+        const shellType = shellTypes.find( type => type.name == name )
+        if ( shellType && shellType.name )
+            this.element.dataset['environment_type_name'] = shellType.name
+        else
+            delete this.element.dataset['environment_type_name']
+        if ( shellType && shellType.representation )
+            this.element.dataset['environment_type_representation'] =
+                shellType.representation
+        else
+            delete this.element.dataset['environment_type_representation']
+    }
 
     /**
      * Convert this shell into an LC representing it.  It will be a single
@@ -153,7 +216,10 @@ export class Shell {
      */
     toLC () {
         const result = new Environment()
-        if ( this.isGiven() ) result.makeIntoA( 'given' )
+        const shellTypeName = this.getEnvironmentType()
+        const shellType = shellTypes.find( type => type.name == shellTypeName )
+        if ( shellType && shellType.attributeName )
+            result.makeIntoA( shellType.attributeName )
         return result
     }
 
@@ -161,18 +227,34 @@ export class Shell {
     // Default handler for environments.  Allows toggling given/claim status.
     edit () {
         const dialog = new Dialog( 'Edit environment', this.editor )
-        dialog.addItem( new CheckBoxItem(
-            'isGiven', 'This environment is an assumption/given' ) )
-        dialog.setDefaultFocus( 'isGiven' )
-        dialog.setInitialData( { isGiven : this.isGiven() } )
-        dialog.show().then( userHitOK => {
-            if ( userHitOK ) {
-                if ( dialog.get( 'isGiven' ) )
-                    this.element.classList.add( givenClassName )
-                else
-                    this.element.classList.remove( givenClassName )
-                this.update()
-            }
+        dialog.addItem( new SelectBoxItem(
+            'shellType', 'Which type of environment to insert?',
+            shellTypes.map( type => type.name )
+        ) )
+        dialog.setDefaultFocus( 'shellType' )
+        dialog.setInitialData( { shellType : this.getEnvironmentType() } )
+        return dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return false
+            this.setEnvironmentType( dialog.get( 'shellType' ) )
+            return true
+        } )
+    }
+
+    /**
+     * The standard way to insert a new shell into the editor is to create it
+     * off screen, open up an editing dialog for that shell, and then if the
+     * user saves their edits, insert the new shell into the document, in the
+     * final state that represents the user's edits.  If, however, the user
+     * cancels their edit of the shell, don't insert anything into the document.
+     * 
+     * This function does exactly that, when called on an offscreen shell,
+     * passing the editor into which to insert the shell as the first parameter.
+     * 
+     * @see {@link module:Atoms.Atom.editThenInsert editThenInsert()}
+     */
+    editThenInsert () {
+        this.edit().then( userSaved => {
+            if ( userSaved ) this.editor.insertContent( this.getHTML() )
         } )
     }
 
@@ -367,9 +449,10 @@ export const install = editor => {
         tooltip : 'Insert block representing an environment',
         shortcut : 'Meta+Shift+E',
         onAction : () => {
-            editor.insertContent( Shell.createElement(
+            const shell = new Shell( Shell.createElement(
                 editor, 'environment', editor.selection.getContent()
-            ).outerHTML )
+            ), editor )
+            shell.editThenInsert()
         }
     } )
     // The event handler for the corner case described above
