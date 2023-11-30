@@ -98,6 +98,9 @@ const shellTypes = [
     }
 ]
 
+// Should document this later.
+export const getShellType = name => shellTypes.find( type => type.name == name )
+
 export class Shell {
 
     // Internal use only: Stores a mapping from atom types to event handlers for
@@ -194,7 +197,7 @@ export class Shell {
             || shellTypes[0].name
     }
     setEnvironmentType ( name ) {
-        const shellType = shellTypes.find( type => type.name == name )
+        const shellType = getShellType( name )
         if ( shellType && shellType.name )
             this.element.dataset['environment_type_name'] = shellType.name
         else
@@ -216,8 +219,7 @@ export class Shell {
      */
     toLC () {
         const result = new Environment()
-        const shellTypeName = this.getEnvironmentType()
-        const shellType = shellTypes.find( type => type.name == shellTypeName )
+        const shellType = getShellType( this.getEnvironmentType() )
         if ( shellType && shellType.attributeName )
             result.makeIntoA( shellType.attributeName )
         return result
