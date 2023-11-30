@@ -1,25 +1,12 @@
 
 /**
  * This module runs in a background thread, not the browser's main (UI) thread.
- * It will eventually be used to grade documents submitted to it in serialized
- * form, and transmit feedback messages about their contents back to the main
- * thread.  Right now, it implements just a very simple placeholder validation
- * routine to use for testing.  We will later import into it the official
- * validation engine that we are developing in a separate repository.
- * 
- * Any implementation will listen for {@link Message messages} sent to the
- * worker with {@link Message#type type} `"putdown"` and will deserialize them
- * into a document, then try to validate every part of that document that this
- * module deems should be validated.
- * 
- * The current, placeholder implementation just looks for simple equations or
- * inequalities of floating point arithemtic (using operators `+`, `-`, `*`, and
- * `/` and relational operators `=`, `>`, `<`, `>=`, and `<=`) and judges them
- * to be valid if they are true according to JavaScript's floating point
- * computational capabilities, and false otherwise.  Later, actual
- * implementations will be far more sophisticated, symbolic, and useful to
- * students in an introductory proofs course.  This placeholder is merely for
- * testing purposes while we polish the more sophisticated validation engine.
+ * It grades documents submitted to it in serialized form, and transmits
+ * feedback messages about their contents back to the main thread.  It is not
+ * yet at the level of sophistication we eventually plan for, but it can already
+ * do a lot.  It imports all the validation tools from
+ * {@link https://lurchmath.github.io/lde our deductive engine repository} and
+ * uses them to validate documents.
  * 
  * None of the functions in this module are called by any external client, and
  * hence none are documented here.  Rather, this script is loaded into Web
@@ -31,8 +18,8 @@
  */
 
 import { Message } from './validation-messages.js'
-import { LogicConcept, LurchSymbol }
-    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import LDE from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@85e7368b912116420a2dc7475c616a721ec38ba1/src/experimental/global-validation.js'
+const LogicConcept = LDE.LogicConcept
 
 // Listen for messages from the main thread, which should send putdown notation
 // for a document to validate.  When it does, we run our one (temporary
@@ -57,110 +44,74 @@ addEventListener( 'message', event => {
             throw new Error( `Not a valid document encoding: ${encoding}` )
         }
     } catch ( error ) {
-        Message.error( error.message || `${error}` )
+        Message.error( `Error decoding document: ${error.message || error}` )
         Message.done()
     }
 } )
 
-// Placeholder validation routine, using all the other routines below, to
-// validate only equations and inequalities of floating point arithmetic.
+// Find the highest-priority validation result, or undefined if the given LC
+// has no validation result attached to it.  This unites all the different ways
+// we've invented to attach feedback to something, which are kind of a mess that
+// this routine cleans up.  We should clean it up ourselves later, but for now,
+// this routine is our solution.
+const getValidationResults = LC => {
+    const results = [ ]
+    // Scope errors are highest priority
+    const scopeErrors = LDE.Scoping.scopeErrors( LC )
+    if ( scopeErrors && scopeErrors.redeclared )
+        results.push( {
+            type : 'scoping',
+            result : 'invalid',
+            reason : `Trying to re-declare ${scopeErrors.redeclared.join(", ")}`
+        } )
+    if ( scopeErrors && scopeErrors.undeclared )
+        results.push( {
+            type : 'scoping',
+            result : 'invalid',
+            reason : `Using ${scopeErrors.undeclared.join(", ")} undeclared`
+        } )
+    // Find any type of validation feedback that was produced before prop
+    // validation, such as instantiation hint structure
+    const otherErrors = LC.getAttribute( 'validation results' )
+    const otherErrorTypes = Object.keys( otherErrors || { } )
+    for ( let type of otherErrorTypes )
+        if ( otherErrors[type].result == 'invalid' )
+            results.push( { type : 'misc', ...otherErrors[type] } )
+    // Final result is the prop validation result, if any
+    const propResult = LDE.Validation.result( LC )
+    if ( propResult )
+        results.push( { type : 'propositional', ...propResult } )
+    return results
+}
+
+// Validate using the imported Lurch Deductive Engine (LDE) module
 const validateDocument = LC => {
-    LC.descendantsSatisfying( isArithmeticSentence ).forEach( sentence => {
+    console.log( LC.toPutdown() )
+    try {
+        LDE.validate( LC )
+    } catch ( error ) {
+        // console.log( error.stack )
+        Message.error( `Error running LDE validation: ${error.message}` )
+        return
+    }
+    console.log( LC.toPutdown() )
+    for ( let descendant of LC.descendantsIterator() ) {
+        const results = getValidationResults( descendant )
+        if ( results.length == 0 ) continue
         try {
-            const result = checkArithmetic( sentence )
             let walk
-            for ( walk = sentence ; walk ; walk = walk.parent() )
+            for ( walk = descendant ; walk ; walk = walk.parent() )
                 if ( walk.ID() ) break
             Message.feedback( {
-                id : sentence.ID(),
+                id : descendant.ID(),
                 ancestorID : walk ? walk.ID() : undefined,
-                address : sentence.address( LC ),
-                putdown : sentence.toPutdown(),
-                valid : result
+                // address : descendant.address( LC ),
+                // putdown : descendant.toPutdown(),
+                results : results
             } )
         } catch ( error ) {
-            Message.error( error.message )
+            Message.error( `Error generating feedback: ${error.message}` )
         }
-    } )
+    }
     Message.done()
-}
-
-const floatRE = /^[+-]?(?:\d+[.]?\d*|\d*[.]?\d+)$/
-const arithmeticOperators = [
-    '+', '-', '*', '/',
-    'Add', 'Subtract', 'Negate', 'Multiply', 'Divide', 'Rational'
-]
-const unaryOperators = [ '-', 'Negate']
-const relationalOperators = [
-    '=', '>', '<', '>=', '<=',
-    'Equal', 'Greater', 'Less', 'GreaterEqual', 'LessEqual'
-]
-
-const isNumber = LC =>
-    ( LC instanceof LurchSymbol ) && floatRE.test( LC.text() )
-
-const isOperation = LC => {
-    return LC.numChildren() >= 2 && ( LC.firstChild() instanceof LurchSymbol )
-        && LC.allButFirstChild().every( isArithmeticExpression )
-}
-
-const isArithmeticSentence = LC => {
-    return LC.numChildren() == 3 && isOperation( LC )
-        && relationalOperators.includes( LC.firstChild().text() )
-}
-
-const isArithmeticExpression = LC => {
-    // base case: a number alone
-    if ( isNumber( LC ) ) return true
-    // all other cases must be operator applied to operands
-    if ( !isOperation( LC ) ) return false
-    // unary case: must be unary negation
-    if ( LC.numChildren() == 2 )
-        return unaryOperators.includes( LC.firstChild().text() )
-    // binary case: must be any arithmetical operator
-    if ( LC.numChildren() == 3 )
-        return arithmeticOperators.includes( LC.firstChild().text() )
-    // no cases above binary are supported
-    return false
-}
-
-const evaluateExpression = LC => {
-    if ( isNumber( LC ) ) return parseFloat( LC.text() )
-    if ( LC.numChildren() != 2 && LC.numChildren() != 3 )
-        throw new Error( `Not an arithmetic expression: ${LC.toPutdown()}` )
-    let operator = LC.firstChild()
-    if ( !( operator instanceof LurchSymbol )
-      || !arithmeticOperators.includes( operator.text() ) )
-        throw new Error( `Not an arithmetic operator: ${operator.toPutdown()}` )
-    operator = operator.text()
-    const args = LC.allButFirstChild().map( evaluateExpression )
-    if ( args.length == 1 ) {
-        if ( operator == '-' || operator == 'Negate' ) return -args[0]
-        throw new Error( `Not a unary operator: ${operator}` )
-    }
-    switch ( operator ) {
-        case '+': case 'Add':                       return args[0] + args[1]
-        case '-': case 'Subtract':                  return args[0] - args[1]
-        case '*': case 'Multiply':                  return args[0] * args[1]
-        case '/': case 'Divide':   case 'Rational': return args[0] / args[1]
-    }
-    throw new Error( `Unknown operator: ${operator}` )
-}
-
-const checkArithmetic = LC => {
-    if ( LC.numChildren() != 3 )
-        throw new Error( `Not an arithmetic sentence: ${LC.toPutdown()}` )
-    let operator = LC.firstChild()
-    if ( !( operator instanceof LurchSymbol )
-      || !relationalOperators.includes( operator.text() ) )
-        throw new Error( `Not an arithmetic relation: ${operator.toPutdown()}` )
-    operator = operator.text()
-    const args = LC.allButFirstChild().map( evaluateExpression )
-    switch ( operator ) {
-        case '=':  case 'Equal':        return args[0] == args[1]
-        case '>':  case 'Greater':      return args[0] > args[1]
-        case '<':  case 'Less':         return args[0] < args[1]
-        case '>=': case 'GreaterEqual': return args[0] >= args[1]
-        case '<=': case 'LessEqual':    return args[0] <= args[1]
-    }
 }
