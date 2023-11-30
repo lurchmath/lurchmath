@@ -18,6 +18,7 @@
 
 import { Message } from './validation-messages.js'
 import { Atom } from './atoms.js'
+import { Shell } from './shells.js'
 
 // Internal use only, the worker in which validation will occur.
 // Loads the ValidationWorker module code so it can talk to us.

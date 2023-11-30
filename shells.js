@@ -54,47 +54,65 @@ const shellTypes = [
     {
         name : 'Definition',
         representation : 'Definition',
-        attributeName : 'rule'
+        attributeName : 'Rule',
+        given : true,
+        children : 'givens'
     },
     {
         name : 'Rule',
         representation : 'Rule',
-        attributeName : 'rule'
+        attributeName : 'Rule',
+        given : true,
+        children : 'givens'
     },
     {
         name : 'Axiom',
         representation : 'Axiom',
-        attributeName : 'rule'
+        attributeName : 'Rule',
+        given : true,
+        children : 'givens'
     },
     {
         name : 'Theorem',
         representation : 'Theorem',
-        attributeName : 'theorem'
+        attributeName : 'theorem',
+        given : false,
+        children : 'givens'
     },
     {
         name : 'Lemma',
         representation : 'Lemma',
-        attributeName : 'theorem'
+        attributeName : 'theorem',
+        given : false,
+        children : 'givens'
     },
     {
         name : 'Corollary',
         representation : 'Corollary',
-        attributeName : 'theorem'
+        attributeName : 'theorem',
+        given : false,
+        children : 'givens'
     },
     {
         name : 'Proof',
         representation : 'Proof',
-        attributeName : null
+        attributeName : null,
+        given : false,
+        children : 'claims'
     },
     {
         name : 'Subproof',
         representation : null,
-        attributeName : null
+        attributeName : null,
+        given : false,
+        children : 'claims'
     },
     {
         name : 'Recall',
         representation : 'Recall',
-        attributeName : 'hint'
+        attributeName : 'hint',
+        given : false,
+        children : 'givens'
     }
 ]
 

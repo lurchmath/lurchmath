@@ -1,6 +1,6 @@
 
 import { Atom, className as atomClassName } from './atoms.js'
-import { Shell, className as shellClassName } from './shells.js'
+import { Shell, className as shellClassName, getShellType } from './shells.js'
 import { getHeader } from './header-editor.js'
 import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
@@ -253,7 +253,18 @@ export class Message {
             // then recur on the outside.
             const innerContext = head.toLC()
             assignID( innerContext, head.element )
-            context.pushChild( documentLC( inside, innerContext ) )
+            const nextEnvironment = documentLC( inside, innerContext )
+            const shellType = getShellType( head.getEnvironmentType() )
+            if ( shellType ) {
+                if ( shellType.given )
+                    nextEnvironment.makeIntoA( 'given' )
+                if ( shellType.children == 'givens' )
+                    nextEnvironment.children().forEach( child => {
+                        if ( child instanceof Environment )
+                            child.makeIntoA( 'given' )
+                    } )
+            }
+            context.pushChild( nextEnvironment )
             return documentLC( outside, context )
         }
         // Run the documentLC function on all the elements in the document that
