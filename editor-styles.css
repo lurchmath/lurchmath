@@ -5,12 +5,12 @@
  */
 
 /* Expression atoms */
-[data-metadata_notation='"putdown"'] {
-    font-size : 12pt;
+.putdown-notation {
+    font-size : 14pt;
     font-family : 'Courier New', Courier, monospace;
 }
-[data-metadata_notation='"smackdown"'] {
-    font-size : 12pt;
+.smackdown-notation {
+    font-size : 14pt;
     font-family : 'Courier New', Courier, monospace;
 }
 span.lurch-atom-empty::before {

@@ -200,7 +200,8 @@ addParser( 'putdown', code => {
         }
     }
 } )
-addRepresentation( 'putdown', code => `<tt>${escapeHTML(code)}</tt>`  )
+addRepresentation( 'putdown', code =>
+    `<tt class='putdown-notation'>${escapeHTML(code)}</tt>`  )
 
 // Internal use only
 // Installs a second notation, smackdown
@@ -219,4 +220,5 @@ addParser( 'smackdown', code => {
         }
     }
 } )
-addRepresentation( 'smackdown', code => `<tt>${escapeHTML(code)}</tt>`  )
+addRepresentation( 'smackdown', code =>
+    `<tt class='smackdown-notation'>${escapeHTML(code)}</tt>`  )
