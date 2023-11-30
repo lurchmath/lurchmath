@@ -50,81 +50,25 @@ export const run = ( editor, encoding = 'json' ) =>
     Message.document( editor, encoding ).send( worker )
 
 // Internal use only
-// Remove all validation markers from an Atom or atom element
-const clearValidation = target => {
-    if ( Atom.isAtomElement( target ) ) target = new Atom( target )
-    if ( !( target instanceof Atom ) )
-        throw new Error( `Invalid validation target: ${target}` )
-    target.removeChild( 'suffix' )
-    target.setHoverText( null )
-}
-
-// Internal use only
-// Right now this just drops the "undeclared variable" errors and keeps
-// everything else, but later it will be made more sophisticated, so that it can
-// obey the document settings, keeping just the relevant validation, as the user
-// has requested.
-const filterValidationResults = results =>
-    results.filter( item => item.type != 'scoping'
-                         || !item.reason.endsWith( 'undeclared' ) )
-
-// Internal use only
-// Get first non-filtered feedback item
-const extractFeedback = results => {
-    const relevant = filterValidationResults( results )
-    return relevant.length == 0 ? null : relevant[0]
-}
-
-// Internal use only
-// Create HTML for the feedback icon to place into the suffix of an atom
-// element, based on the feedback message received
-const markerHTML = message => {
-    if ( message.is( 'feedback' ) ) {
-        const feedback = extractFeedback( message.get( 'results' ) )
-        switch ( feedback?.result ) {
-            case 'valid'   : return '<span class="checkmark">&check;</span>'
-            case 'invalid' : return '<span class="redx">✗</span>'
-            default        : return '<span class="unknown">?</span>'
-        }
-    }
-    if ( message.is( 'error' ) )
-        return '<span class="errormark">!</span>'
-}
-
-// Internal use only
-// Append a validation marker to the suffix of an atom element.
-// Note that this is additive, because there may be multiple markers on any
-// given atom element (e.g., if it contains multiple subparts to validate).
-const addValidation = ( target, marker ) => {
-    if ( Atom.isAtomElement( target ) ) target = new Atom( target )
-    if ( !( target instanceof Atom ) )
-        throw new Error( `Invalid validation target: ${target}` )
-    const suffix = target.getChild( 'suffix' )
-    target.fillChild( 'suffix', suffix.innerHTML + marker )
-}
-
-// Internal use only
 // Install event handler so that we can decorate the document correctly upon
 // receiving validation feedback.  We install it on both the worker and this
 // window, becauase when parsing errors happen, we send feedback about them from
 // this window itself before even sending anything to the worker.
-[ worker, window ].forEach( context =>
+;[ worker, window ].forEach( context =>
     context.addEventListener( 'message', event => {
         const message = new Message( event )
         console.log( JSON.stringify( message.content, null, 4 ) )
-        const firstFeedback = message.is( 'feedback' ) ?
-            extractFeedback( message.get( 'results' ) ) : null
-        if ( ( message.is( 'feedback' ) && firstFeedback )
-          || message.is( 'error' ) ) {
+        if ( message.is( 'feedback' ) || message.is( 'error' ) ) {
             if ( message.element ) {
                 console.log( message.element )
                 if ( Atom.isAtomElement( message.element ) ) {
-                    const atom = new Atom( message.element )
-                    addValidation( atom, markerHTML( message ) )
-                    atom.setHoverText( firstFeedback.reason )
+                    new Atom( message.element ).setValidationResult(
+                        message.getValidationResult(),
+                        message.getValidationReason() )
                 } else if ( Shell.isShellElement( message.element ) ) {
-                    message.element.dataset['validation_result'] = firstFeedback.result
-                    new Shell( message.element ).setHoverText( firstFeedback.reason )
+                    new Shell( message.element ).setValidationResult(
+                        message.getValidationResult(),
+                        message.getValidationReason() )
                 } else {
                     console.log( 'Warning: feedback message received for unusable element' )
                     // console.log( JSON.stringify( message.content, null, 4 ) )
@@ -145,7 +89,9 @@ const addValidation = ( target, marker ) => {
 // Internal use only
 // Remove all validation markers from all atom element suffixes in the given
 // editor
-const clearAll = editor => Atom.allIn( editor ).forEach( clearValidation )
+const clearAll = editor =>
+    Atom.allIn( editor ).forEach( atom =>
+        atom.setValidationResult( null ) )
 
 /**
  * This function should be called in the editor's setup routine.  It installs

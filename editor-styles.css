@@ -19,19 +19,28 @@ span.lurch-atom-empty::before {
     font-style: italic;
     color: #bbb;
 }
-span.checkmark {
+span.feedback-marker-valid::after {
+    content: '✓';
     font-family: 'Lucida Grande';
     color: #4CAF50;
     font-weight: bold;
 }
-span.redx {
+span.feedback-marker-invalid::after {
+    content: '✗';
     font-family: 'Lucida Grande';
     color: red;
     font-weight: bold;
 }
-span.errormark {
+span.feedback-marker-indeterminate::after {
+    content: '?';
     font-family: 'Lucida Grande';
     color: rgb(216, 180, 0);
+    font-weight: bold;
+}
+span.feedback-marker-error::after {
+    content: '!';
+    font-family: 'Lucida Grande';
+    color: red;
     font-weight: bold;
 }
 

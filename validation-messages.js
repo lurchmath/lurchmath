@@ -130,6 +130,52 @@ export class Message {
         }
     }
 
+    // Internal use only
+    // Of the many validation results that may have been combined into this
+    // feedback message, find the first one that passes our filtering preferences.
+    // For now, filtering preferences are not settable by the user:  We ignore
+    // "undeclared variable" scoping errors and keep everything else.  Later,
+    // which feedback messages are filtered will be a document setting.
+    getFirstValidationObject () {
+        let results = this.get( 'results' )
+        if ( !results ) return null
+        return results.find( item => item.type != 'scoping'
+                                  || !item.reason.endsWith( 'undeclared' ) )
+    }
+
+    /**
+     * If this message object represents validation feedback, extract the
+     * validation result from that feedback and return it.  If it is an error,
+     * return `"error"`.  Otherwise, return undefined.
+     * 
+     * @returns {string} the result string, which should be one of `"valid"`,
+     *   `"invalid"`, `"indeterminate"`, or `"error"`
+     * @see {@link Message#getValidationReason getValidationReason()}
+     */
+    getValidationResult () {
+        if ( this.is( 'feedback' ) )
+            return this.getFirstValidationObject()?.result
+        else if ( this.is( 'error' ) )
+            return 'error'
+    }
+
+    /**
+     * If this message object represents validation feedback or an error,
+     * extract the reason text from that feedback or error message and return
+     * it.  Otherwise, return undefined.
+     * 
+     * @returns {string} the reason text, which can be any string, but should be
+     *   formatted in a way that is suitable for showing in the hover popup on
+     *   an HTML element
+     * @see {@link Message#getValidationResult getValidationResult()}
+     */
+    getValidationReason () {
+        if ( this.is( 'feedback' ) )
+            return this.getFirstValidationObject()?.reason
+        else if ( this.is( 'error' ) )
+            return this.get( 'reason' )
+    }
+
     /**
      * This function is intended for use in workers, to communicate back to the
      * main thread.  It constructs a message instance, gives it the type
@@ -233,6 +279,7 @@ export class Message {
                     setTimeout( () => Message.error( e.message, {
                         id : tmp.ID(),
                         errorType : 'parsing error',
+                        reason : 'Could not parse this notation',
                         valid : false
                     } ), 0 )
                     LCs = [ ]

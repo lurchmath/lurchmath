@@ -467,6 +467,53 @@ export class Atom {
     }
 
     /**
+     * Set the suffix of the atom to reflect its validation result.
+     * 
+     * The first argument must be one of `"valid"`, `"invalid"`, `"error"`, or
+     * `"indeterminate"`.  No error is thrown if you use another value, but it
+     * will not display any meaningful feedback icon.  To clear all validation
+     * feedback, omit both arguments, or call `setValidationResult(null)`.  The
+     * meanings of these indicators are as follows.
+     * 
+     *  * `"valid"`: the atom represents correct mathematical work
+     *  * `"invalid"`: the atom represents incorrect mathematical work
+     *  * `"indeterminate"`: the atom cannot be clearly classified as valid or
+     *    invalid (e.g., the user has provided something vague, and their
+     *    settings specify that such things should not be aggressively marked
+     *    wrong, but just indeterminate, to request more specificity)
+     *  * `"error"`: the software encountered an internal error while attempting
+     *    to validate the atom.  (Obviously this is to be avoided!  It is
+     *    available to use if an internal error occurs, so that the user gets
+     *    truthful feedback in such a case, and can report the bug so that we
+     *    can set about trying to fix it.  But of course we strive to write
+     *    software does not encounter errors, and thus in which this type of
+     *    feedback is never actually seen by a user.)
+     * 
+     * The second argument should be the text to be shown when the user hovers
+     * their mouse over the atom.  You can omit this if you do not want any
+     * such text, but it is recommended to always have such text, for the user's
+     * benefit.  Note that browsers do not support HTML tags in such hover text
+     * panels, but they do support newline characters (`"\n"`).
+     * 
+     * @param {string?} result - the validation result, one of `"valid"`,
+     *   `"invalid"`, `"error"`, or `"indeterminate"`; can be omitted in order
+     *   to clear all validation feedback
+     * @param {string?} reason - the reason for the validation result, as text to
+     *   be displayed when the user hovers their mouse over the atom
+     * @see {@link module:Shells.Shell#setValidationResult setValidationResult()}
+     */
+    setValidationResult ( result, reason ) {
+        if ( !result ) {
+            this.removeChild( 'suffix' )
+            this.setHoverText( null )
+        } else {
+            this.fillChild( 'suffix',
+                `<span class="feedback-marker-${result}">&nbsp;</span>` )
+            this.setHoverText( reason )
+        }
+    }
+
+    /**
      * One can construct an instance of the Atom class to interface with an
      * element in the editor only if that element actually represents an atom,
      * as defined in {@link module:Atoms the documentation for the Atoms

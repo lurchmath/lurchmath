@@ -293,6 +293,26 @@ export class Shell {
     }
 
     /**
+     * Set the suffix of the shell to reflect its validation result.
+     * 
+     * See the documentation for {@link module:Atoms.Atom#setValidationResult
+     * the setValidationResult() function in the Atom class} for the explanation
+     * of the function and parameters of this method.  It is identical to that
+     * one, except that it operates on shells instead of atoms.
+     *
+     * @see {@link module:Atoms.Atom#setValidationResult setValidationResult()}
+     */
+    setValidationResult ( result, reason ) {
+        if ( !result ) {
+            delete this.element.dataset['validation_result']
+            this.setHoverText( null )
+        } else {
+            this.element.dataset['validation_result'] = result
+            this.setHoverText( reason )
+        }
+    }
+
+    /**
      * One can construct an instance of the Shell class to interface with an
      * element in the editor only if that element actually represents a shell,
      * as defined in {@link module:Shells the documentation for the Shells
