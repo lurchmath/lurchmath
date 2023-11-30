@@ -60,12 +60,33 @@ const clearValidation = target => {
 }
 
 // Internal use only
+// Right now this just drops the "undeclared variable" errors and keeps
+// everything else, but later it will be made more sophisticated, so that it can
+// obey the document settings, keeping just the relevant validation, as the user
+// has requested.
+const filterValidationResults = results =>
+    results.filter( item => item.type != 'scoping'
+                         || !item.reason.endsWith( 'undeclared' ) )
+
+// Internal use only
+// Get first non-filtered feedback item
+const extractFeedback = results => {
+    const relevant = filterValidationResults( results )
+    return relevant.length == 0 ? null : relevant[0]
+}
+
+// Internal use only
 // Create HTML for the feedback icon to place into the suffix of an atom
 // element, based on the feedback message received
 const markerHTML = message => {
-    if ( message.is( 'feedback' ) )
-        return message.get( 'valid' ) ? '<span class="checkmark">&check;</span>'
-                                    : '<span class="redx">✗</span>'
+    if ( message.is( 'feedback' ) ) {
+        const feedback = extractFeedback( message.get( 'results' ) )
+        switch ( feedback?.result ) {
+            case 'valid'   : return '<span class="checkmark">&check;</span>'
+            case 'invalid' : return '<span class="redx">✗</span>'
+            default        : return '<span class="unknown">?</span>'
+        }
+    }
     if ( message.is( 'error' ) )
         return '<span class="errormark">!</span>'
 }
@@ -90,23 +111,30 @@ const addValidation = ( target, marker ) => {
 [ worker, window ].forEach( context =>
     context.addEventListener( 'message', event => {
         const message = new Message( event )
-        if ( message.is( 'feedback' ) || message.is( 'error' ) ) {
+        console.log( JSON.stringify( message.content, null, 4 ) )
+        const firstFeedback = message.is( 'feedback' ) ?
+            extractFeedback( message.get( 'results' ) ) : null
+        if ( ( message.is( 'feedback' ) && firstFeedback )
+          || message.is( 'error' ) ) {
             if ( message.element ) {
+                console.log( message.element )
                 if ( Atom.isAtomElement( message.element ) ) {
                     const atom = new Atom( message.element )
                     addValidation( atom, markerHTML( message ) )
-                    if ( message.content.text )
-                        atom.setHoverText( message.content.text )
+                    atom.setHoverText( firstFeedback.reason )
                 } else {
-                    throw new Error( 'Feedback message for non-atoms not supported' )
+                    console.log( 'Warning: feedback message received for unusable element' )
+                    // console.log( JSON.stringify( message.content, null, 4 ) )
                 }
             } else {
-                throw new Error( 'Feedback message received with no element as target' )
+                console.log( 'Warning: feedback message received with no target element' )
+                // console.log( JSON.stringify( message.content, null, 4 ) )
             }
         } else if ( message.is( 'done' ) ) {
             // pass
         } else {
-            console.log( 'Ignoring this message:', message )
+            console.log( 'Warning: unrecognized message type' )
+            // console.log( JSON.stringify( message.content, null, 4 ) )
         }
     } )
 )
