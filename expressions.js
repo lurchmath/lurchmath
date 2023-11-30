@@ -10,11 +10,15 @@
 
 import { Atom } from './atoms.js'
 import { lookup } from './document-settings.js'
-import { Dialog, TextInputItem, SelectBoxItem, HTMLItem, AlertItem } from './dialog.js'
+import {
+    Dialog, TextInputItem, SelectBoxItem, HTMLItem, AlertItem, ButtonItem
+} from './dialog.js'
 import { parse, names as notationNames, usesMathEditor, represent } from './notation.js'
-import { escapeHTML } from './utilities.js'
+import { escapeHTML, simpleHTMLTable } from './utilities.js'
 import { phrasesInForceAt } from './math-phrases.js'
-import { MathItem } from './math-live.js'
+import { MathItem, getConverter, outputFormats } from './math-live.js'
+
+let converter = null
 
 /**
  * Install into a TinyMCE editor instance a new menu item:
@@ -30,6 +34,7 @@ import { MathItem } from './math-live.js'
  * @function
  */
 export const install = editor => {
+    getConverter().then( result => converter = result )
     editor.ui.registry.addMenuItem( 'expression', {
         text : 'Expression',
         icon : 'insert-character',
@@ -100,9 +105,26 @@ export const phraseHTML = ( phrase, editor ) => {
 const inputControl = ( name, notation, label, placeholder ) =>
     usesMathEditor( notation ) ? new MathItem( name, label )
                                : new TextInputItem( name, label, placeholder || name )
+// Common button across all types of dialogs
+// This does not yet work because putdown can't be used as an input format for
+// conversion.  Later, if we have upgraded our conversion tools to support that,
+// this should be easy to re-enable at that time.
+const addPreviewButton = ( dialog, atom ) => {
+    // dialog.addItem( new ButtonItem( 'Preview in all notations', () => {
+    //     const previewDialog = new Dialog( 'Preview in all notations', dialog.editor )
+    //     previewDialog.addItem( new HTMLItem( simpleHTMLTable(
+    //         outputFormats.map( format => [
+    //             format,
+    //             `<tt>${escapeHTML(atom.toNotation(format))}</tt>`
+    //         ] )
+    //     ) ) )
+    //     previewDialog.show()
+    // } ) )
+}
 // This one sets up a dialog for editing an atom using some notation, like putdown.
 const setUpNotationDialog = ( dialog, atom, notation ) => {
     dialog.addItem( inputControl( 'code', notation, 'Expression' ) )
+    addPreviewButton( dialog, atom )
     dialog.setInitialData( {
         code : atom.getMetadata( 'code' ),
         notation : notation
@@ -142,6 +164,7 @@ const setUpPhraseDialog = ( dialog, atom, phrase ) => {
         dialog.setDefaultFocus( `param-${params[0]}` )
     else
         dialog.setDefaultFocus( 'notation' )
+    addPreviewButton( dialog, atom )
     dialog.setInitialData( initialData )
 }
 // This one takes a dialog like the one set up above and saves its edits into the atom.
@@ -238,6 +261,13 @@ Atom.addType( 'notation', {
         } )
         const paramNotation = phrase.getMetadata( 'notation' )
         return parse( template, paramNotation )
+    },
+    toNotation : function ( notation ) {
+        if ( !converter ) return
+        const LCs = this.toLCs()
+        let putdown = ''
+        LCs.forEach( LC => putdown += LC.toPutdown() + '\n' )
+        return converter( putdown, 'putdown', notation )
     },
     // this update function can optionally accept a "phrase" parameter, which
     // will prevent us from searching for a math phrase in force at this atom;

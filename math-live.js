@@ -172,9 +172,17 @@ const mathJSONToPutdown = json => {
     return `(unsupported_MathJSON ${JSON.stringify( json )})`
 }
 
-// Internal use only; see getConverter(), below.
-const inputFormats = [ 'latex', 'mathjson', 'asciimath' ]
-const outputFormats = [ 'html', 'putdown', ...inputFormats ]
+/**
+ * An array of names of all the input formats known by the converter defined in
+ * {@link module:MathLive.getConverter getConverter()}.
+ */
+export const inputFormats = [ 'latex', 'mathjson', 'asciimath' ]
+
+/**
+ * An array of names of all the output formats known by the converter defined in
+ * {@link module:MathLive.getConverter getConverter()}.
+ */
+export const outputFormats = [ 'html', 'putdown', ...inputFormats ]
 
 /**
  * A converter is a function with the following signature:
@@ -211,11 +219,12 @@ const outputFormats = [ 'html', 'putdown', ...inputFormats ]
  * @function
  */
 export const getConverter = () => loadMathFieldClass().then( () => {
-    // Ensure that .json doesn't convert 1/2 to "Half"
-    MathfieldElement.computeEngine.jsonSerializationOptions.exclude = [ 'Half' ]
     // Define the function here that we will return, so that we have a name to
     // us inside of it for recursive calls.
     const convert = ( data, inputFormat, outputFormat ) => {
+        // Ensure that .json doesn't convert 1/2 to "Half"
+        MathfieldElement.computeEngine.jsonSerializationOptions.exclude = [ 'Half' ]
+        // (Tried to put that code outside the function but it was too soon; not sure why.)
         inputFormat = inputFormat.toLowerCase()
         outputFormat = outputFormat.toLowerCase()
         if ( !inputFormats.includes( inputFormat ) )
