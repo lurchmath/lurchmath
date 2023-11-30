@@ -122,6 +122,9 @@ const addValidation = ( target, marker ) => {
                     const atom = new Atom( message.element )
                     addValidation( atom, markerHTML( message ) )
                     atom.setHoverText( firstFeedback.reason )
+                } else if ( Shell.isShellElement( message.element ) ) {
+                    message.element.dataset['validation_result'] = firstFeedback.result
+                    new Shell( message.element ).setHoverText( firstFeedback.reason )
                 } else {
                     console.log( 'Warning: feedback message received for unusable element' )
                     // console.log( JSON.stringify( message.content, null, 4 ) )

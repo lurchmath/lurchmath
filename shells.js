@@ -208,6 +208,20 @@ export class Shell {
      */
     setType ( type ) { this.element.dataset.type = type }
 
+    /**
+     * Set (or clear) the hover text on this shell.  Hover text is what's shown
+     * in a small popup when the user hovers over the shell in the editor.
+     * 
+     * @param {string?} text - the text to set as the hover text for this
+     *   shell's HTMLElement, or `null` to remove the hover text
+     */
+    setHoverText ( text ) {
+        if ( text )
+            this.element.setAttribute( 'title', text )
+        else
+            this.element.removeAttribute( 'title' )
+    }
+
     // Internal use only:
     // get/set what type of environment this is (Theorem, Proof, etc.)
     getEnvironmentType () {

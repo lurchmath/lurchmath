@@ -56,6 +56,39 @@ div.lurch-shell[data-environment_type_representation]::before {
     left: 6pt;
     padding: 0 6pt;  
 }
+div.lurch-shell[data-validation_result="valid"]::after {
+    content: '✓';
+    color: #4CAF50;
+    background-color: white;
+    font-family: 'Lucida Grande';
+    font-weight: bold;
+    position: absolute;
+    bottom: -7pt;
+    right: 6pt;
+    padding: 0 6pt;
+}
+div.lurch-shell[data-validation_result="invalid"]::after {
+    content: '✗';
+    color: red;
+    background-color: white;
+    font-family: 'Lucida Grande';
+    font-weight: bold;
+    position: absolute;
+    bottom: -7pt;
+    right: 6pt;
+    padding: 0 6pt;
+}
+div.lurch-shell[data-validation_result="indeterminate"]::after {
+    content: '?';
+    color: rgb(216, 180, 0);
+    background-color: white;
+    font-family: 'Lucida Grande';
+    font-weight: bold;
+    position: absolute;
+    bottom: -7pt;
+    right: 6pt;
+    padding: 0 6pt;
+}
 
 /* Dependency URL atoms  */
 .lurch-dependency {
