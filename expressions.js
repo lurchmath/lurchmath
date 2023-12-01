@@ -276,7 +276,7 @@ Atom.addType( 'notation', {
     update : function ( phrase ) {
         const notation = this.getMetadata( 'notation' )
         if ( !phrase )
-            phrase = phrasesInForceAt( location || this ).find(
+            phrase = phrasesInForceAt( this ).find(
                 phrase => phrase.getMetadata( 'name' ) == notation )
         if ( !phrase ) {
             const code = this.getMetadata( 'code' )
