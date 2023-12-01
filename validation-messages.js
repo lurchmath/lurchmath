@@ -195,6 +195,22 @@ export class Message {
     /**
      * This function is intended for use in workers, to communicate back to the
      * main thread.  It constructs a message instance, gives it the type
+     * `"progress"`, and says what percentage of the total progress of
+     * validation has been accomplished, as an integer in the set
+     * $\{0,1,...,99,100\}$.
+     * 
+     * This can be done in one line of code without this convenience function,
+     * but using this method makes the code more concise and readable.
+     * 
+     * @param {integer} complete - the progress value, from 0 to 100 inclusive
+     */
+    static progress ( complete ) {
+        new Message( { type : 'progress', complete } ).send()
+    }
+
+    /**
+     * This function is intended for use in workers, to communicate back to the
+     * main thread.  It constructs a message instance, gives it the type
      * `"done"`, and sends that message back to the main thread.
      * 
      * This can be done in one line of code without this convenience function,

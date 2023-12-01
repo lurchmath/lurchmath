@@ -19,6 +19,7 @@
 import { Message } from './validation-messages.js'
 import { Atom } from './atoms.js'
 import { Shell } from './shells.js'
+import { Dialog } from './dialog.js'
 
 // Internal use only, the worker in which validation will occur.
 // Loads the ValidationWorker module code so it can talk to us.
@@ -48,6 +49,10 @@ const worker = new Worker( 'validation-worker.js', { type : 'module' } )
  */
 export const run = ( editor, encoding = 'json' ) =>
     Message.document( editor, encoding ).send( worker )
+
+// Internal use only
+// Object for storing the progress notification we show during validation
+let progressNotification = null
 
 // Internal use only
 // Install event handler so that we can decorate the document correctly upon
@@ -82,8 +87,13 @@ export const run = ( editor, encoding = 'json' ) =>
                 console.log( 'Warning: feedback message received with no target element' )
                 // console.log( JSON.stringify( message.content, null, 4 ) )
             }
+        } else if ( message.is( 'progress' ) ) {
+            progressNotification.progressBar.value( message.get( 'complete' ) )
         } else if ( message.is( 'done' ) ) {
-            // pass
+            progressNotification.close()
+            Dialog.notify( progressNotification.editor, 'success',
+                'Validation complete', 2000 )
+            progressNotification = null
         } else {
             console.log( 'Warning: unrecognized message type' )
             // console.log( JSON.stringify( message.content, null, 4 ) )
@@ -126,6 +136,12 @@ export const install = editor => {
         shortcut : 'Meta+Shift+V',
         onAction : () => {
             clearAll( editor )
+            progressNotification = editor.notificationManager.open( {
+                text : 'Validating...',
+                type : 'info',
+                progressBar : true
+            } )
+            progressNotification.editor = editor // ugly hack I'll fix later
             run( editor )
         }
     } )

@@ -19,7 +19,26 @@
 
 import { Message } from './validation-messages.js'
 import LDE from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@85e7368b912116420a2dc7475c616a721ec38ba1/src/experimental/global-validation.js'
+
 const LogicConcept = LDE.LogicConcept
+
+// Internal use only
+// Sets up an event handler for progress notifications from the LDE, to pass
+// them back to the main thread using the Message.progress() static method.
+// Because progress messages from the LDE come in the form of (p,n,r), where
+// p is a pass number (any positive integer), n is the total amount of work to
+// be done in that pass (any nonnegative integer), and r is the proportion of
+// the work of the pass complete (an integer from 0 to 100 inclusive), we
+// transform (p,n,r) into (1 - 2^(-p+1) + 2^(-p) * r) to get the value to send
+// to the main thread.  This makes pass 1 take up the first half of the progress
+// bar, pass 2 half of what remains, pass 3 half of what remains, and so on.
+LDE.LurchOptions.updateProgress = ( passIndex, _, percentComplete ) => {
+    const proportion = percentComplete / 100
+    const transformed = 1 - Math.pow( 2, -passIndex+1 )
+                          + Math.pow( 2, -passIndex ) * proportion
+    Message.progress( ( transformed * 100 ) | 0 )
+}
+LDE.LurchOptions.updateFreq = 1
 
 // Listen for messages from the main thread, which should send putdown notation
 // for a document to validate.  When it does, we run our one (temporary
