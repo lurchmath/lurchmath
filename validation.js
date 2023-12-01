@@ -57,10 +57,10 @@ export const run = ( editor, encoding = 'json' ) =>
 ;[ worker, window ].forEach( context =>
     context.addEventListener( 'message', event => {
         const message = new Message( event )
-        console.log( JSON.stringify( message.content, null, 4 ) )
+        // console.log( JSON.stringify( message.content, null, 4 ) )
         if ( message.is( 'feedback' ) || message.is( 'error' ) ) {
             if ( message.element ) {
-                console.log( message.element )
+                // console.log( message.element )
                 if ( Atom.isAtomElement( message.element ) ) {
                     // Technically we should construct an atom with an editor,
                     // but we don't have one here, and we're just doing one

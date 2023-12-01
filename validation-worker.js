@@ -86,7 +86,7 @@ const getValidationResults = LC => {
 
 // Validate using the imported Lurch Deductive Engine (LDE) module
 const validateDocument = LC => {
-    console.log( LC.toPutdown() )
+    // console.log( LC.toPutdown() )
     try {
         LDE.validate( LC )
     } catch ( error ) {
@@ -94,7 +94,7 @@ const validateDocument = LC => {
         Message.error( `Error running LDE validation: ${error.message}` )
         return
     }
-    console.log( LC.toPutdown() )
+    // console.log( LC.toPutdown() )
     for ( let descendant of LC.descendantsIterator() ) {
         const results = getValidationResults( descendant )
         if ( results.length == 0 ) continue
