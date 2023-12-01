@@ -39,7 +39,8 @@ export const phrasesInForceAt = target => {
     const result = [ ]
     const editor = target instanceof Atom ? target.editor : editorForNode( target )
     if ( !editor ) return [ ]
-    const element = target instanceof Atom ? target.element : target
+    const element = target instanceof Atom ?
+        ( target.element || target.futureLocation ) : target
     Shell.accessibles( editor, element ).forEach(
         atomElement => {
             const atom = new Atom( atomElement )
