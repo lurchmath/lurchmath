@@ -680,7 +680,8 @@ export class Atom {
      * @see {@link module:Atoms.Atom.allElementsIn allElementsIn()}
      */
     static allIn ( editor ) {
-        return Atom.allElementsIn( editor ).map( element => new Atom( element ) )
+        return Atom.allElementsIn( editor ).map( element =>
+            new Atom( element, editor ) )
     }
 
 }
@@ -724,7 +725,7 @@ export const install = editor => {
         thisAtomElementList.filter(
             element => !lastAtomElementList.includes( element )
         ).forEachWithTimeout(
-            element => new Atom( element ).update()
+            element => new Atom( element, editor ).update()
         )
         lastAtomElementList = thisAtomElementList
     } )

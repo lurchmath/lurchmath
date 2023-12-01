@@ -62,10 +62,15 @@ export const run = ( editor, encoding = 'json' ) =>
             if ( message.element ) {
                 console.log( message.element )
                 if ( Atom.isAtomElement( message.element ) ) {
+                    // Technically we should construct an atom with an editor,
+                    // but we don't have one here, and we're just doing one
+                    // small operation, which doesn't require the editor.
                     new Atom( message.element ).setValidationResult(
                         message.getValidationResult(),
                         message.getValidationReason() )
                 } else if ( Shell.isShellElement( message.element ) ) {
+                    // Same comment here about Shells that we see above about
+                    // atoms.
                     new Shell( message.element ).setValidationResult(
                         message.getValidationResult(),
                         message.getValidationReason() )

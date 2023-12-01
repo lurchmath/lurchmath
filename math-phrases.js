@@ -43,7 +43,7 @@ export const phrasesInForceAt = target => {
         ( target.element || target.futureLocation ) : target
     Shell.accessibles( editor, element ).forEach(
         atomElement => {
-            const atom = new Atom( atomElement )
+            const atom = new Atom( atomElement, editor )
             if ( atom.getMetadata( 'type' ) == 'mathphrasedef' )
                 result.push( atom )
         }
