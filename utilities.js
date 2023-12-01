@@ -234,9 +234,9 @@ export const editorForNode = node => {
  * @param {number} [timeout=0] - the number of milliseconds to wait between calls
  * @function
  */
-export const forEachWithTimeout = ( func, array, timeout = 0 ) => {
-    if ( array.length == 0 ) return
-    func( array[0] )
+Array.prototype.forEachWithTimeout = function( func, timeout = 0 ) {
+    if ( this.length == 0 ) return
+    func( this[0] )
     setTimeout( () =>
-        forEachWithTimeout( func, array.slice(1), timeout ), timeout )
+        this.slice(1).forEachWithTimeout( func, timeout ), timeout )
 }

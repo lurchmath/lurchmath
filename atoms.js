@@ -34,7 +34,7 @@
  * @see {@link module:Shells the Shells module}
  */
 
-import { removeScriptTags, forEachWithTimeout } from './utilities.js'
+import { removeScriptTags } from './utilities.js'
 
 /**
  * Class name used to distinguish HTML elements representing atoms.  (For an
@@ -721,9 +721,11 @@ export const install = editor => {
     let lastAtomElementList = [ ]
     editor.on( 'input NodeChange Paste Change Undo Redo', () => {
         const thisAtomElementList = Atom.allElementsIn( editor )
-        forEachWithTimeout( element => new Atom( element ).update(),
-            thisAtomElementList.filter( element =>
-                !lastAtomElementList.includes( element ) ) )
+        thisAtomElementList.filter(
+            element => !lastAtomElementList.includes( element )
+        ).forEachWithTimeout(
+            element => new Atom( element ).update()
+        )
         lastAtomElementList = thisAtomElementList
     } )
 }
