@@ -1,5 +1,12 @@
 
 /**
+ * This module provides an `install()` function for use in the editor's setup
+ * routine, to add this module's validation functionality to the editor.  The
+ * install routine does all the work of this module; there are no module-level
+ * variables.  Each call to `install()` creates a new background Web Worker
+ * that will do validation, installs a new set of event handlers for it, etc.
+ * See {@link module:Validation.install install()} for details.
+ *
  * This module creates a Web Worker to use for doing validation outside of the
  * UI thread.  It loads into that worker the code in
  * {@link module:ValidationWorker the validation worker module}, and then
@@ -21,93 +28,6 @@ import { Atom } from './atoms.js'
 import { Shell } from './shells.js'
 import { Dialog } from './dialog.js'
 
-// Internal use only, the worker in which validation will occur.
-// Loads the ValidationWorker module code so it can talk to us.
-const worker = new Worker( 'validation-worker.js', { type : 'module' } )
-
-/**
- * Send a serialized document to the worker for validation.  It is necessary for
- * the document to be serialized, because objects cannot be shared across the
- * main thread/worker thread boundary.  Here we require the data to be
- * serialized in putdown notation, but that could be extended to support other
- * notations in the future, including anything that can be parsed into an
- * expression tree, such as JSON, etc.
- * 
- * No value is returned, but validation will begin.  Messages will be sent to
- * any listener installed using {@link module:Validation.addEventListener
- * addEventListener()}, and those messages will be a sequence of zero or more
- * messages of type `"feedback"` or type `"error"` followed by exactly one
- * message of type `"done"`.
- * 
- * Calling this function again before you have received the `"done"` message
- * from the previous call will just queue up the second validation to happen
- * after the first one completes.
- * 
- * @param {string} putdown - the document to validate, represented in putdown
- *   notation
- * @function
- */
-export const run = ( editor, encoding = 'json' ) =>
-    Message.document( editor, encoding ).send( worker )
-
-// Internal use only
-// Object for storing the progress notification we show during validation
-let progressNotification = null
-
-// Internal use only
-// Install event handler so that we can decorate the document correctly upon
-// receiving validation feedback.  We install it on both the worker and this
-// window, becauase when parsing errors happen, we send feedback about them from
-// this window itself before even sending anything to the worker.
-;[ worker, window ].forEach( context =>
-    context.addEventListener( 'message', event => {
-        const message = new Message( event )
-        // console.log( JSON.stringify( message.content, null, 4 ) )
-        if ( message.is( 'feedback' ) || message.is( 'error' ) ) {
-            if ( message.element ) {
-                // console.log( message.element )
-                if ( Atom.isAtomElement( message.element ) ) {
-                    // Technically we should construct an atom with an editor,
-                    // but we don't have one here, and we're just doing one
-                    // small operation, which doesn't require the editor.
-                    new Atom( message.element ).setValidationResult(
-                        message.getValidationResult(),
-                        message.getValidationReason() )
-                } else if ( Shell.isShellElement( message.element ) ) {
-                    // Same comment here about Shells that we see above about
-                    // atoms.
-                    new Shell( message.element ).setValidationResult(
-                        message.getValidationResult(),
-                        message.getValidationReason() )
-                } else {
-                    console.log( 'Warning: feedback message received for unusable element' )
-                    // console.log( JSON.stringify( message.content, null, 4 ) )
-                }
-            } else {
-                console.log( 'Warning: feedback message received with no target element' )
-                // console.log( JSON.stringify( message.content, null, 4 ) )
-            }
-        } else if ( message.is( 'progress' ) ) {
-            progressNotification.progressBar.value( message.get( 'complete' ) )
-        } else if ( message.is( 'done' ) ) {
-            progressNotification.close()
-            Dialog.notify( progressNotification.editor, 'success',
-                'Validation complete', 2000 )
-            progressNotification = null
-        } else {
-            console.log( 'Warning: unrecognized message type' )
-            // console.log( JSON.stringify( message.content, null, 4 ) )
-        }
-    } )
-)
-
-// Internal use only
-// Remove all validation markers from all atom element suffixes in the given
-// editor
-const clearAll = editor =>
-    Atom.allIn( editor ).forEach( atom =>
-        atom.setValidationResult( null ) )
-
 /**
  * This function should be called in the editor's setup routine.  It installs
  * two menu items into the editor:
@@ -118,33 +38,101 @@ const clearAll = editor =>
  *  * one for removing all such validation suffixes from the editor's current
  *    contents
  * 
+ * In order to support the functionality of those two menu items, the
+ * `install()` function also constructs a web worker that will do the validation
+ * in the background, and that web worker loads the tools in the
+ * {@link module:ValidationWorker validation worker module}.  This function also
+ * installs event handlers on the worker and on this window so that
+ * {@link Message Message instances} sent from the worker or from this window
+ * during parsing can be handled and used to create validation feedback in the
+ * editor.
+ * 
  * @param {tinymce.Editor} editor - the editor in which to install the features
  *   described above
  * @function
  */
 export const install = editor => {
+
+    // Load the ValidationWorker module code so it can talk to us.
+    const worker = new Worker( 'validation-worker.js', { type : 'module' } )
+
+    // Object for storing the progress notification we show during validation
+    let progressNotification = null
+
+    // Define utility function used below:
+    // Remove all validation markers from all atoms and shells in the editor
+    const clearAll = () => {
+        Atom.allIn( editor ).forEach( atom =>
+            atom.setValidationResult( null ) )
+    }
+
+    // Install event handler so that we can decorate the document correctly upon
+    // receiving validation feedback.  We install it on both the worker and this
+    // window, becauase when parsing errors happen, we send feedback about them
+    // from this window itself before even sending anything to the worker.
+    ;[ worker, window ].forEach( context =>
+        context.addEventListener( 'message', event => {
+            const message = new Message( event )
+            // console.log( JSON.stringify( message.content, null, 4 ) )
+            if ( message.is( 'feedback' ) || message.is( 'error' ) ) {
+                if ( message.element ) {
+                    // console.log( message.element )
+                    if ( Atom.isAtomElement( message.element ) ) {
+                        new Atom( message.element, editor ).setValidationResult(
+                            message.getValidationResult(),
+                            message.getValidationReason() )
+                    } else if ( Shell.isShellElement( message.element ) ) {
+                        new Shell( message.element, editor ).setValidationResult(
+                            message.getValidationResult(),
+                            message.getValidationReason() )
+                    } else {
+                        console.log( 'Warning: feedback message received for unusable element' )
+                        // console.log( JSON.stringify( message.content, null, 4 ) )
+                    }
+                } else {
+                    console.log( 'Warning: feedback message received with no target element' )
+                    // console.log( JSON.stringify( message.content, null, 4 ) )
+                }
+            } else if ( message.is( 'progress' ) ) {
+                progressNotification.progressBar.value( message.get( 'complete' ) )
+            } else if ( message.is( 'done' ) ) {
+                progressNotification.close()
+                Dialog.notify( editor, 'success', 'Validation complete', 2000 )
+                progressNotification = null
+            } else {
+                console.log( 'Warning: unrecognized message type' )
+                // console.log( JSON.stringify( message.content, null, 4 ) )
+            }
+        } )
+    )
+
+    // Add menu item for clearing validation results
     editor.ui.registry.addMenuItem( 'clearvalidation', {
         text : 'Clear validation',
         tooltip : 'Remove all validation markers from the document',
         shortcut : 'Meta+Shift+C',
-        onAction : () => clearAll( editor )
+        onAction : () => clearAll()
     } )
+    
+    // Add menu item for running validation
     editor.ui.registry.addMenuItem( 'validate', {
         text : 'Validate',
         icon : 'checkmark',
         tooltip : 'Run validation on the document',
         shortcut : 'Meta+Shift+V',
         onAction : () => {
-            clearAll( editor )
+            // Clear old results
+            clearAll()
+            // Start progress bar in UI
             progressNotification = editor.notificationManager.open( {
                 text : 'Validating...',
                 type : 'info',
                 progressBar : true
             } )
-            progressNotification.editor = editor // ugly hack I'll fix later
-            run( editor )
+            // Send the document to the worker to initiate background validation
+            Message.document( editor, 'json' ).send( worker )
         }
     } )
 }
 
-export default { install, run }
+export default { install }
