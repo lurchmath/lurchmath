@@ -64,6 +64,8 @@ export const install = editor => {
     const clearAll = () => {
         Atom.allIn( editor ).forEach( atom =>
             atom.setValidationResult( null ) )
+        Shell.allIn( editor ).forEach( shell =>
+            shell.setValidationResult( null ) )
     }
 
     // Install event handler so that we can decorate the document correctly upon
