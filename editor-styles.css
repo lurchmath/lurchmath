@@ -121,7 +121,12 @@ div.lurch-shell[data-validation_result="indeterminate"]::after {
     font-size: 11pt;
 }
 
+/* Other */
 span.URL {
     font-family : 'Courier New', Courier, monospace;
     font-size: small;
+}
+div.LC-meaning-preview {
+    height: 10em;
+    overflow-y: scroll;
 }

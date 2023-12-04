@@ -13,10 +13,12 @@ import { lookup } from './document-settings.js'
 import {
     Dialog, TextInputItem, SelectBoxItem, HTMLItem, AlertItem, ButtonItem
 } from './dialog.js'
-import { parse, names as notationNames, usesMathEditor, represent } from './notation.js'
-import { escapeHTML, simpleHTMLTable } from './utilities.js'
+import {
+    parse, names as notationNames, usesMathEditor, represent, syntaxTreeHTML
+} from './notation.js'
+import { escapeHTML } from './utilities.js'
 import { phrasesInForceAt } from './math-phrases.js'
-import { MathItem, getConverter, outputFormats } from './math-live.js'
+import { MathItem, getConverter } from './math-live.js'
 
 let converter = null
 
@@ -106,20 +108,17 @@ const inputControl = ( name, notation, label, placeholder ) =>
     usesMathEditor( notation ) ? new MathItem( name, label )
                                : new TextInputItem( name, label, placeholder || name )
 // Common button across all types of dialogs
-// This does not yet work because putdown can't be used as an input format for
-// conversion.  Later, if we have upgraded our conversion tools to support that,
-// this should be easy to re-enable at that time.
+// Shows a simple HTML preview of the internal LC structure of the atom
 const addPreviewButton = ( dialog, atom ) => {
-    // dialog.addItem( new ButtonItem( 'Preview in all notations', () => {
-    //     const previewDialog = new Dialog( 'Preview in all notations', dialog.editor )
-    //     previewDialog.addItem( new HTMLItem( simpleHTMLTable(
-    //         outputFormats.map( format => [
-    //             format,
-    //             `<tt>${escapeHTML(atom.toNotation(format))}</tt>`
-    //         ] )
-    //     ) ) )
-    //     previewDialog.show()
-    // } ) )
+    dialog.addItem( new ButtonItem( 'View meaning structure', () => {
+        const previewDialog = new Dialog( 'View meaning structure', dialog.editor )
+        previewDialog.addItem( new HTMLItem(
+            `<div class="LC-meaning-preview">
+                ${ atom.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
+            </div>`
+        ) )
+        previewDialog.show()
+    } ) )
 }
 // This one sets up a dialog for editing an atom using some notation, like putdown.
 const setUpNotationDialog = ( dialog, atom, notation ) => {

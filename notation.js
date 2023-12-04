@@ -222,3 +222,22 @@ addParser( 'smackdown', code => {
 } )
 addRepresentation( 'smackdown', code =>
     `<tt class='smackdown-notation'>${escapeHTML(code)}</tt>`  )
+
+/**
+ * Create a universally understandable HTML representation for any given LC.
+ * This will be used as a debugging tool for any power user who wants to see a
+ * syntax-tree-like representation of any atom in their document.
+ * 
+ * @param {LogicConcept} LC - the LogicConcept to be represented
+ * @returns {string} the HTML representation of the LogicConcept
+ * @function
+ */
+export const syntaxTreeHTML = LC => {
+    const bulletize = list =>
+        '<ul>' + list.map( x => `<li>${x}</li>` ).join( '\n' ) + '</ul>'
+    if ( LC.constructor.className == 'Symbol' )
+        return escapeHTML( LC.text() )
+    else
+        return LC.constructor.className + '\n'
+            + bulletize( LC.children().map( syntaxTreeHTML ) )
+}
