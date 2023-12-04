@@ -101,6 +101,8 @@ export const install = editor => {
                 progressNotification.close()
                 Dialog.notify( editor, 'success', 'Validation complete', 2000 )
                 progressNotification = null
+            } else if ( message.content?.type?.startsWith( 'mathlive#' ) ) {
+                // Ignore messages MathLive is sending to itself
             } else {
                 console.log( 'Warning: unrecognized message type' )
                 // console.log( JSON.stringify( message.content, null, 4 ) )
