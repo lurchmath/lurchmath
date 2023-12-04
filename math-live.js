@@ -231,6 +231,10 @@ export const getConverter = () => loadMathFieldClass().then( () => {
             throw new Error( `Invalid input format: ${inputFormat}` )
         if ( !outputFormats.includes( outputFormat ) )
             throw new Error( `Invalid output format: ${outputFormat}` )
+        // handle trivial case
+        if ( inputFormat == outputFormat )
+            return data
+        // handle all other cases
         switch ( `${inputFormat} ${outputFormat}` ) {
             case 'latex putdown':
                 return convert( convert( data, 'latex', 'mathjson' ),
