@@ -32,7 +32,7 @@ const loadMathFieldClass = () =>
  * 
  * @type {string}
  */
-export const stylesheet = 'https://unpkg.com/mathlive@0.96.2/dist/mathlive-static.css'
+export const stylesheet = 'https://unpkg.com/mathlive/dist/mathlive-static.css'
 
 /**
  * An item that can be used in a {@link Dialog} and shows up as an equation
