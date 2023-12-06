@@ -6,12 +6,15 @@
 
 /* Expression atoms */
 .putdown-notation {
-    font-size : 14pt;
+    font-size : 16pt;
     font-family : 'Courier New', Courier, monospace;
 }
 .smackdown-notation {
-    font-size : 14pt;
+    font-size : 16pt;
     font-family : 'Courier New', Courier, monospace;
+}
+.ML__latex {
+    font-size : 1.2em;
 }
 span.lurch-atom-empty::before {
     content: 'empty expression';
