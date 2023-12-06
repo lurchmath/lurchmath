@@ -9,7 +9,7 @@
  */
 
 import { Atom } from './atoms.js'
-import { lookup } from './document-settings.js'
+import { appSettings } from './settings-install.js'
 import {
     Dialog, TextInputItem, SelectBoxItem, HTMLItem, AlertItem, ButtonItem
 } from './dialog.js'
@@ -46,8 +46,7 @@ export const install = editor => {
             const atom = Atom.newInline( editor, '', {
                 type : 'notation',
                 code : '',
-                // use the notation language specified in the document settings:
-                notation : lookup( editor, 'notation' )
+                notation : appSettings.get( 'notation' )
             } )
             atom.update()
             atom.editThenInsert()
