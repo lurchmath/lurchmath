@@ -96,6 +96,7 @@ export const phraseHTML = ( phrase, editor ) => {
     const atom = Atom.newInline( editor, '', { type : 'notation', notation } )
     const paramNames = phrase.getMetadata( 'paramNames' ).split( /\s*,\s*/ )
     paramNames.forEach( param => atom.setMetadata( `param-${param}`, param ) )
+    paramNames.forEach( param => atom.setMetadata( `notation-${param}`, 'putdown' ) )
     atom.update( phrase )
     return atom.getHTML()
 }
