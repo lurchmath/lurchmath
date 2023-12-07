@@ -106,6 +106,12 @@ export const phraseHTML = ( phrase, editor ) => {
 const inputControl = ( name, notation, label, placeholder ) =>
     usesMathEditor( notation ) ? new MathItem( name, label )
                                : new TextInputItem( name, label, placeholder || name )
+// Control for choosing a notation
+const notationSelect = ( name, label, accessiblePhrases = [ ] ) =>
+    new SelectBoxItem( name, label, [
+        ...notationNames(),
+        ...accessiblePhrases.map( phrase => phrase.getMetadata( 'name' ) )
+    ] )
 // Common button across all types of dialogs
 // Shows a simple HTML preview of the internal LC structure of the atom
 const addPreviewButton = ( dialog, atom ) => {
@@ -120,14 +126,14 @@ const addPreviewButton = ( dialog, atom ) => {
     } ) )
 }
 // This one sets up a dialog for editing an atom using some notation, like putdown.
-const setUpNotationDialog = ( dialog, atom, notation ) => {
-    dialog.addItem( inputControl( 'code', notation, 'Expression' ) )
+const setUpNotationDialog = ( dialog, atom, initialData ) => {
+    dialog.addItem( inputControl( 'code', initialData.notation, 'Expression' ) )
     addPreviewButton( dialog, atom )
     dialog.setInitialData( {
         code : atom.getMetadata( 'code' ),
-        notation : notation
+        ...initialData
     } )
-    if ( notation == 'math editor' )
+    if ( initialData.notation == 'math editor' )
         dialog.items.find( item => item.name == 'code' )?.setFocusWhenShown( true )
     else
         dialog.setDefaultFocus( 'code' )
@@ -139,24 +145,27 @@ const applyNotationDialog = ( dialog, atom ) => {
 }
 // This one sets up a dialog for editing a math phrase (not a math phrase definition,
 // but an expression that is an instance of a particular math phrase defined elsewhere).
-const setUpPhraseDialog = ( dialog, atom, phrase ) => {
+const setUpPhraseDialog = ( dialog, atom, phrase, initialData ) => {
     const html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
     const internal = phrase.getMetadata( 'codeTemplate' )
-    const paramNotation = phrase.getMetadata( 'notation' )
+    const internalNotation = phrase.getMetadata( 'notation' )
     dialog.addItem( new HTMLItem( `
         <div style='margin-top: 1em; margin-bottom: 1em;'>
             <p>External representation: ${html}</p>
-            <p>Internal representation (in ${paramNotation}):
+            <p>Internal representation (in ${internalNotation}):
                 ${escapeHTML(internal)}</p>
         </div>
     ` ) )
-    const initialData = { notation : phrase.getMetadata( 'name' ) }
     const params = phrase.getMetadata( 'paramNames' ).split( ',' )
         .map( name => name.trim() )
     params.forEach( param => {
-        const key = `param-${param}`
-        dialog.addItem( inputControl( key, paramNotation, param, param ) )
-        initialData[key] = atom.getMetadata( key ) || param
+        const notationKey = `notation-${param}`
+        dialog.addItem( notationSelect( notationKey, `Notation for ${param}` ) )
+        initialData[notationKey] ||= internalNotation
+        const valueKey = `param-${param}`
+        dialog.addItem( inputControl(
+            valueKey, initialData[notationKey], `Value of ${param}`, param ) )
+        initialData[valueKey] = atom.getMetadata( valueKey ) || param
     } )
     if ( params.length > 0 )
         dialog.setDefaultFocus( `param-${params[0]}` )
@@ -170,8 +179,10 @@ const applyPhraseDialog = ( dialog, atom, phrase ) => {
     const params = phrase.getMetadata( 'paramNames' ).split( ',' )
         .map( name => name.trim() )
     params.forEach( param => {
-        const key = `param-${param}`
-        atom.setMetadata( key, dialog.get( key ) )
+        const notationKey = `notation-${param}`
+        atom.setMetadata( notationKey, dialog.get( notationKey ) )
+        const valueKey = `param-${param}`
+        atom.setMetadata( valueKey, dialog.get( valueKey ) )
     } )
     atom.update( phrase )
 }
@@ -184,7 +195,11 @@ Atom.addType( 'notation', {
         const accessiblePhrases = phrasesInForceAt( this )
         const nameToPhrase = name => accessiblePhrases.find( phrase =>
             phrase.getMetadata( 'name' ) == name )
-        let notation = this.getMetadata( 'notation' )
+        let dataToPreserve = { notation : this.getMetadata( 'notation' ) }
+        this.getMetadataKeys().map( key => {
+            if ( key.startsWith( 'notation-' ) )
+                dataToPreserve[key] = this.getMetadata( key )
+        } )
         // define a re-usable function for setting up the dialog, because we may
         // need to run this function multiple times, if the user chooses to
         // change the type of expression being edited, in the notation drop-down
@@ -192,29 +207,31 @@ Atom.addType( 'notation', {
             // clear all
             while ( dialog.items.length > 0 ) dialog.removeItem( 0 )
             // add the dropdown that's always present
-            dialog.addItem( new SelectBoxItem( 'notation', 'Type of expression', [
-                ...notationNames(),
-                ...accessiblePhrases.map( phrase => phrase.getMetadata( 'name' ) )
-            ] ) )
+            dialog.addItem( notationSelect(
+                'notation', 'Type of expression', accessiblePhrases ) )
             // if it's just text in some notation, set up the dialog for that
-            if ( notationNames().includes( notation ) ) {
-                setUpNotationDialog( dialog, this, notation )
+            if ( notationNames().includes( dataToPreserve.notation ) ) {
+                setUpNotationDialog( dialog, this, dataToPreserve )
                 return
             }
             // if it's a math phrase, set up the dialog for that, after we
             // ensure it exists (showing an error if it doesn't)
-            const phrase = nameToPhrase( notation )
+            const phrase = nameToPhrase( dataToPreserve.notation )
             if ( !phrase ) {
-                dialog.addItem( new AlertItem( 'error', `Invalid type: ${notation}` ) )
+                dialog.addItem( new AlertItem( 'error',
+                    `Invalid type: ${dataToPreserve.notation}` ) )
                 return
             }
-            setUpPhraseDialog( dialog, this, phrase )
+            setUpPhraseDialog( dialog, this, phrase, dataToPreserve )
         }
         // If the user changes the type of expression being edited, we need to
         // set up the dialog again to match the new type of expression.
         dialog.onChange = ( _, component ) => {
-            if ( component.name != 'notation' ) return
-            notation = dialog.get( 'notation' )
+            if ( component.name != 'notation'
+              && !component.name.startsWith( 'notation-' ) )
+                return
+            Object.keys( dataToPreserve ).forEach( key =>
+                dataToPreserve[key] = dialog.get( key ) )
             setUpDialog()
             dialog.reload()
         }
@@ -223,18 +240,19 @@ Atom.addType( 'notation', {
         // Show it and if they accept any changes, apply them to the atom.
         return dialog.show().then( userHitOK => {
             if ( !userHitOK ) return false
-            // store notation from the dropdown that's always present
-            this.setMetadata( 'notation', notation )
+            // store any data we want to preserve
+            Object.keys( dataToPreserve ).forEach( key =>
+                this.setMetadata( key, dataToPreserve[key] ) )
             // if it's just text in some notation, save in the appropriate manner
-            if ( notationNames().includes( notation ) ) {
+            if ( notationNames().includes( dataToPreserve.notation ) ) {
                 applyNotationDialog( dialog, this )
                 return true
             }
             // if it's a math phrase, ensure it exists (throwing an error if it
             // doesn't) and then save in a manner suitable to all its parameters
-            const phrase = nameToPhrase( notation )
+            const phrase = nameToPhrase( dataToPreserve.notation )
             if ( !phrase )
-                throw new Error( `No such math phrase: ${notation}` )
+                throw new Error( `No such math phrase: ${dataToPreserve.notation}` )
             applyPhraseDialog( dialog, this, phrase )
             return true
         } )
@@ -243,22 +261,42 @@ Atom.addType( 'notation', {
         // Ensure this expression wants to be included in the output
         const code = this.getMetadata( 'code' )
         const notation = this.getMetadata( 'notation' )
-        if ( !code || !notation ) return [ ]
+        if ( !notation ) return [ ]
         // If this expression is just plain code, parse it and return the result
         const phrase = phrasesInForceAt( this ).find(
             phrase => phrase.getMetadata( 'name' ) == notation )
-        if ( !phrase ) return parse( code, notation )
-        // If this expression is a math phrase, build its code and parse that
-        let template = phrase.getMetadata( 'codeTemplate' )
+        if ( !phrase ) {
+            if ( !code ) return [ ]
+            return parse( code, notation )
+        }
+        // If this expression is a math phrase, build it from its parameters
+        const template = phrase.getMetadata( 'codeTemplate' )
+        const internalNotation = phrase.getMetadata( 'notation' )
+        const builtTemplate = parse( template, internalNotation )
         this.getMetadataKeys().forEach( key => {
             if ( key.startsWith( 'param-' ) ) {
                 const param = key.substring( 6 )
                 const value = this.getMetadata( key )
-                template = template.replaceAll( param, value )
+                const notation = this.getMetadata( `notation-${param}` )
+                let builtParam = parse( value, notation )
+                if ( builtParam.length != 1 ) return [ ]
+                builtTemplate.forEach( ( LC, index ) => {
+                    const dummies = LC.descendantsSatisfying( d =>
+                        d.constructor.className == 'Symbol' && d.text() == param )
+                    dummies.forEach( d => {
+                        const replacement = builtParam[0].copy()
+                        const attributeHolder = d.copy()
+                        attributeHolder.clearAttributes( 'symbol text' )
+                        replacement.copyAttributesFrom( attributeHolder )
+                        if ( d == LC )
+                            builtTemplate[index] = replacement
+                        else
+                            d.replaceWith( replacement )
+                    } )
+                } )
             }
         } )
-        const paramNotation = phrase.getMetadata( 'notation' )
-        return parse( template, paramNotation )
+        return builtTemplate
     },
     toNotation : function ( notation ) {
         if ( !converter ) return
@@ -283,11 +321,11 @@ Atom.addType( 'notation', {
             return
         }
         let html = phrase.getHTMLMetadata( 'htmlTemplate' ).innerHTML
-        const paramNotation = phrase.getMetadata( 'notation' )
         this.getMetadataKeys().forEach( key => {
             if ( key.startsWith( 'param-' ) ) {
                 const param = key.substring( 6 )
                 const value = this.getMetadata( key )
+                const paramNotation = this.getMetadata( `notation-${param}` )
                 html = html.replaceAll( param, represent( value, paramNotation ) )
             }
         } )
