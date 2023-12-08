@@ -127,9 +127,10 @@ export class LurchDocument {
     static documentParts ( document ) {
         const temp = window.document.createElement( 'div' )
         temp.innerHTML = document
+        const toSearch = Array.from( temp.childNodes )
         return {
-            metadata : temp.querySelector( '#metadata' ),
-            document : temp.querySelector( '#document' )
+            metadata : toSearch.find( child => child.matches?.( '#metadata' ) ),
+            document : toSearch.find( child => child.matches?.( '#document' ) )
         }
     }
 
