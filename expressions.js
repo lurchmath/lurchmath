@@ -262,13 +262,25 @@ Atom.addType( 'notation', {
         // Ensure this expression wants to be included in the output
         const code = this.getMetadata( 'code' )
         const notation = this.getMetadata( 'notation' )
-        if ( !notation ) return [ ]
+        if ( !notation ) {
+            console.log( 'No notation for this atom:', this )
+            return [ ]
+        }
         // If this expression is just plain code, parse it and return the result
         const phrase = phrasesInForceAt( this ).find(
             phrase => phrase.getMetadata( 'name' ) == notation )
         if ( !phrase ) {
-            if ( !code ) return [ ]
-            return parse( code, notation )
+            if ( !code ) {
+                console.log( 'No code for this non-phrase atom:', this )
+                return [ ]
+            }
+            const result = parse( code, notation )
+            if ( result.message ) {
+                console.log( code, notation, result )
+                console.log( converter( code, 'latex', 'putdown' ) )
+                return [ ]
+            }
+            return result
         }
         // If this expression is a math phrase, build it from its parameters
         const template = phrase.getMetadata( 'codeTemplate' )
@@ -280,7 +292,10 @@ Atom.addType( 'notation', {
                 const value = this.getMetadata( key )
                 const notation = this.getMetadata( `notation-${param}` )
                 let builtParam = parse( value, notation )
-                if ( builtParam.length != 1 ) return [ ]
+                if ( builtParam.message || builtParam.length != 1 ) {
+                    console.log( value, notation, buildParam )
+                    return [ ]
+                }
                 builtTemplate.forEach( ( LC, index ) => {
                     const dummies = LC.descendantsSatisfying( d =>
                         d.constructor.className == 'Symbol' && d.text() == param )
