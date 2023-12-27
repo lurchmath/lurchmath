@@ -89,9 +89,25 @@ export class MathItem {
     // Stores the current value of the MathLive editor, as a LaTeX string,
     // because once the editor is closed, you can't get this value back.  So we
     // need to store it somewhere for retrieval even after the editor closes.
-    saveValue () { this.mathValue = this.mathLiveEditor?.value }
+    saveValue () {
+        if ( this.mathValue != this.mathLiveEditor?.value ) {
+            this.mathValue = this.mathLiveEditor?.value
+            this.dialog.onChange( this.dialog, this )
+        }
+    }
     // Internal use only; how to fetch the value stored by saveValue().
     savedValue () { return this.mathValue }
+
+    /**
+     * Set the current contents of the editor to the expression represented in
+     * the given LaTeX content.
+     * 
+     * @param {string} value - LaTeX content to be put into the MathLive editor
+     */
+    setValue ( value ) {
+        this.mathLiveEditor.value = value
+        this.saveValue()
+    }
 
     // Called whenever the dialog is shown (or, if this item is inside a tab,
     // whenever that tab is shown).  This is what initializes the MathLive

@@ -70,8 +70,8 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'notation',
                 'Default notation to use for new expressions',
-                notationNames(),
-                'putdown'
+                [ 'AsciiMath', 'LaTeX' ],
+                'LaTeX'
             )
         )
     )
