@@ -233,7 +233,7 @@ addRepresentation( 'smackdown', code =>
  * @function
  */
 export const syntaxTreeHTML = LC => {
-    const bulletize = list =>
+    const bulletize = list => list.length == 0 ? '' :
         '<ul>' + list.map( x => `<li>${x}</li>` ).join( '\n' ) + '</ul>'
     const attributes = LC =>
         LC.getAttributeKeys().filter( key => key != 'symbol text' ).map( key =>
