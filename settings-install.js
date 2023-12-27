@@ -69,7 +69,7 @@ export const appSettings = new Settings(
             'Meaningful content',
             new CategorySettingMetadata(
                 'notation',
-                'Default notation to use for new expressions',
+                'Default notation to use for new documents',
                 [ 'AsciiMath', 'LaTeX' ],
                 'LaTeX'
             )

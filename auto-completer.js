@@ -32,6 +32,7 @@
 
 import { lookup } from './document-settings.js'
 import { expressionHTML } from './expressions.js'
+import { getConverter } from './math-live.js'
 
 // Internal use: Stores all autocompletion functions.
 // An autocompletion function has the signature documented below.
@@ -126,20 +127,28 @@ export const install = editor => {
             if ( exprCode.includes( '$' ) )
                 return Promise.resolve( [ ] )
             const notation = lookup( editor, 'notation' )
-            const patternContent = pattern.substring( 0, pattern.length - 1 )
-            return Promise.resolve( [
-                {
-                    type : 'cardmenuitem',
-                    value : expressionHTML( patternContent, false, editor ),
-                    label : `${notation} expression: ${patternContent}`,
-                    items : [
-                        {
-                            type : 'cardtext',
-                            text : `${notation} expression: ${patternContent}`
-                        }
-                    ]
-                }
-            ] )
+            let patternContent = pattern.substring( 0, pattern.length - 1 )
+            const given = patternContent.toLowerCase().startsWith( 'assume ' )
+                       || patternContent.toLowerCase().startsWith( 'given' )
+            if ( given )
+                patternContent = patternContent.substring( patternContent.indexOf( ' ' ) + 1 )
+            const givenText = given ? 'given' : 'claim'
+            return getConverter().then( converter => {
+                const latex = converter( patternContent, notation.toLowerCase(), 'latex' )
+                return [
+                    {
+                        type : 'cardmenuitem',
+                        value : expressionHTML( latex, given, editor ),
+                        label : `${notation} ${givenText} expression: ${patternContent}`,
+                        items : [
+                            {
+                                type : 'cardtext',
+                                text : `${notation} ${givenText} expression: ${patternContent}`
+                            }
+                        ]
+                    }
+                ]
+            } )
         }
     } )
 }

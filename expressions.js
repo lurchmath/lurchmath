@@ -9,7 +9,7 @@
  */
 
 import { Atom } from './atoms.js'
-import { appSettings } from './settings-install.js'
+import { lookup } from './document-settings.js'
 import { Dialog, TextInputItem, HTMLItem, ButtonItem, CheckBoxItem } from './dialog.js'
 import { parse, represent, syntaxTreeHTML } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
@@ -98,7 +98,7 @@ Atom.addType( 'notation', {
             latex : this.getMetadata( 'latex' ),
             given : this.getMetadata( 'given' )
         } )
-        dialog.setDefaultFocus( appSettings.get( 'notation' ).toLowerCase() )
+        dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
         // if the edit asciimath or latex, keep them in sync
         dialog.onChange = ( _, component ) => {
             if ( component.name == 'asciimath' ) {

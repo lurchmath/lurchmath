@@ -12,11 +12,11 @@
  */
 
 import { Settings } from './settings.js'
+import { appSettings } from './settings-install.js'
 import {
     SettingsMetadata, SettingsCategoryMetadata, CategorySettingMetadata,
     TextSettingMetadata, LongTextSettingMetadata
 } from './settings-metadata.js'
-import { names as notationNames } from './notation.js'
 import { LurchDocument } from './lurch-document.js'
 
 /**
@@ -35,9 +35,13 @@ export const documentSettingsMetadata = new SettingsMetadata(
         new LongTextSettingMetadata( 'abstract', 'Abstract', '' )
     ),
     new SettingsCategoryMetadata(
-        'Mathematical content',
-        new CategorySettingMetadata( 'notation', 'Default notation',
-            notationNames(), notationNames()[0] )
+        'Meaningful content',
+        new CategorySettingMetadata(
+            'notation',
+            'Default notation to use for new expressions',
+            [ 'AsciiMath', 'LaTeX' ],
+            appSettings.get( 'notation' )
+        )
     )
 )
 
