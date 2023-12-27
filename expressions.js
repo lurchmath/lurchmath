@@ -10,7 +10,7 @@
 
 import { Atom } from './atoms.js'
 import { appSettings } from './settings-install.js'
-import { Dialog, TextInputItem, HTMLItem, ButtonItem } from './dialog.js'
+import { Dialog, TextInputItem, HTMLItem, ButtonItem, CheckBoxItem } from './dialog.js'
 import { parse, represent, syntaxTreeHTML } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
 
@@ -40,7 +40,8 @@ export const install = editor => {
             const atom = Atom.newInline( editor, '', {
                 type : 'notation',
                 asciimath : '',
-                latex : ''
+                latex : '',
+                given : false
             } )
             atom.update()
             atom.editThenInsert()
@@ -61,11 +62,12 @@ export const install = editor => {
  *   HTML elements using its document object)
  * @function
  */
-export const expressionHTML = ( content, notation, editor ) => {
+export const expressionHTML = ( latex, given, editor ) => {
     const atom = Atom.newInline( editor, '', {
-        type: 'notation',
-        code: content,
-        notation: notation
+        type : 'notation',
+        asciimath : converter( latex, 'latex', 'asciimath' ),
+        latex : latex,
+        given : given
     } )
     atom.update()
     return atom.getHTML()
@@ -80,6 +82,7 @@ Atom.addType( 'notation', {
         dialog.addItem( asciiMathInput )
         const mathLiveInput = new MathItem( 'latex', 'In standard notation' )
         dialog.addItem( mathLiveInput )
+        dialog.addItem( new CheckBoxItem( 'given', 'Is the expression given?', false ) )
         dialog.addItem( new ButtonItem( 'View meaning', () => {
             const previewDialog = new Dialog( 'View meaning', dialog.editor )
             previewDialog.addItem( new HTMLItem(
@@ -92,7 +95,8 @@ Atom.addType( 'notation', {
         // initialize dialog with data from the atom
         dialog.setInitialData( {
             asciimath : this.getMetadata( 'asciimath' ),
-            latex : this.getMetadata( 'latex' )
+            latex : this.getMetadata( 'latex' ),
+            given : this.getMetadata( 'given' )
         } )
         dialog.setDefaultFocus( appSettings.get( 'notation' ).toLowerCase() )
         // if the edit asciimath or latex, keep them in sync
@@ -113,6 +117,7 @@ Atom.addType( 'notation', {
             // save the data
             this.setMetadata( 'asciimath', dialog.get( 'asciimath' ) )
             this.setMetadata( 'latex', dialog.get( 'latex' ) )
+            this.setMetadata( 'given', dialog.get( 'given' ) )
             this.update()
             return true
         } )
@@ -121,12 +126,24 @@ Atom.addType( 'notation', {
         // Get the LaTeX form and attempt to parse it
         const latex = this.getMetadata( 'latex' )
         const result = parse( latex, 'latex' )
-        // If there was no error, we can return the result
-        if ( !result.message ) return result
-        // There was an error, so log it and return no LCs
-        console.log( latex, 'latex', result )
-        console.log( converter( latex, 'latex', 'putdown' ) )
-        return [ ]
+        // If there was an error, log it and return no LCs
+        if ( result.message ) {
+            console.log( latex, 'latex', result )
+            console.log( converter( latex, 'latex', 'putdown' ) )
+            return [ ]
+        }
+        // If there was more than one LC created, complain and return no LCs
+        if ( result.length != 1 ) {
+            console.log( 'Expression yielded more than one LC:' )
+            console.log( result.map( LC => LC.toPutdown() ) )
+            return [ ]
+        }
+        // Mark the one LC as a given or claim and return it (in a list)
+        if ( this.getMetadata( 'given' ) )
+            result[0].makeIntoA( 'given' )
+        else
+            result[0].unmakeIntoA( 'given' )
+        return result
     },
     toNotation : function ( notation ) {
         if ( !converter ) return
@@ -139,6 +156,10 @@ Atom.addType( 'notation', {
         const latex = this.getMetadata( 'latex' )
         const repr = `${represent( latex, 'latex' )}`
         this.fillChild( 'body', repr )
+        if ( this.getMetadata( 'given' ) )
+            this.fillChild( 'prefix', 'Assume ' )
+        else
+            this.fillChild( 'prefix', '' )
     }
 } )
 

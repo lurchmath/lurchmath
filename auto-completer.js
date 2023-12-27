@@ -130,7 +130,7 @@ export const install = editor => {
             return Promise.resolve( [
                 {
                     type : 'cardmenuitem',
-                    value : expressionHTML( patternContent, notation, editor ),
+                    value : expressionHTML( patternContent, false, editor ),
                     label : `${notation} expression: ${patternContent}`,
                     items : [
                         {
