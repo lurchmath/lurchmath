@@ -462,8 +462,9 @@ export class Atom {
     editThenInsert () {
         if ( !this.edit )
             throw new Error( `No edit event handler for atom ${this}` )
-        // The following line lets phrasesInForceAt() know where this atom will
-        // eventually go in the document, so it can use the right definitions:
+        // The following line marks where this atom will/ eventually go in the
+        // document, in case the editor is contingent upon the location of the
+        // atom with respect to earlier definitions.
         this.futureLocation = this.editor.selection.getNode()
         // Now do the edit:
         this.edit().then( userSaved => {

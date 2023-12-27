@@ -15,7 +15,6 @@ import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
 import Expressions from './expressions.js'
 import Dependencies from './dependencies.js'
-import MathPhrases from './math-phrases.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
 import { loadFromQueryString } from './load-from-url.js'
@@ -63,7 +62,7 @@ const menuData = {
     ),
     document : buildMenu( 'Document',
         'editheader extractheader embedheader',
-        'dependency mathphrasedef',
+        'dependency',
         'clearvalidation validate',
         'docsettings'
     ),
@@ -113,7 +112,6 @@ loadScript( TinyMCEURL ).then( () => {
             Expressions.install( editor )
             Shells.install( editor )
             Dependencies.install( editor )
-            MathPhrases.install( editor )
             Validation.install( editor )
             AutoCompleter.install( editor )
             if ( !Headers.isEditor() ) {
