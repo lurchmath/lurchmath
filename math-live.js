@@ -201,6 +201,13 @@ export const inputFormats = [ 'latex', 'mathjson', 'asciimath' ]
  */
 export const outputFormats = [ 'html', 'putdown', ...inputFormats ]
 
+// Internal use only
+// LaTeX commands not parseable by MathLive, but that we need to have parsed.
+// This string is used later to convert all such commands in to plain \text{...}
+// blocks, so that they go through the MathLive parser, and we can manipulate
+// them after the JSON/putdown/LC form has been created.
+const unsupportedLatexCommands = `forall exists`
+
 /**
  * A converter is a function with the following signature:
  * `convert( data, 'input format', 'output format' )`.
@@ -259,6 +266,11 @@ export const getConverter = () => loadMathFieldClass().then( () => {
             case 'latex html':
                 return MathLive.convertLatexToMarkup( data )
             case 'latex mathjson':
+                unsupportedLatexCommands.trim().split( /\s+/ )
+                .forEach( latexCommand =>
+                    data = data.replace(
+                        RegExp( '\\\\'+latexCommand+'\\b', 'g' ),
+                        `\\text{${latexCommand}}` ) )
                 return MathfieldElement.computeEngine.parse(
                     data, { canonical: false } ).json
             case 'latex asciimath':
