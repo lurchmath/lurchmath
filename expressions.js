@@ -2,8 +2,8 @@
 /**
  * This file installs one tool into the user interface, a menu item for
  * inserting an inline atom into the document, one that allows the user to write
- * mathematical expressions using any of the parsers defined in the
- * {@link module:Notation notation module}.
+ * mathematical expressions in either AsciiMath or LaTeX notation using a
+ * MathLive equation editor.
  * 
  * @module NotationAtoms
  */
@@ -18,12 +18,10 @@ let converter = null
 
 /**
  * Install into a TinyMCE editor instance a new menu item:
- * "Expression," intended for the Insert menu.  It adds an inline atom to the
- * user's document, with default content just one identifier, the word
- * "expression."  If the user clicks it, they can then change the content in a
- * popup dialog.  The dialog will ensure that the user can save their edits only
- * if those edits are judged, by the notation function for the expression, to be
- * valid code under that notation.
+ * "Expression," intended for the Insert menu.  It creates an inline atom that
+ * can be inserted into the user's document, then initiates editing on it, so
+ * that the user can customize it and then confirm or cancel the insertion of it.
+ * The inline atom represents a mathematical expression.
  * 
  * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
  *   menu item should be installed
@@ -34,7 +32,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'expression', {
         text : 'Expression',
         icon : 'insert-character',
-        tooltip : 'Insert math in simple notation',
+        tooltip : 'Insert expression',
         shortcut : 'Meta+E',
         onAction : () => {
             const atom = Atom.newInline( editor, '', {
