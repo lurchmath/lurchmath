@@ -3,6 +3,7 @@ import { Atom, className as atomClassName } from './atoms.js'
 import { Shell, className as shellClassName, getShellType } from './shells.js'
 import { getHeader } from './header-editor.js'
 import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { isOnScreen } from './utilities.js'
 
 /**
  * This class simplifies communication between the main thread and worker
@@ -340,7 +341,7 @@ export class Message {
             [
                 ...( getHeader( editor )?.querySelectorAll( selector ) || [ ] ),
                 ...editor.dom.doc.querySelectorAll( selector )
-            ].map( element =>
+            ].filter( isOnScreen ).map( element =>
                 element.classList.contains( atomClassName ) ?
                 new Atom( element, editor ) : new Shell( element, editor )
             )
