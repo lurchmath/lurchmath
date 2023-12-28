@@ -34,7 +34,7 @@
  */
 
 import { getHeader } from './header-editor.js'
-import { onlyBefore } from './utilities.js'
+import { onlyBefore, isOnScreen } from './utilities.js'
 import { className as atomClassName } from './atoms.js'
 import { addAutocompleteFunction } from './auto-completer.js'
 import { Dialog, SelectBoxItem } from './dialog.js'
@@ -361,7 +361,7 @@ export class Shell {
      */
     static allIn ( editor ) {
         return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
-            .map( element => new Shell( element ) )
+            .filter( isOnScreen ).map( element => new Shell( element ) )
     }
 
     /**
@@ -444,7 +444,7 @@ export class Shell {
             ...( getHeader( editor )?.querySelectorAll( `.${className}` ) || [ ] ),
             // nodes in document preceding target:
             ...onlyBefore( editor.dom.doc.querySelectorAll( `.${className}` ), target )
-        ].filter( predicate )
+        ].filter( isOnScreen ).filter( predicate )
     }
 
 }

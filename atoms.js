@@ -34,7 +34,7 @@
  * @see {@link module:Shells the Shells module}
  */
 
-import { removeScriptTags } from './utilities.js'
+import { removeScriptTags, isOnScreen } from './utilities.js'
 
 /**
  * Class name used to distinguish HTML elements representing atoms.  (For an
@@ -667,8 +667,7 @@ export class Atom {
      */
     static allElementsIn ( editor ) {
         return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
-            .filter( element => element.parentNode &&
-                !element.parentNode.classList.contains( 'mce-offscreen-selection' ) )
+            .filter( isOnScreen )
     }
 
     /**
