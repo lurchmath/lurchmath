@@ -274,9 +274,11 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                 return convert( convert( data, 'mathjson', 'latex' ),
                     'latex', 'asciimath' )
             case 'asciimath latex':
-                // Handle MathLive-specific preferences for special sets here:
                 return asciiMathToLatex( data )
+                    // Handle unnecessary brackets around symbols:
+                    // (These can cause spacing problems in some cases.)
                     .replace( /[{](\w)[}]/g, ' $1 ' )
+                    // MathLive-specific preferences for special sets:
                     .replace( /\\mathbb\s+Q/g, '\\Q' )
                     .replace( /\\mathbb\s+R/g, '\\R' )
                     .replace( /\\mathbb\s+C/g, '\\C' )
