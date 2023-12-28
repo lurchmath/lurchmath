@@ -18,6 +18,7 @@
  */
 
 import { loadScript } from './utilities.js'
+import asciiMathToLatex from './asciimath-to-latex.js'
 
 // Internal use only.
 // Ensures the MathLive scripts are loaded, so you can do whatever you want with
@@ -273,7 +274,14 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                 return convert( convert( data, 'mathjson', 'latex' ),
                     'latex', 'asciimath' )
             case 'asciimath latex':
-                return MathLive.convertAsciiMathToLatex( data )
+                // Handle MathLive-specific preferences for special sets here:
+                return asciiMathToLatex( data )
+                    .replace( /[{](\w)[}]/g, ' $1 ' )
+                    .replace( /\\mathbb\s+Q/g, '\\Q' )
+                    .replace( /\\mathbb\s+R/g, '\\R' )
+                    .replace( /\\mathbb\s+C/g, '\\C' )
+                    .replace( /\\mathbb\s+Z/g, '\\Z' )
+                    .replace( /\\mathbb\s+N/g, '\\N' )
             case 'asciimath html':
                 return convert( convert( data, 'asciimath', 'latex' ),
                     'latex', 'html' )
