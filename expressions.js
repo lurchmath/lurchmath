@@ -97,8 +97,11 @@ Atom.addType( 'notation', {
             given : this.getMetadata( 'given' )
         } )
         dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
-        // if the edit asciimath or latex, keep them in sync
+        // if they edit the asciimath or latex, keep them in sync
+        let syncing = false
         dialog.onChange = ( _, component ) => {
+            if ( syncing ) return
+            syncing = true
             if ( component.name == 'asciimath' ) {
                 const asciiMath = dialog.get( 'asciimath' )
                 const latex = converter( asciiMath, 'asciimath', 'latex' )
@@ -108,6 +111,7 @@ Atom.addType( 'notation', {
                 const asciiMath = converter( latex, 'latex', 'asciimath' )
                 dialog.dialog.setData( { asciimath : asciiMath } )
             }
+            syncing = false
         }
         // Show it and if they accept any changes, apply them to the atom.
         return dialog.show().then( userHitOK => {
