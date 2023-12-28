@@ -98,7 +98,8 @@ Atom.addType( 'notation', {
         } )
         dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
         // if they edit the asciimath or latex, keep them in sync
-        let syncEnabled = true
+        let syncEnabled = false
+        setTimeout( () => syncEnabled = true, 0 ) // after dialog populates
         dialog.onChange = ( _, component ) => {
             if ( !syncEnabled ) return
             syncEnabled = false // prevent syncing to fixed point/infinity
