@@ -287,6 +287,7 @@ export const getConverter = () => loadMathFieldClass().then( () => {
     const convert = ( data, inputFormat, outputFormat ) => {
         // Ensure that .json doesn't convert 1/2 to "Half"
         MathfieldElement.computeEngine.jsonSerializationOptions.exclude = [ 'Half' ]
+        window.MathfieldElement = MathfieldElement
         // (Tried to put that code outside the function but it was too soon; not sure why.)
         inputFormat = inputFormat.toLowerCase()
         outputFormat = outputFormat.toLowerCase()

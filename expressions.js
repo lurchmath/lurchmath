@@ -111,6 +111,14 @@ Atom.addType( 'notation', {
                 const latex = dialog.get( 'latex' )
                 const asciiMath = converter( latex, 'latex', 'asciimath' )
                 dialog.dialog.setData( { asciimath : asciiMath } )
+                // console.log( '\nMathLive widget contains:', latex )
+                // console.log( 'Can it parse that?',
+                //     JSON.stringify( MathfieldElement.computeEngine.parse( latex,
+                //         { canonical : false } ).json ) )
+                // console.log( 'Can we convert it to putdown?',
+                //     converter( latex, 'latex', 'putdown' ) )
+                // const tmp = parse( latex, 'latex' )
+                // console.log( 'Is the putdown valid?', tmp.message || 'yes' )
             }
             syncEnabled = true
         }
@@ -133,6 +141,7 @@ Atom.addType( 'notation', {
         if ( result.message ) {
             console.log( latex, 'latex', result )
             console.log( converter( latex, 'latex', 'putdown' ) )
+            // console.log( converter( latex, 'latex', 'mathjson' ) )
             return [ ]
         }
         // If there was more than one LC created, complain and return no LCs
