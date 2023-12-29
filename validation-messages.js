@@ -2,8 +2,9 @@
 import { Atom, className as atomClassName } from './atoms.js'
 import { Shell, className as shellClassName, getShellType } from './shells.js'
 import { getHeader } from './header-editor.js'
-import { Environment, Expression } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { isOnScreen } from './utilities.js'
+import { cleanLC } from './lc-cleanup.js'
 
 /**
  * This class simplifies communication between the main thread and worker
@@ -277,69 +278,6 @@ export class Message {
             Message.idToElement.set( `${counter}`, element )
             counter++
         }
-        // Utility functions for creating errors during applyModifiers
-        const sendModifierError = ( LC, text ) => {
-            setTimeout( () => Message.error( text, {
-                id : LC.ID(),
-                errorType : 'declaration error',
-                valid : false,
-                reason : text
-            } ), 0 )
-            LC.remove()
-        }
-        const getPrevious = LC => {
-            const result = LC.previousSibling()
-            if ( !result || !( result instanceof Expression ) ) {
-                sendModifierError( LC, 'This declaration needs an expression before it' )
-                LC.remove()
-            }
-            return result
-        }
-        const getNext = LC => {
-            const result = LC.nextSibling()
-            if ( !result || !( result instanceof Expression ) ) {
-                sendModifierError( LC, 'This declaration needs an expression after it' )
-                LC.remove()
-            }
-            return result
-        }
-        // Utility function for processing an environment's children by seeking
-        // whether any of them are declarations that need to modify one of their
-        // siblings, and if so, applying the modification in-place.
-        const applyModifiers = env => {
-            // console.log( 'Applying modifiers to:', env )
-            for ( let i = 0 ; i < env.numChildren() ; ) {
-                const child = env.child( i )
-                if ( child.isA( 'LetWithBody' ) ) {
-                    const next = getNext( child )
-                    if ( next ) {
-                        child.lastChild().replaceWith( next )
-                        child.unmakeIntoA( 'LetWithBody' )
-                        child.makeIntoA( 'Let' )
-                        continue
-                    }
-                } else if ( child.isA( 'ForSomePrefix' ) ) {
-                    const next = getNext( child )
-                    if ( next ) {
-                        child.lastChild().replaceWith( next )
-                        child.unmakeIntoA( 'ForSomePrefix' )
-                        child.makeIntoA( 'ForSome' )
-                        continue
-                    }
-                } else if ( child.isA( 'ForSomeSuffix' ) ) {
-                    const previous = getPrevious( child )
-                    if ( previous ) {
-                        child.lastChild().replaceWith( previous )
-                        child.unmakeIntoA( 'ForSomeSuffix' )
-                        child.makeIntoA( 'ForSome' )
-                        continue
-                    }
-                } else if ( child instanceof Environment ) {
-                    applyModifiers( child )
-                }
-                i++
-            }
-        }
         // Convert an array of Atom or Shell instances into an LC representing
         // the document.  They must appear in the same order that their elements
         // do in the document.
@@ -409,7 +347,8 @@ export class Message {
                 new Atom( element, editor ) : new Shell( element, editor )
             )
         )
-        applyModifiers( LC )
+        // Apply any cleanup necessary to make the LC usable in validation.
+        cleanLC( LC )
         // Create a message that could be sent to the validation worker, including
         // the encoding produced above of the document's atoms and shells.
         return new Message( {
