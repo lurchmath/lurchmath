@@ -83,9 +83,16 @@ Atom.addType( 'notation', {
         dialog.addItem( new CheckBoxItem( 'given', 'Is the expression given?', false ) )
         dialog.addItem( new ButtonItem( 'View meaning', () => {
             const previewDialog = new Dialog( 'View meaning', dialog.editor )
+            const copy = Atom.newInline( this.editor, '', {
+                type : 'notation',
+                asciimath : dialog.get( 'asciimath' ),
+                latex : dialog.get( 'latex' ),
+                given : dialog.get( 'given' )
+            } )
+            copy.update()
             previewDialog.addItem( new HTMLItem(
                 `<div class="LC-meaning-preview">
-                    ${ this.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
+                    ${ copy.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
                 </div>`
             ) )
             previewDialog.show()
