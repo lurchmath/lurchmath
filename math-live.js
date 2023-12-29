@@ -167,9 +167,9 @@ const mathJSONToPutdown = json => {
         return json
     // MathJSON strings come in 2 formats:
     // 1. a string with a leading and trailing apostrophe
-    if ( ( typeof( json ) == 'string ' )
+    if ( ( typeof( json ) == 'string' )
       && ( json[0] == '\'' ) && ( json[json.length - 1] == '\'' ) )
-        return JSON.parse( json )
+        return json.slice( 1, -1 ).replace( /\\'/g, "'" )
     // 2. object literals with a "str" field
     if ( json.str ) return json.str
     // MathJSON symbols come in 2 formats:
