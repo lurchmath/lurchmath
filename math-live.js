@@ -208,6 +208,45 @@ export const outputFormats = [ 'html', 'putdown', ...inputFormats ]
 // them after the JSON/putdown/LC form has been created.
 const unsupportedLatexCommands = `forall exists`
 
+// Internal use only
+// Clean up LaTeX to make it suitable for MathLive, which is limited.
+const prepLatexForMathLive = latex => {
+    // Handle unnecessary brackets around symbols:
+    // (These can cause spacing problems in some cases.)
+    latex = latex.replace( /[{](\w)[}]/g, ' $1 ' )
+    // Replace bbbold font with MathLive-specific symbols for special sets:
+    latex = latex.replace( /\\mathbb\s+Q/g, '\\Q' )
+                 .replace( /\\mathbb\s+R/g, '\\R' )
+                 .replace( /\\mathbb\s+C/g, '\\C' )
+                 .replace( /\\mathbb\s+Z/g, '\\Z' )
+                 .replace( /\\mathbb\s+N/g, '\\N' )
+    // Remove matched \\left. ... \\right. pairs, which MathLive doesn't like:
+    let original = latex
+    latex = ''
+    while ( original.length > 0 ) {
+        const pos = original.indexOf( '\\left.' )
+        if ( pos == -1 ) {
+            latex += original
+            original = ''
+        } else {
+            const partner = original.indexOf( '\\right', pos )
+            if ( partner == -1 ) {
+                latex += original
+                original = ''
+            } else if ( original.slice( partner, partner + 7 ) == '\\right.' ) {
+                latex += original.slice( 0, pos )
+                         + original.slice( pos + 6, partner )
+                original = original.slice( partner + 7 )
+            } else {
+                latex += original.slice( 0, pos + 6 )
+                original = original.slice( pos + 6 )
+            }
+        }
+    }
+    // Done
+    return latex
+}
+
 /**
  * A converter is a function with the following signature:
  * `convert( data, 'input format', 'output format' )`.
@@ -271,6 +310,7 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                     data = data.replace(
                         RegExp( '\\\\'+latexCommand+'\\b', 'g' ),
                         `\\text{${latexCommand}}` ) )
+                data = prepLatexForMathLive( data )
                 return MathfieldElement.computeEngine.parse(
                     data, { canonical: false } ).json
             case 'latex asciimath':
@@ -287,15 +327,6 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                     'latex', 'asciimath' )
             case 'asciimath latex':
                 return asciiMathToLatex( data )
-                    // Handle unnecessary brackets around symbols:
-                    // (These can cause spacing problems in some cases.)
-                    .replace( /[{](\w)[}]/g, ' $1 ' )
-                    // MathLive-specific preferences for special sets:
-                    .replace( /\\mathbb\s+Q/g, '\\Q' )
-                    .replace( /\\mathbb\s+R/g, '\\R' )
-                    .replace( /\\mathbb\s+C/g, '\\C' )
-                    .replace( /\\mathbb\s+Z/g, '\\Z' )
-                    .replace( /\\mathbb\s+N/g, '\\N' )
             case 'asciimath html':
                 return convert( convert( data, 'asciimath', 'latex' ),
                     'latex', 'html' )
