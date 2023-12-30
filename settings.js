@@ -178,6 +178,15 @@ export class Settings extends Map {
                 initialData : originalSettings,
                 onSubmit : () => {
                     const results = dialog.getData()
+                    const errors = this.metadata.validate( results )
+                    if ( errors.length > 0 ) {
+                        let message = 'Cannot save preferences due to these errors:<br/>'
+                        errors.forEach( ( text, index ) => {
+                            message += `${index + 1}. ${text}<br/>`
+                        } )
+                        Dialog.failure( editor, message, 'Fix errors before saving' )
+                        return
+                    }
                     dialog.close()
                     const changedKeys = Object.keys( results ).filter(
                         key => results[key] != originalSettings[key] )

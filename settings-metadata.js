@@ -65,6 +65,20 @@ export class SettingMetadata {
      */
     convert ( data ) { return data }
 
+    /**
+     * By default, a setting does not have any error checking built in.  Thus
+     * its validate function always returns an empty array, meaning no errors.
+     * This can be customized in subclasses to return a list of error messages
+     * (each one a string suitable for display in a TinyMCE dialog).
+     * 
+     * @param {Object} data - the data currently in the UI for this setting,
+     *   as produced by a call to `getData()` in the dialog, followed by
+     *   looking up the specific value associated with this setting's name
+     * @returns {String[]} an array of error messages, or an empty array if
+     *   there are no errors (as in this default implementation)
+     */
+    validate ( _ ) { return [ ] }
+
 }
 
 /**
@@ -181,11 +195,24 @@ export class TextSettingMetadata extends SettingMetadata {
      * this setting as one that should be represented in the UI using a
      * text input widget (a single-line input control, not a multi-line editor).
      * 
-     * @param  {...any} args - same arguments as for the superclass constructor
+     * @param  {...any} args - same arguments as for the superclass constructor,
+     *   plus an optional validator function that will be used as the
+     *   implementation of {@link SettingMetadata#validate validate()} for this
+     *   instance.  (See the signature documented there for details.)
      */
-    constructor ( name, label, defaultValue ) {
+    constructor ( name, label, defaultValue, validator ) {
         super( name, label, `${defaultValue}` )
         this.type = 'input'
+        this.validator = validator
+    }
+
+    /**
+     * Validate the contents of the setting, if the user provided a validator
+     * function at construction time.  Otherwise, just do what the superclass
+     * does.  See {@link SettingMetadata#validate validate()} for details.
+     */
+    validate ( data ) {
+        return this.validator ? this.validator( data ) : super.validate( data )
     }
 
 }
@@ -203,11 +230,24 @@ export class LongTextSettingMetadata extends SettingMetadata {
      * textarea input widget (a multi-line input control, not just a one-line
      * input).
      * 
-     * @param  {...any} args - same arguments as for the superclass constructor
+     * @param  {...any} args - same arguments as for the superclass constructor,
+     *   plus an optional validator function that will be used as the
+     *   implementation of {@link SettingMetadata#validate validate()} for this
+     *   instance.  (See the signature documented there for details.)
      */
-    constructor ( name, label, defaultValue ) {
+    constructor ( name, label, defaultValue, validator ) {
         super( name, label, `${defaultValue}` )
         this.type = 'textarea'
+        this.validator = validator
+    }
+
+    /**
+     * Validate the contents of the setting, if the user provided a validator
+     * function at construction time.  Otherwise, just do what the superclass
+     * does.  See {@link SettingMetadata#validate validate()} for details.
+     */
+    validate ( data ) {
+        return this.validator ? this.validator( data ) : super.validate( data )
     }
 
 }
@@ -391,6 +431,17 @@ export class SettingsCategoryMetadata extends SettingMetadata {
         return this.contents.find( metadata => metadata.name == key )
     }
 
+    /**
+     * Validate all the settings in this category and return all their error
+     * messages concatenated into a single array.  If there were no error
+     * messages (which is the default) then the result will be an empty list,
+     * indicating that the data passes validation.
+     * See {@link SettingMetadata#validate validate()} for details.
+     */
+    validate ( data ) {
+        return this.contents.map( item => item.validate( data[item.name] ) ).flat()
+    }
+
 }
 
 /**
@@ -483,6 +534,17 @@ export class SettingsMetadata extends SettingMetadata {
             const result = this.categories[i].metadataFor( key )
             if ( result ) return result
         }
+    }
+
+    /**
+     * Validate all the settings in all the categories and return all their
+     * error messages concatenated into a single array.  If there were no error
+     * messages (which is the default) then the result will be an empty list,
+     * indicating that the data passes validation.
+     * See {@link SettingMetadata#validate validate()} for details.
+     */
+    validate ( data ) {
+        return this.categories.map( category => category.validate( data ) ).flat()
     }
 
 }
