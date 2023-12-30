@@ -1,6 +1,6 @@
 
 import { Message } from "./validation-messages.js"
-import { Expression } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { Expression, Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
 // Several utility functions required by the workhorse function used below:
 // Utility function 1: Send an error about a declaration missing a required
