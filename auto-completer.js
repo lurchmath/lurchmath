@@ -129,7 +129,7 @@ export const install = editor => {
             const notation = lookup( editor, 'notation' )
             let patternContent = pattern.substring( 0, pattern.length - 1 )
             const given = patternContent.toLowerCase().startsWith( 'assume ' )
-                       || patternContent.toLowerCase().startsWith( 'given' )
+                       || patternContent.toLowerCase().startsWith( 'given ' )
             if ( given )
                 patternContent = patternContent.substring( patternContent.indexOf( ' ' ) + 1 )
             const givenText = given ? 'given' : 'claim'
