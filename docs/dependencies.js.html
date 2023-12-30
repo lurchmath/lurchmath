@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: ColorSettingMetadata</title>
+    <title>Lurch Web User Interface: dependencies.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,216 +34,133 @@
 </header>
 
 
-<main class="layout-main ">
+<main class="layout-main  layout-content--source">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">ColorSettingMetadata</h1>
+    <p class="page-kind">source</p>
+    <h1 class="page-title">dependencies.js</h1>
     
 
 
 
+    
 
 <section>
-
-
-<header class="class">
-
-
-    
-        
-        <!-- <h2>ColorSettingMetadata</h2> -->
-
-        
-
-        
-
-        
-            
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for color values</p></div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-
-
-
-    
-        
-
-
-
-
-
-    
-
-
-    
-    <h3 class="subtitle">Constructor</h3>
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="ColorSettingMetadata">new ColorSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-color picker.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">args</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.156">, line 156</a>
-        </li>
-    </ul>
-
-
-
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    
-</article>
-
+    <article>
+        <pre id="source" class="source-page line-numbers"><code class="language-js">
+/**
+ * This file installs one tool into the user interface, a menu item for
+ * inserting a dependecy-type atom into the document.  A user who edits such an
+ * atom can load any document into that dependency from any source supported by
+ * the {@link Dialog.loadFile Dialog.loadFile()} function.
+ * 
+ * Such an atom will have two important properties:
+ * 
+ *  * Its `"description"` metadata entry will contain whatever text the user
+ *    wants to use to make the dependency easy to identify when scrolling
+ *    through a document, so the reader doesn't need to open it up to know
+ *    what's inside.  This is a simple piece of metadata, not HTML-type
+ *    metadata; the difference between the two is documented
+ *    {@link module:Atoms.Atom#getHTMLMetadata here}.
+ *  * Its `"content"` HTML metadata entry will contain the full content of the
+ *    dependency that was loaded, or it will be absent if the atom has not yet
+ *    been configured by the user.  This is a piece of HTML metadata, not simple
+ *    metadata, because it will typically be large; the difference between the
+ *    two is documented {@link module:Atoms.Atom#getHTMLMetadata here}.
+ * 
+ * @module Dependencies
+ */
+
+import { Atom } from './atoms.js'
+import { openFileInNewWindow } from './load-from-url.js'
+import { simpleHTMLTable, escapeHTML } from './utilities.js'
+import { Dialog, ButtonItem, TextInputItem } from './dialog.js'
+import { addAutocompleteFunction } from './auto-completer.js'
+
+/**
+ * Install into a TinyMCE editor instance a new menu item: Import dependency,
+ * intended for the Document menu.  It adds a dependency atom (with no content
+ * or description) to the user's document, and if the user clicks it, they can
+ * then edit both in a popup dialog.
+ * 
+ * This assumes that the TinyMCE initialization code includes the "dependency"
+ * item on one of the menus.
+ * 
+ * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
+ *   menu item should be installed
+ * @function
+ */
+export const install = editor => {
+    editor.ui.registry.addMenuItem( 'dependency', {
+        icon : 'duplicate-row',
+        text : 'Import dependency',
+        tooltip : 'Insert block for importing a dependency',
+        onAction : () => {
+            const atom = Atom.newBlock( editor, '',
+                { type : 'dependency', description : 'none' } )
+            atom.update()
+            atom.editThenInsert()
+        }
+    } )
+    let emptyDependencyHTML = null
+    addAutocompleteFunction( editor => {
+        if ( !emptyDependencyHTML ) {
+            const atom = Atom.newBlock( editor, '',
+                { type: 'dependency', description : 'none' } )
+            atom.update()
+            emptyDependencyHTML = atom.getHTML()
+        }
+        return [
+            {
+                shortcut : 'dependency',
+                preview : 'Import a dependency',
+                content : emptyDependencyHTML
+            }
+        ]
+    } )
+}
+
+// Internal use only: Show a dialog that lets the user edit the dependency's
+// description, or change its content by loading any file over top of the old
+// content, or preview the current content in a new window.
+Atom.addType( 'dependency', {
+    edit : function () {
+        const description = this.getMetadata( 'description' )
+        const origContent = this.getHTMLMetadata( 'content' )?.innerHTML
+        let newContent = origContent
+        const dialog = new Dialog( 'Edit dependency', this.editor )
+        dialog.addItem( new TextInputItem( 'description', 'Description' ) )
+        dialog.setDefaultFocus( 'description' )
+        dialog.addItem( new ButtonItem( 'Load new contents (overwriting old)', () => {
+            Dialog.loadFile( this.editor, 'Load dependency contents' )
+            .then( loaded => newContent = loaded.content ) // save for below
+            .catch( () => { } ) // it's ok to cancel
+        } ) )
+        dialog.addItem( new ButtonItem( 'Preview contents in new window', () => {
+            openFileInNewWindow( newContent )
+        } ) )
+        dialog.setInitialData( { 'description' : description } )
+        return dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return false
+            this.setMetadata( 'description', dialog.get( 'description' ) )
+            this.setHTMLMetadata( 'content', newContent ) // save loaded content
+            this.update()
+            return true
+        } )
+    },
+    update : function () {
+        this.element.style.border = 'solid 1px gray'
+        this.element.style.padding = '0 1em 0 1em'
+        const description = this.getMetadata( 'description' )
+        this.fillChild( 'body', simpleHTMLTable(
+            'Imported dependency document',
+            [ 'Description:', `&lt;tt>${escapeHTML( description )}&lt;/tt>` ]
+        ) )
+    }
+} )
+
+export default { install }
+</code></pre>
+    </article>
 </section>
 
 

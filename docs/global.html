@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: ColorSettingMetadata</title>
+    <title>Lurch Web User Interface: Global</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -36,8 +36,8 @@
 
 <main class="layout-main ">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">ColorSettingMetadata</h1>
+    <p class="page-kind"></p>
+    <h1 class="page-title">Global</h1>
     
 
 
@@ -46,20 +46,17 @@
 <section>
 
 
-<header class="class">
+<header class="not-class">
 
 
     
         
-        <!-- <h2>ColorSettingMetadata</h2> -->
+        <!-- <h2></h2> -->
 
         
 
         
 
-        
-            
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for color values</p></div>
         
     
 </header>
@@ -72,85 +69,91 @@
     
         
 
+        
 
 
-
+<div class="details">
+    
 
     
 
-
-    
-    <h3 class="subtitle">Constructor</h3>
     
 
-    <div class="method-type">
     
-    </div>
 
-    <h4 class="method-name" id="ColorSettingMetadata">new ColorSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
     
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-color picker.</p>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 </div>
 
 
+        
+    
+    </div>
 
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
     
 
-<ul class="method-params">
     
 
-        <li>
-            
-                <span class="param-name">args</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
-            
-        </li>
+     
 
     
-</ul>
+
+    
+
+
+    
+        <h3 class="subtitle">Members</h3>
+
+        
+            
+
+<article class="member">
+    <div class="method-type">
+        <span class="method-type-signature is-constant">constant</span>
+    </div>
+<h4 class="member-name" id="cleanLC">cleanLC<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>This function performs cleanup of documents, represented by LCs, which have
+been created by the UI and are about to be sent for validation.  Not all LC
+structures created by the UI are valid (because the user can do many things),
+and not all are ready to be sent to the LDE (because the structures produced
+by MathLive's parser are not always optimal for validation).</p>
+<p>This function takes a document LC as input and modifies it in-place.  It
+takes the following actions.</p>
+<ol>
+<li>If any declarations depend on a sibling to be complete (e.g., &quot;let x be
+such that&quot; requires a next sibling to be its body), find that sibling
+and merge the declaration with it, or send an error message if there is
+no such sibling.</li>
+</ol>
+<p>(More steps in the cleanup process will be added here; this is extensible,
+and we will need to extend it.)</p>
+</div>
+
+
 
 
 
@@ -194,47 +197,16 @@ color picker.</p>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
+    <h4>Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.156">, line 156</a>
+            <a href="lc-cleanup.js.html">lc-cleanup.js</a><a href="lc-cleanup.js.html#source.92">, line 92</a>
         </li>
     </ul>
 
 
-
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
+</article>
+        
     
 
     

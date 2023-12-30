@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: ColorSettingMetadata</title>
+    <title>Lurch Web User Interface: CheckBoxItem</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Class</p>
-    <h1 class="page-title">ColorSettingMetadata</h1>
+    <h1 class="page-title">CheckBoxItem</h1>
     
 
 
@@ -51,7 +51,7 @@
 
     
         
-        <!-- <h2>ColorSettingMetadata</h2> -->
+        <!-- <h2>CheckBoxItem</h2> -->
 
         
 
@@ -59,7 +59,9 @@
 
         
             
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for color values</p></div>
+            <div class="class-description"><p>An item that can be used in a <a href="Dialog.html">Dialog</a> and shows up as a checkbox.
+This corresponds to the &quot;checkbox&quot; type of body component in a TinyMCE
+dialog.</p></div>
         
     
 </header>
@@ -87,7 +89,7 @@
     
     </div>
 
-    <h4 class="method-name" id="ColorSettingMetadata">new ColorSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
+    <h4 class="method-name" id="CheckBoxItem">new CheckBoxItem<span class="signature">(name, label)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -96,9 +98,7 @@
 
 <div class="method-description">
     
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-color picker.</p>
+    <p>Construct a checkbox.</p>
 </div>
 
 
@@ -117,7 +117,7 @@ color picker.</p>
 
         <li>
             
-                <span class="param-name">args</span>
+                <span class="param-name">name</span>
             
 
             
@@ -125,27 +125,46 @@ color picker.</p>
 
 
     <span class="param-type">
-        <code>any</code>
+        <code>string</code>
     </span>
     
 
             
 
             
-                <span class="param-attributes">
+
+            
+
+            <div class="param-description"><p>the name of the control in the dialog, used for
+querying its value when the dialog closes, or providing an initial
+value when the dialog opens</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">label</span>
+            
+
+            
                 
 
-                
 
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
             
 
             
 
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
+            
+
+            <div class="param-description"><p>the label to show next to the checkbox in the
+user interface</p></div>
             
         </li>
 
@@ -208,7 +227,7 @@ color picker.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.156">, line 156</a>
+            <a href="dialog.js.html">dialog.js</a><a href="dialog.js.html#source.710">, line 710</a>
         </li>
     </ul>
 
@@ -223,7 +242,7 @@ color picker.</p>
         <h3 class="subsection-title">Classes</h3>
 
         <dl>
-            <dt><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></dt>
+            <dt><a href="CheckBoxItem.html">CheckBoxItem</a></dt>
             <dd></dd>
         </dl>
     
