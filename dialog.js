@@ -363,7 +363,7 @@ export class Dialog {
     static failure ( editor, text, title = 'Failure' ) {
         const dialog = new Dialog( title, editor )
         dialog.removeButton( 'Cancel' )
-        dialog.addItem( new AlertItem( 'failure', text ) )
+        dialog.addItem( new AlertItem( 'error', text ) )
         return dialog.show()
     }
 
