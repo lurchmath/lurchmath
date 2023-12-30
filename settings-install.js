@@ -12,7 +12,6 @@ import {
     SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata,
     CategorySettingMetadata
 } from './settings-metadata.js'
-import { names as notationNames } from './notation.js'
 
 /**
  * This is a silly example of app setting metadata for now, because we have not
