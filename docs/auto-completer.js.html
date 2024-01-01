@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: ColorSettingMetadata</title>
+    <title>Lurch Web User Interface: auto-completer.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,216 +34,176 @@
 </header>
 
 
-<main class="layout-main ">
+<main class="layout-main  layout-content--source">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">ColorSettingMetadata</h1>
+    <p class="page-kind">source</p>
+    <h1 class="page-title">auto-completer.js</h1>
     
 
 
 
+    
 
 <section>
-
-
-<header class="class">
-
-
-    
-        
-        <!-- <h2>ColorSettingMetadata</h2> -->
-
-        
-
-        
-
-        
-            
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for color values</p></div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-
-
-
-    
-        
-
-
-
-
-
-    
-
-
-    
-    <h3 class="subtitle">Constructor</h3>
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="ColorSettingMetadata">new ColorSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-color picker.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">args</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.156">, line 156</a>
-        </li>
-    </ul>
-
-
-
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="ColorSettingMetadata.html">ColorSettingMetadata</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
-    
-
-    
-
-    
-
-    
-</article>
-
+    <article>
+        <pre id="source" class="source-page line-numbers"><code class="language-js">
+/**
+ * This module makes it easy for various parts of the Lurch app to easily and
+ * consistently add new autocompletion tools.  It encapsulates a few assumptions
+ * about how autocompletion will work in the Lurch app, so that those
+ * assumptions do not need to be repeated throughout the codebase, wherever any
+ * file needs to add autocompletion support.
+ * 
+ * For example, this module ensures that all autocompletions begin with a
+ * backslash, because that is a design decision we've made to imitate the
+ * well-known mathematics notation in $\LaTeX$.  The module also ensures that
+ * previews for autocompletions are shown in a single-column menu, one line per
+ * item, with the shortcut and the potential insertion displayed together.
+ * 
+ * This is built upon TinyMCE's existing autocompletion functionality.  This
+ * module provides only a thin layer on top of that functionality to streamline
+ * the process of making all autocompletions in Lurch behave consistently, with
+ * minimal coding needed on the part of the various modules in the Lurch UI.
+ * 
+ * It also installs an autocompletion that uses `$...$` notation, in imitation
+ * of $\LaTeX$ inline math expressions.  That autocompletion allows the user to
+ * replace any content between dollar signs with an expression, in the user's
+ * default notation, in the sense of the {@link module:NotationAtoms expressions
+ * in the Notation Atoms module}.
+ * 
+ * Clients can import this module and then call its
+ * {@link module:AutoComplete.install install()} function to add autocompletion
+ * support to TinyMCE.
+ * 
+ * @module AutoComplete
+ */
+
+import { lookup } from './document-settings.js'
+import { expressionHTML } from './expressions.js'
+import { getConverter } from './math-live.js'
+
+// Internal use: Stores all autocompletion functions.
+// An autocompletion function has the signature documented below.
+const autocompleteFunctions = [ ]
+
+/**
+ * Add a new autocompletion function to this module.  When the user types the
+ * trigger character into their document (which in Lurch is a backslash, `\`),
+ * every autocomplete function installed in this module will be called on the
+ * current editor, and each can return a JavaScript array of autocompletions.
+ * Those arrays will all be concatenated and used to suggest autocompletion
+ * options to the user.
+ * 
+ * The signature of an autocompletion function is as follows:  It takes as input
+ * a single parameter, the TinyMCE Editor instance in which the user typed a
+ * backslash, thus invoking autocompletion.  It returns a JavaScript array of
+ * autocompletion records, each of which is a JavaScript object containing the
+ * following three fields.
+ * 
+ *  * `shortcut` - the shortcut that will trigger the autocompletion, if the
+ *    user types it (and which will be used to filter the autocompletion list to
+ *    those relevant to what the user has typed so far)
+ *  * `content` - the HTML content that will be inserted into the user's
+ *    document (replacing the shortcut) if the user accepts this autocompletion
+ *  * `preview` - a string that describes the autocompletion in a single line,
+ *    for displaying to the user in a menu as part of the autocompletion UI
+ * 
+ * For example, if the user has typed `\a`, and the autocompletion function
+ * has returned an array containing autocompletions for `\apple` and `\ant`,
+ * as well as several others that do not begin with `\a`, only the completions
+ * for `\apple` and `\ant` will be shown.  If the user chooses `\apple`, then
+ * that text will disappear and be replaced by the content for the `\apple`
+ * autocompletion.
+ * 
+ * @param {Function} f - the autocompletion function to add, with a signature as
+ *   documented above
+ */
+export const addAutocompleteFunction = f => autocompleteFunctions.push( f )
+
+/**
+ * Install autocompletion support in a TinyMCE Editor.  See the documentation at
+ * {@link module:AutoComplete the top of this module} for details.
+ * 
+ * @param {tinymce.Editor} editor - the editor into which to install support for
+ *   autocompletion
+ */
+export const install = editor => {
+    // First, the autocompleter that is extensible using the
+    // addAutocompleteFunction() API given above:
+    editor.ui.registry.addAutocompleter( 'lurch-general-complete', {
+        trigger : '\\',
+        minChars : 0,
+        columns : 1,
+        onAction : ( autocompleter, range, newContent ) => {
+            editor.selection.setRng( range )
+            editor.insertContent( newContent )
+            autocompleter.hide()
+        },
+        fetch : pattern => Promise.resolve(
+            autocompleteFunctions.map( f => f( editor ) )
+            .flat()
+            .filter( completion => completion.shortcut.startsWith( pattern ) )
+            .map( completion => ( {
+                type : 'cardmenuitem',
+                value : completion.content,
+                label : completion.preview,
+                items : [
+                    {
+                        type : 'cardtext',
+                        text : `\\${completion.shortcut}: ${completion.preview}`
+                    }
+                ]
+            } ) )
+        )
+    } )
+    // Second, the autocompleter that is just for expressions in one of the
+    // pre-installed notations from notations.js:
+    editor.ui.registry.addAutocompleter( 'lurch-expression-autocomplete', {
+        trigger : '$',
+        minChars : 1,
+        columns : 1,
+        onAction : ( autocompleter, range, newContent ) => {
+            editor.selection.setRng( range )
+            editor.insertContent( newContent )
+            autocompleter.hide()
+        },
+        fetch : pattern => {
+            let exprCode = pattern.replaceAll( '\\\\', '' ).replaceAll( '\\$', '' )
+            if ( !exprCode.endsWith( '$' ) )
+                return Promise.resolve( [ ] )
+            exprCode = exprCode.substring( 0, exprCode.length - 1 )
+            if ( exprCode.includes( '$' ) )
+                return Promise.resolve( [ ] )
+            const notation = lookup( editor, 'notation' )
+            let patternContent = pattern.substring( 0, pattern.length - 1 )
+            const given = patternContent.toLowerCase().startsWith( 'assume ' )
+                       || patternContent.toLowerCase().startsWith( 'given' )
+            if ( given )
+                patternContent = patternContent.substring( patternContent.indexOf( ' ' ) + 1 )
+            const givenText = given ? 'given' : 'claim'
+            return getConverter().then( converter => {
+                const latex = converter( patternContent, notation.toLowerCase(), 'latex' )
+                return [
+                    {
+                        type : 'cardmenuitem',
+                        value : expressionHTML( latex, given, editor ),
+                        label : `${notation} ${givenText} expression: ${patternContent}`,
+                        items : [
+                            {
+                                type : 'cardtext',
+                                text : `${notation} ${givenText} expression: ${patternContent}`
+                            }
+                        ]
+                    }
+                ]
+            } )
+        }
+    } )
+}
+
+export default { install }
+</code></pre>
+    </article>
 </section>
 
 
