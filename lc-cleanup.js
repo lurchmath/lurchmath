@@ -1,74 +1,54 @@
 
-import { Message } from "./validation-messages.js"
-import { Expression, Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { Message } from './validation-messages.js'
+import { Expression } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { DeclarationType } from './declarations.js'
 
-// Several utility functions required by the workhorse function used below:
+// Some utility functions required by the workhorse function used below:
 // Utility function 1: Send an error about a declaration missing a required
 // neighbor expression.
-const sendModifierError = ( LC, text ) => {
+const sendNeighborError = ( LC, beforeOrAfter ) => {
     setTimeout( () => Message.error( text, {
         id : LC.ID(),
         errorType : 'declaration error',
         valid : false,
-        reason : text
+        reason : `This declaration needs an expression ${beforeOrAfter} it`
     } ), 0 )
     LC.remove()
 }
-// Utility function 2: Get the previous expression or send an error if there is
-// none.
-const getPrevious = LC => {
-    const result = LC.previousSibling()
-    if ( !result || !( result instanceof Expression ) ) {
-        sendModifierError( LC, 'This declaration needs an expression before it' )
-        LC.remove()
-    }
-    return result
-}
-// Utility function 3: Get the next expression or send an error if there is
-// none.
-const getNext = LC => {
-    const result = LC.nextSibling()
-    if ( !result || !( result instanceof Expression ) ) {
-        sendModifierError( LC, 'This declaration needs an expression after it' )
-        LC.remove()
-    }
-    return result
-}
-// Utility function 4: Traverse an LC's children; if any of them are declarations
-// that need to modify one of their siblings, apply the modification in-place,
-// or send an error message if it cannot be done.
-const applyModifiers = env => {
-    for ( let i = 0 ; i < env.numChildren() ; ) {
-        const child = env.child( i )
-        if ( child.isA( 'LetWithBody' ) ) {
-            const next = getNext( child )
-            if ( next ) {
-                child.lastChild().replaceWith( next )
-                child.unmakeIntoA( 'LetWithBody' )
-                child.makeIntoA( 'Let' )
-                continue
+// Utility function 2: Traverse an LC's children; if any of them are declarations,
+// make the changes in the document, which may include merging the declaration
+// with one of its neighbors.  Send an error message if it cannot be done,
+// deleting the erroneous declaration in the process.
+const cleanUpDeclarations = env => {
+    env.descendantsSatisfying( descendant =>
+        descendant.hasAttribute( 'declaration-template' )
+    ).forEach( declaration => {
+        const declType = DeclarationType.fromTemplate(
+            declaration.getAttribute( 'declaraton_template' ) )
+        if ( declType.body == 'before' ) {
+            const body = declaration.previousSibling()
+            if ( !body || !( body instanceof Expression ) ) {
+                sendNeighborError( declaration, 'before' )
+                declaration.remove()
+                return
             }
-        } else if ( child.isA( 'ForSomePrefix' ) ) {
-            const next = getNext( child )
-            if ( next ) {
-                child.lastChild().replaceWith( next )
-                child.unmakeIntoA( 'ForSomePrefix' )
-                child.makeIntoA( 'ForSome' )
-                continue
+            declaration.lastChild().replaceWith( body )
+        } else if ( declType.body == 'after' ) {
+            const body = declaration.nextSibling()
+            if ( !body || !( body instanceof Expression ) ) {
+                sendNeighborError( declaration, 'after' )
+                declaration.remove()
+                return
             }
-        } else if ( child.isA( 'ForSomeSuffix' ) ) {
-            const previous = getPrevious( child )
-            if ( previous ) {
-                child.lastChild().replaceWith( previous )
-                child.unmakeIntoA( 'ForSomeSuffix' )
-                child.makeIntoA( 'ForSome' )
-                continue
-            }
-        } else if ( child instanceof Environment ) {
-            applyModifiers( child )
+            declaration.lastChild().replaceWith( body )
         }
-        i++
-    }
+        declaration.makeIntoA(
+            declType.type == 'variable' ? 'Let' :
+            declType.body == 'none' ? 'Declare' : 'ForSome'
+        )
+        if ( !declaration.isA( 'ForSome' ) )
+            declaration.makeIntoA( 'given' )
+    } )
 }
 
 /**
@@ -90,5 +70,5 @@ const applyModifiers = env => {
  * and we will need to extend it.)
  */
 export const cleanLC = LC => {
-    applyModifiers( LC )
+    cleanUpDeclarations( LC )
 }

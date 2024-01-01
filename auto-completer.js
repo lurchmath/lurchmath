@@ -33,6 +33,7 @@
 import { lookup } from './document-settings.js'
 import { expressionHTML } from './expressions.js'
 import { getConverter } from './math-live.js'
+import { DeclarationType, declarationHTML } from './declarations.js'
 
 // Internal use: Stores all autocompletion functions.
 // An autocompletion function has the signature documented below.
@@ -149,6 +150,37 @@ export const install = editor => {
                     }
                 ]
             } )
+        }
+    } )
+    // Third, the autocompleter that is for declarations:
+    editor.ui.registry.addAutocompleter( 'lurch-declaration-autocomplete', {
+        trigger : '$',
+        minChars : 2,
+        columns : 1,
+        onAction : ( autocompleter, range, newContent ) => {
+            editor.selection.setRng( range )
+            editor.insertContent( newContent )
+            autocompleter.hide()
+        },
+        fetch : pattern => {
+            let exprCode = pattern.replaceAll( '\\\\', '' ).replaceAll( '\\$', '' )
+            const result = [ ]
+            DeclarationType.allInSettings( true ).forEach( declType => {
+                const symbol = declType.match( exprCode )
+                if ( symbol ) {
+                    const display = declType.displayForm( symbol )
+                    const html = declarationHTML( declType, symbol, editor )
+                    result.push( {
+                        type : 'cardmenuitem',
+                        value : html,
+                        label : display,
+                        items : [
+                            { type : 'cardtext', text : display }
+                        ]
+                    } )
+                }
+            } )
+            return Promise.resolve( result )
         }
     } )
 }

@@ -10,47 +10,116 @@
 
 import { Atom } from './atoms.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
-import { LogicConcept }
+import { Declaration, LurchSymbol }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { getConverter } from './math-live.js'
+import { appSettings } from './settings-install.js'
 
 let converter = null
 
-// Internal use only
-// List of all declaration types
-const declarationTypes = [
-    {
-        name : 'Let',
-        template : 'Let _ be arbitrary'
-    },
-    {
-        name : 'LetWithBody',
-        template : 'Let _ be such that...'
-    },
-    {
-        name : 'ForSomePrefix',
-        template : 'For some _, ...'
-    },
-    {
-        name : 'ForSomeSuffix',
-        template : '..., for some _'
-    },
-    {
-        name : 'Declare',
-        template : 'Reserve a new symbol _'
+export class DeclarationType {
+    constructor ( type, body, template ) {
+        this.type = type
+        if ( type != 'variable' && type != 'constant' )
+            throw new Error( `Invalid declaration type: ${type}` )
+        this.body = body
+        if ( body != 'before' && body != 'after' && body != 'none' )
+            throw new Error( `Invalid body specifier: ${body}` )
+        if ( template !== undefined ) {
+            this.template = template
+        } else {
+            this.template = DeclarationType.defaultTemplate( type, body )
+            if ( !this.template )
+                throw new Error( `No default declaration template for ${key}` )
+        }
     }
-]
-const nameToType = name => declarationTypes.find( item => item.name == name )
-const displayTextToType = displayText => declarationTypes.find( item => {
-    const [ prefix, suffix ] = item.template.split( '_', 2 )
-    return displayText.startsWith( prefix ) && displayText.endsWith( suffix )
-} )
-const fillTemplate = ( type, symbol, keepEllipsis=true ) => {
-    const result = type.template.replaceAll( '_', symbol )
-    return keepEllipsis ? result : result.replaceAll( '...', '' )
+    displayForm ( symbol ) {
+        return this.template.replace( '[statement]', '...' ).trim()
+                            .replace( '[variable]', symbol )
+                            .replace( '[constant]', symbol )
+    }
+    documentForm ( symbol ) {
+        if ( this.type == 'constant' && this.body == 'none' )
+            symbol = `<code class="putdown-notation">${symbol}</code>`
+        else
+            symbol = converter( symbol, 'latex', 'html' )
+        return this.template.replace( '[statement]', '' ).trim()
+                            .replace( '[variable]', symbol )
+                            .replace( '[constant]', symbol )
+    }
+    match ( text ) {
+        // const original = text
+        const simple = str => str.trim().replace( /\s+/g, ' ' )
+        text = simple( text )
+        const parts = this.template.replace( '[statement]', '' )
+            .split( `[${this.type}]` ).map( simple )
+        // console.log( '\n\n--------------------\nMATCHES?', original, text, parts )
+        if ( !text.toLowerCase().startsWith( parts[0].toLowerCase() ) ) {
+            // console.log( 'Not initial segment:',
+            //     parts[0].toLowerCase(), '---', text.toLowerCase() )
+            return
+        }
+        text = text.substring( parts[0].length ).trim()
+        const match = /^(\w+)\b/.exec( text )
+        if ( !match ) {
+            // console.log( 'Not an identifier:', JSON.stringify(text) )
+            return
+        } else {
+            // console.log( match )
+        }
+        const symbol = match[1]
+        text = text.substring( symbol.length ).trim()
+        if ( parts[1] != ''
+          && !parts[1].toLowerCase().startsWith( text.toLowerCase() ) ) {
+            // console.log( 'Not initial segment:',
+            //     text.toLowerCase(), '---', parts[1].toLowerCase() )
+            return
+        }
+        // console.log( 'MATCH!', symbol )
+        return symbol
+    }
+    static defaultTemplate ( type, body ) {
+        return {
+            'variable none' : 'Let [variable] be arbitrary',
+            'variable before' : '[statement], for an arbitrary [variable]',
+            'variable after' : 'Let [variable] be arbitrary and assume [statement]',
+            'constant none' : 'Reserve [constant] as a new symbol',
+            'constant before' : '[statement], for some [constant]',
+            'constant after' : 'For some [constant], [statement]'
+        }[`${type} ${body}`]
+    }
+    static templateToType ( template ) {
+        return template.includes( '[variable]' ) ? 'variable' : 'constant'
+    }
+    static templateToBody ( template ) {
+        return template.startsWith( '[statement]' ) ? 'before' :
+               template.endsWith( '[statement]' ) ? 'after' : 'none'
+    }
+    static fromTemplate ( template ) {
+        return new DeclarationType(
+            DeclarationType.templateToType( template ),
+            DeclarationType.templateToBody( template ),
+            template )
+    }
+    static allInSettings ( addDefaults = false ) {
+        const result = appSettings.get( 'declaration type templates' ).split( '\n' )
+                                  .map( line => DeclarationType.fromTemplate( line ) )
+        if ( addDefaults ) {
+            ;[ 'variable', 'constant' ].forEach( type => {
+                ;[ 'none', 'before', 'after' ].forEach( body => {
+                    if ( !DeclarationType.existsPhraseFor( type, body, result ) )
+                        result.push( new DeclarationType( type, body ) )
+                } )
+            } )
+        }
+        return result
+    }
+    static existsPhraseFor ( type, body, list ) {
+        if ( !list ) list = DeclarationType.allInSettings( false )
+        return list.some( declType =>
+            declType.type == type && declType.body == body )
+    }
 }
-const displayChoices = symbol =>
-    declarationTypes.map( type => fillTemplate( type, symbol ) )
 
 /**
  * Install into a TinyMCE editor instance a new menu item:
@@ -84,21 +153,20 @@ export const install = editor => {
 /**
  * Create the HTML for a declaration atom with the given type and symbol.
  * 
- * @param {string} typeName - the type of the declaration, which should be one
- *   of the names in the `declarationTypes` array ('Let', 'LetWithBody',
- *   'ForSomePrefix', 'ForSomeSuffix', or 'Declare')
+ * @param {DeclarationType} declType - the type of the declaration
  * @param {string} symbol - the symbol to be declared
  * @param {tinymce.Editor} editor - the TinyMCE editor instance into which the
  *   declaration may eventually be inserted (used primarily for constructing
  *   HTML elements using its document object)
  * @function
+ * 
+ * @see {@link DeclarationType} for details about the first parameter
  */
-export const declarationHTML = ( typeName, symbol, editor ) => {
-    const type = nameToType( typeName )
+export const declarationHTML = ( declType, symbol, editor ) => {
     const atom = Atom.newInline( editor, '', {
         type : 'declaration',
         symbol : symbol,
-        displayText : fillTemplate( type, symbol )
+        'declaration_template' : declType.template
     } )
     atom.update()
     return atom.getHTML()
@@ -109,28 +177,34 @@ Atom.addType( 'declaration', {
     edit : function () {
         // set up dialog contents
         const symbol = this.getMetadata( 'symbol' )
-        const displayText = this.getMetadata( 'displayText' )
-        const type = displayTextToType( displayText )
+        const declType = DeclarationType.fromTemplate(
+            this.getMetadata( 'declaration_template' ) )
         const dialog = new Dialog( 'Edit declaration', this.editor )
-        dialog.addItem( new SelectBoxItem( 'displayText', 'Declaration type',
-            displayChoices( symbol ) ) )
+        const declTypes = DeclarationType.allInSettings( true )
+        dialog.addItem( new SelectBoxItem( 'declaration_display',
+            'Declaration type',
+            declTypes.map( dt => dt.displayForm( symbol ) ) ) )
         dialog.addItem( new TextInputItem( 'symbol', 'Symbol to declare', symbol ) )
         // initialize dialog with data from the atom
         dialog.setInitialData( {
             symbol : symbol,
-            displayText : fillTemplate( type, symbol )
+            'declaration_display' : declType.displayForm( symbol ),
         } )
         dialog.setDefaultFocus( 'symbol' )
         // if they edit the symbol, update the dropdown
+        const getSelectBox = () =>
+            document.querySelector( '.tox-selectfield > select' )
+        let lastSelectedIndex = declTypes.map( dt => dt.template )
+            .indexOf( declType.template )
+        console.log( declType.template, declTypes.map( dt => dt.template ), lastSelectedIndex )
         dialog.onChange = ( _, component ) => {
+            const selectBox = getSelectBox()
+            lastSelectedIndex = selectBox.selectedIndex
             if ( component.name == 'symbol' ) {
                 const symbol = dialog.get( 'symbol' )
-                const selectBox = document.querySelector(
-                    '.tox-selectfield > select' )
-                const lastIndex = selectBox.selectedIndex
-                selectBox.innerHTML = displayChoices( symbol ).map(
-                    text => `<option>${text}</option>` ).join( '' )
-                selectBox.selectedIndex = lastIndex
+                selectBox.innerHTML = declTypes.map( dt =>
+                    `<option>${dt.displayForm( symbol )}</option>` ).join( '' )
+                selectBox.selectedIndex = lastSelectedIndex
             }
         }
         // Show it and if they accept any changes, apply them to the atom.
@@ -138,20 +212,21 @@ Atom.addType( 'declaration', {
             if ( !userHitOK ) return false
             // save the data
             this.setMetadata( 'symbol', dialog.get( 'symbol' ) )
-            this.setMetadata( 'displayText', dialog.get( 'displayText' ) )
+            this.setMetadata( 'declaration_template',
+                declTypes[lastSelectedIndex].template )
             this.update()
             return true
         } )
     },
     toLCs : function () {
-        const symbolString = JSON.stringify( this.getMetadata( 'symbol' ) )
-        const displayText = this.getMetadata( 'displayText' )
-        const typeName = displayTextToType( displayText ).name
-        const decl = LogicConcept.fromPutdown( `[${symbolString}]` )[0]
-            .asA( typeName )
-        if ( [ 'Let', 'LetWithBody', 'Declare' ].includes( typeName ) )
-            decl.makeIntoA( 'given' )
-        return [ decl ]
+        return [
+            new Declaration(
+                new LurchSymbol( this.getMetadata( 'symbol' ) )
+            ).attr(
+                'declaration_template',
+                this.getMetadata( 'declaration_template' )
+            )
+        ]
     },
     toNotation : function ( notation ) {
         if ( !converter ) return
@@ -162,11 +237,9 @@ Atom.addType( 'declaration', {
     },
     update : function () {
         const symbol = this.getMetadata( 'symbol' )
-        const displayText = this.getMetadata( 'displayText' )
-        const type = displayTextToType( displayText )
-        const typesetSymbol = converter( symbol, 'latex', 'html' )
-        const repr = fillTemplate( type, typesetSymbol, false )
-        this.fillChild( 'body', repr )
+        const declType = DeclarationType.fromTemplate(
+            this.getMetadata( 'declaration_template' ) )
+        this.fillChild( 'body', declType.documentForm( symbol ) )
     }
 } )
 
