@@ -1,6 +1,5 @@
 
 import { appURL } from './utilities.js'
-import { className, Atom } from './atoms.js'
 
 /**
  * A Lurch document will have several parts, including at least the following.
@@ -329,30 +328,6 @@ export class LurchDocument {
     deleteMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
         if ( element ) element.remove()
-    }
-
-    /**
-     * For details of what an atom is, read the documentation of
-     * {@link module:Atoms.Atom the Atom class}.  An editor can have any number
-     * of atoms in it, each of which is represented as some HTML indicating that
-     * it is an atom, but which is more convenient to work with in JavaScript
-     * through use of the {@link module:Atoms.Atom Atom} class.
-     * 
-     * This function finds all atoms in the editor's HTML content, converts each
-     * to an instance of the {@link module:Atoms.Atom Atom} class, and returns
-     * the resulting array.
-     * 
-     * @returns {Atom[]} an array of all the atoms in the editor, each one
-     *   represented as an instance of the {@link module:Atoms.Atom Atom} class
-     * @see {@link module:Atoms.Atom Atom class}
-     * @see {@link module:Atoms Atoms module}
-     */
-    atoms () {
-        return Array.from(
-            this.editor.getDoc().getElementsByClassName( className )
-        ).filter( element =>
-            !element.parentNode.classList.contains( 'mce-offscreen-selection' )
-        ).map( element => new Atom( element, this.editor ) )
     }
 
 }
