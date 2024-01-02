@@ -172,6 +172,18 @@ export class Shell {
     }
 
     /**
+     * This function is a handler for whenever the metadata stored in this shell
+     * changes.  Its default implementation is to do nothing, but having it here
+     * allows {@link module:Validation the validation module} to replace this
+     * handler with one that clears all validation feedback.  We do it this way,
+     * rather than importing the validation module and calling its "clear"
+     * function ourselves, because it prevents a circular dependency.
+     * 
+     * @see {@link Atom#dataChanged dataChanged() for Atoms}
+     */
+    dataChanged () { }
+
+    /**
      * Get the HTML representation of this shell, as it currently sits in the
      * document.
      * 
@@ -239,6 +251,7 @@ export class Shell {
                 shellType.representation
         else
             delete this.element.dataset['environment_type_representation']
+        this.dataChanged()
     }
 
     /**
@@ -288,7 +301,10 @@ export class Shell {
      */
     editThenInsert () {
         this.edit().then( userSaved => {
-            if ( userSaved ) this.editor.insertContent( this.getHTML() )
+            if ( userSaved ) {
+                this.editor.insertContent( this.getHTML() )
+                this.dataChanged()
+            }
         } )
     }
 
@@ -353,15 +369,29 @@ export class Shell {
 
     /**
      * Find all elements in the given TinyMCE editor that represent shells, and
+     * return each one in the order they appear in the document.
+     * 
+     * @param {tinymce.Editor} editor - the editor in which to search
+     * @returns {HTMLElement[]} the array of shell elements in the editor's document
+     */
+    static allElementsIn ( editor ) {
+        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
+            .filter( isOnScreen )
+            .filter( element => editor.dom.doc.body.contains( element ) )
+    }
+
+    /**
+     * Find all elements in the given TinyMCE editor that represent shells, and
      * return each one, transformed into an instance of the Shell class.  They
      * are returned in the order they appear in the document.
      * 
      * @param {tinymce.Editor} editor - the editor in which to search
-     * @returns {Atom[]} the array of shell elements in the editor's document
+     * @returns {Shell[]} the array of shells in the editor's document
+     * @see {@link module:Shells.Shell.allElementsIn allElementsIn()}
      */
     static allIn ( editor ) {
-        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
-            .filter( isOnScreen ).map( element => new Shell( element, editor ) )
+        return Shell.allElementsIn( editor ).map( element =>
+            new Shell( element, editor ) )
     }
 
     /**
@@ -493,6 +523,25 @@ export const install = editor => {
                 }
             }
         } )
+    } )
+    // Whenever anything changes, check to see if any shells were deleted.
+    // If so, trigger a clearing of old validation feedback.
+    let lastShellElementList = [ ]
+    editor.on( 'input NodeChange Paste Change Undo Redo', () => {
+        const thisShellElementList = Shell.allElementsIn( editor )
+        // New ones trigger validation clearing:
+        thisShellElementList.filter(
+            element => !lastShellElementList.includes( element )
+        ).forEachWithTimeout(
+            element => new Shell( element, editor ).dataChanged()
+        )
+        // Deleted ones also trigger validation clearing:
+        lastShellElementList.filter(
+            element => !thisShellElementList.includes( element )
+        ).forEach(
+            element => new Shell( element, editor ).dataChanged()
+        )
+        lastShellElementList = thisShellElementList
     } )
     // The first menu item described above
     // (We do not call it "insert environment" because it will go on the insert

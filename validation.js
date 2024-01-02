@@ -27,6 +27,7 @@ import { Message } from './validation-messages.js'
 import { Atom } from './atoms.js'
 import { Shell } from './shells.js'
 import { Dialog } from './dialog.js'
+import { isOnScreen } from './utilities.js'
 
 /**
  * This function should be called in the editor's setup routine.  It installs
@@ -66,6 +67,34 @@ export const install = editor => {
             atom.setValidationResult( null ) )
         Shell.allIn( editor ).forEach( shell =>
             shell.setValidationResult( null ) )
+    }
+
+    // Global(ish) variable used by the function below
+    let clearIsPending = false
+    // Same as previous utility function, but this one queues them up, so that
+    // (a) they don't happen immediately and (b) multiple calls can get
+    // compressed into a single result, for efficiency.
+    const queueClearAll = () => {
+        if ( clearIsPending ) return
+        clearIsPending = true
+        setTimeout( () => {
+            clearAll( editor )
+            clearIsPending = false
+        }, 0 )
+    }
+
+    // Install that validation clearing function as the event handler for any
+    // change made to the internal data of an atom or shell (or the creation of
+    // an atom or shell).
+    Atom.prototype.dataChanged = function () {
+        if ( this.editor == editor && isOnScreen( this.element )
+          && editor.dom.doc.body.contains( this.element ) )
+            queueClearAll()
+    }
+    Shell.prototype.dataChanged = function () {
+        if ( this.editor == editor && isOnScreen( this.element )
+          && editor.dom.doc.body.contains( this.element ) )
+            queueClearAll()
     }
 
     // Install event handler so that we can decorate the document correctly upon

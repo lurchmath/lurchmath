@@ -109,6 +109,18 @@ export class Atom {
         this.setupHandlers()
     }
 
+    /**
+     * This function is a handler for whenever the metadata stored in this atom
+     * changes.  Its default implementation is to do nothing, but having it here
+     * allows {@link module:Validation the validation module} to replace this
+     * handler with one that clears all validation feedback.  We do it this way,
+     * rather than importing the validation module and calling its "clear"
+     * function ourselves, because it prevents a circular dependency.
+     * 
+     * @see {@link Shell#dataChanged dataChanged() for Shells}
+     */
+    dataChanged () { }
+
     // Internal use only
     // Install any event handlers for this atom's type into this atom itself.
     // This is called by the constructor (because most Atom instances are
@@ -299,6 +311,7 @@ export class Atom {
      */
     setMetadata ( key, value ) {
         this.element.dataset[metadataKey( key )] = JSON.stringify( value )
+        this.dataChanged()
     }
 
     /**
@@ -313,6 +326,7 @@ export class Atom {
      */
     removeMetadata ( key ) {
         delete this.element.dataset[metadataKey( key )]
+        this.dataChanged()
     }
 
     /**
@@ -413,6 +427,7 @@ export class Atom {
             newDatum.innerHTML = removeScriptTags( value.innerHTML || value )
             this.getChild( 'metadata', true ).appendChild( newDatum )
         }
+        this.dataChanged()
     }
 
     /**
@@ -427,6 +442,7 @@ export class Atom {
      */
     removeHTMLMetadata ( key ) {
         this.findMetadataElement( key )?.remove()
+        this.dataChanged()
     }
 
     /**
@@ -468,7 +484,10 @@ export class Atom {
         this.futureLocation = this.editor.selection.getNode()
         // Now do the edit:
         this.edit().then( userSaved => {
-            if ( userSaved ) this.editor.insertContent( this.getHTML() )
+            if ( userSaved ) {
+                this.editor.insertContent( this.getHTML() )
+                this.dataChanged()
+            }
         } ).finally( () => {
             // And clean up the data we stored earlier; no longer needed.
             delete this.futureLocation
@@ -668,6 +687,7 @@ export class Atom {
     static allElementsIn ( editor ) {
         return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
             .filter( isOnScreen )
+            .filter( element => editor.dom.doc.body.contains( element ) )
     }
 
     /**
@@ -676,7 +696,7 @@ export class Atom {
      * are returned in the order they appear in the document.
      * 
      * @param {tinymce.Editor} editor - the editor in which to search
-     * @returns {Atom[]} the array of atom elements in the editor's document
+     * @returns {Atom[]} the array of atom in the editor's document
      * @see {@link module:Atoms.Atom.allElementsIn allElementsIn()}
      */
     static allIn ( editor ) {
@@ -709,9 +729,11 @@ export class Atom {
  * @function
  */
 export const install = editor => {
+    // Install click handler to edit the atom that was clicked
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
             Atom.findAbove( event.target, editor )?.edit?.() ) )
+    // Install Enter key handler for same purpose
     editor.on( 'keydown', event => {
         if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
             return
@@ -719,13 +741,27 @@ export const install = editor => {
         if ( Atom.isAtomElement( selected ) )
             new Atom( selected, editor ).edit?.()
     } )
+    // Whenever anything changes, check to see which atoms appeared and which
+    // disappeared.  New ones need to have their appearance updated, and both
+    // new and deleted ones should trigger a clearing of validation feedback.
     let lastAtomElementList = [ ]
     editor.on( 'input NodeChange Paste Change Undo Redo', () => {
         const thisAtomElementList = Atom.allElementsIn( editor )
+        // New ones need updating and trigger validation clearing:
         thisAtomElementList.filter(
             element => !lastAtomElementList.includes( element )
         ).forEachWithTimeout(
-            element => new Atom( element, editor ).update()
+            element => {
+                const atom = new Atom( element, editor )
+                atom.update()
+                atom.dataChanged()
+            }
+        )
+        // Deleted ones trigger validation clearing:
+        lastAtomElementList.filter(
+            element => !thisAtomElementList.includes( element )
+        ).forEach(
+            element => new Atom( element, editor ).dataChanged()
         )
         lastAtomElementList = thisAtomElementList
     } )
