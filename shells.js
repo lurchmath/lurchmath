@@ -361,7 +361,7 @@ export class Shell {
      */
     static allIn ( editor ) {
         return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
-            .filter( isOnScreen ).map( element => new Shell( element ) )
+            .filter( isOnScreen ).map( element => new Shell( element, editor ) )
     }
 
     /**
