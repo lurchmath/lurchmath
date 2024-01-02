@@ -20,7 +20,7 @@
  * It also installs an autocompletion that uses `$...$` notation, in imitation
  * of $\LaTeX$ inline math expressions.  That autocompletion allows the user to
  * replace any content between dollar signs with an expression, in the user's
- * default notation, in the sense of the {@link module:NotationAtoms expressions
+ * default notation, in the sense of the {@link module:ExpressionAtoms expressions
  * in the Notation Atoms module}.
  * 
  * Clients can import this module and then call its

@@ -5,7 +5,7 @@
  * mathematical expressions in either AsciiMath or LaTeX notation using a
  * MathLive equation editor.
  * 
- * @module NotationAtoms
+ * @module ExpressionAtoms
  */
 
 import { Atom } from './atoms.js'
@@ -36,7 +36,7 @@ export const install = editor => {
         shortcut : 'Meta+E',
         onAction : () => {
             const atom = Atom.newInline( editor, '', {
-                type : 'notation',
+                type : 'expression',
                 asciimath : '',
                 latex : '',
                 given : false
@@ -62,7 +62,7 @@ export const install = editor => {
  */
 export const expressionHTML = ( latex, given, editor ) => {
     const atom = Atom.newInline( editor, '', {
-        type : 'notation',
+        type : 'expression',
         asciimath : converter( latex, 'latex', 'asciimath' ),
         latex : latex,
         given : given
@@ -72,7 +72,7 @@ export const expressionHTML = ( latex, given, editor ) => {
 }
 
 // Internal use only: Show the dialog whose behavior is described above.
-Atom.addType( 'notation', {
+Atom.addType( 'expression', {
     edit : function () {
         // set up dialog contents
         const dialog = new Dialog( 'Edit expression', this.editor )
@@ -84,7 +84,7 @@ Atom.addType( 'notation', {
         dialog.addItem( new ButtonItem( 'View meaning', () => {
             const previewDialog = new Dialog( 'View meaning', dialog.editor )
             const copy = Atom.newInline( this.editor, '', {
-                type : 'notation',
+                type : 'expression',
                 asciimath : dialog.get( 'asciimath' ),
                 latex : dialog.get( 'latex' ),
                 given : dialog.get( 'given' )
@@ -103,7 +103,7 @@ Atom.addType( 'notation', {
             latex : this.getMetadata( 'latex' ),
             given : this.getMetadata( 'given' )
         } )
-        dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
+        dialog.setDefaultFocus( lookup( this.editor, 'expression' ).toLowerCase() )
         // if they edit the asciimath or latex, keep them in sync
         let syncEnabled = false
         setTimeout( () => syncEnabled = true, 0 ) // after dialog populates
