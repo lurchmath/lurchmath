@@ -72,8 +72,20 @@ export const expressionHTML = ( latex, given, editor ) => {
 }
 
 // Internal use only: Show the dialog whose behavior is described above.
-Atom.addType( 'expression', {
-    edit : function () {
+export class Expression extends Atom {
+
+    static subclassName = Atom.registerSubclass( 'expression', Expression )
+
+    /**
+     * Shows a multi-part dialog for editing expression atoms using AsciiMath or
+     * a MathLive editor widget.  The user can then confirm or cancel the edit,
+     * as per the convention described in {@link module:Atoms.Atom#edit the
+     * edit() function for the Atom class}.
+     * 
+     * @returns {Promise} same convention as specified in
+     *   {@link module:Atoms.Atom#edit edit() for Atoms}
+     */
+    edit () {
         // set up dialog contents
         const dialog = new Dialog( 'Edit expression', this.editor )
         const asciiMathInput = new TextInputItem( 'asciimath', 'In plain text', '' )
@@ -103,7 +115,7 @@ Atom.addType( 'expression', {
             latex : this.getMetadata( 'latex' ),
             given : this.getMetadata( 'given' )
         } )
-        dialog.setDefaultFocus( lookup( this.editor, 'expression' ).toLowerCase() )
+        dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
         // if they edit the asciimath or latex, keep them in sync
         let syncEnabled = false
         setTimeout( () => syncEnabled = true, 0 ) // after dialog populates
@@ -139,8 +151,17 @@ Atom.addType( 'expression', {
             this.update()
             return true
         } )
-    },
-    toLCs : function () {
+    }
+
+    /**
+     * If this expression successfully parses into a single LogicConcept, then
+     * this function returns a JavaScript array containing that one LogicConcept.
+     * Otherwise, this function returns an empty array, and has the side effect
+     * of printing errors to the developer console to assist with debugging.
+     * 
+     * @returns {LogicConcept[]} an array containing zero or one LogicConcepts
+     */
+    toLCs () {
         // Get the LaTeX form and attempt to parse it
         const latex = this.getMetadata( 'latex' )
         const result = parse( latex, 'latex' )
@@ -163,15 +184,14 @@ Atom.addType( 'expression', {
         else
             result[0].unmakeIntoA( 'given' )
         return result
-    },
-    toNotation : function ( notation ) {
-        if ( !converter ) return
-        const LCs = this.toLCs()
-        let putdown = ''
-        LCs.forEach( LC => putdown += LC.toPutdown() + '\n' )
-        return converter( putdown, 'putdown', notation )
-    },
-    update : function () {
+    }
+
+    /**
+     * Update the HTML representation of this expression.  That includes placing
+     * a typeset version of the expression into the atom's body and setting the
+     * prefix to be `'Assume '` if the expression is given, otherwise empty.
+     */
+    update () {
         const latex = this.getMetadata( 'latex' )
         const repr = `${represent( latex, 'latex' )}`
         this.fillChild( 'body', repr )
@@ -180,6 +200,7 @@ Atom.addType( 'expression', {
         else
             this.fillChild( 'prefix', '' )
     }
-} )
+
+}
 
 export default { install }

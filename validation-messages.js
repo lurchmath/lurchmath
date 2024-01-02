@@ -290,7 +290,7 @@ export class Message {
             if ( head instanceof Atom ) {
                 let LCs
                 try {
-                    LCs = head.toLCs?.() || [ ]
+                    LCs = head.toLCs()
                 } catch ( e ) {
                     const tmp = new Environment() // any LC is fine
                     assignID( tmp, head.element )
@@ -344,7 +344,7 @@ export class Message {
                 ...editor.dom.doc.querySelectorAll( selector )
             ].filter( isOnScreen ).map( element =>
                 element.classList.contains( atomClassName ) ?
-                new Atom( element, editor ) : new Shell( element, editor )
+                Atom.from( element, editor ) : Shell.from( element, editor )
             )
         )
         // Apply any cleanup necessary to make the LC usable in validation.

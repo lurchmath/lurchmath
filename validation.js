@@ -109,11 +109,11 @@ export const install = editor => {
                 if ( message.element ) {
                     // console.log( message.element )
                     if ( Atom.isAtomElement( message.element ) ) {
-                        new Atom( message.element, editor ).setValidationResult(
+                        Atom.from( message.element, editor ).setValidationResult(
                             message.getValidationResult(),
                             message.getValidationReason() )
                     } else if ( Shell.isShellElement( message.element ) ) {
-                        new Shell( message.element, editor ).setValidationResult(
+                        Shell.from( message.element, editor ).setValidationResult(
                             message.getValidationResult(),
                             message.getValidationReason() )
                     } else {

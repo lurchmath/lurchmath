@@ -74,8 +74,21 @@ export const install = editor => {
 // Internal use only: Show a dialog that lets the user edit the dependency's
 // description, or change its content by loading any file over top of the old
 // content, or preview the current content in a new window.
-Atom.addType( 'dependency', {
-    edit : function () {
+export class Dependency extends Atom {
+
+    static subclassName = Atom.registerSubclass( 'dependency', Dependency )
+    
+    /**
+     * Shows a multi-part dialog for editing dependency atoms, including
+     * specfying their description and providing their content in any one of a
+     * variety of ways.  The user can then confirm or cancel the edit,
+     * as per the convention described in {@link module:Atoms.Atom#edit the
+     * edit() function for the Atom class}.
+     * 
+     * @returns {Promise} same convention as specified in
+     *   {@link module:Atoms.Atom#edit edit() for Atoms}
+     */
+    edit () {
         const description = this.getMetadata( 'description' )
         const origContent = this.getHTMLMetadata( 'content' )?.innerHTML
         let newContent = origContent
@@ -98,8 +111,17 @@ Atom.addType( 'dependency', {
             this.update()
             return true
         } )
-    },
-    update : function () {
+    }
+
+    /**
+     * Update the HTML representation of this dependency.  A dependency's
+     * visual representation is just an uneditable DIV in the document that
+     * looks like a box, says it's a dependency, and includes the description
+     * the user provided when editing the dependency.  The actual content of the
+     * dependency does not appear in its visual representation in the document,
+     * because it would typically be prohibitively large.
+     */
+    update () {
         this.element.style.border = 'solid 1px gray'
         this.element.style.padding = '0 1em 0 1em'
         const description = this.getMetadata( 'description' )
@@ -108,6 +130,7 @@ Atom.addType( 'dependency', {
             [ 'Description:', `<tt>${escapeHTML( description )}</tt>` ]
         ) )
     }
-} )
+
+}
 
 export default { install }

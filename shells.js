@@ -136,28 +136,32 @@ export const getShellType = name => shellTypes.find( type => type.name == name )
  */
 export class Shell {
 
-    // Internal use only: Stores a mapping from atom types to event handlers for
-    // shells of that type.  Public use of this data should be done through the
-    // addType() function below; clients do not need to read this data.
-    static handlers = new Map()
+    // Internal use only: Stores a mapping from subclass names to subclasses of
+    // the Shell class.  Public use of this data should be done through the
+    // registerSubclass() function below; clients do not need to read this data.
+    static subclasses = new Map()
 
     /**
-     * This class will watch for various UI events on shells in the editor, and
-     * will call appropriate event handlers based on the type of shell that was
-     * involved.  To register one or more event handlers, call this function.
-     * The set of event handlers and their signatures are documented below, and
-     * may grow with time.
+     * This class tracks its collection of subclasses so that elements in the
+     * editor can have an appropriate Shell subclass wrapper created around them
+     * as needed, for custom event handling.  To register a subclass, call this
+     * function.  To create a shell that has the right subclass, see
+     * {@link module:Shells.Shell#from from()}.
      * 
-     *  * "Edit" event signature: one parameter, the Shell instance for which
-     *    editing was initiated (by a click or by highlighting it and pressing
-     *    the Enter key)
+     * Example:
      * 
-     * @param {string} type - the type of shell for which to register an event
-     *   handler
-     * @param {function} handlers - an object mapping event types (strings like
-     *   "edit") to event handlers (functions)
+     * ```js
+     * class Example extends Shell { ... }
+     * Shell.registerSubclass( 'Example', Example )
+     * ```
+     * 
+     * @param {string} name - the name of the subclass to register
+     * @param {Object} subclass - the subclass itself
      */
-    static addType ( type, handlers ) { Shell.handlers.set( type, handlers ) }
+    static registerSubclass ( name, subclass ) {
+        Shell.subclasses.set( name, subclass )
+        return name
+    }
 
     /**
      * Construct a new instance of this class corresponding to the shell
@@ -178,12 +182,6 @@ export class Shell {
             throw new Error( 'This is not a shell element: ' + element )
         this.element = element
         this.editor = editor
-        const type = this.getType()
-        if ( Shell.handlers.has( type ) ) {
-            const handlers = Shell.handlers.get( type )
-            Object.keys( handlers ).forEach( eventName =>
-                this[eventName] = handlers[eventName] )
-        }
     }
 
     /**
@@ -285,8 +283,16 @@ export class Shell {
         return result
     }
 
-    // Internal use only:
-    // Default handler for environments.  Allows toggling given/claim status.
+    /**
+     * Opens a dialog for editing the shell.  It provides two choices:  Which
+     * type of shell is this, and is it a given or not?  If the user clicks OK,
+     * any changes they made are saved into the editor, and the returned promise
+     * resolves to true.  If the user clicks Cancel, no edits are saved, and the
+     * promise resolves to false.
+     * 
+     * @returns {Promise} a promise that resolves to `true` if the user
+     *   clicked OK in the dialog, or `false` if the user clicked Cancel
+     */
     edit () {
         const dialog = new Dialog( 'Edit environment', this.editor )
         dialog.addItem( new SelectBoxItem(
@@ -406,7 +412,7 @@ export class Shell {
      */
     static allIn ( editor ) {
         return Shell.allElementsIn( editor ).map( element =>
-            new Shell( element, editor ) )
+            Shell.from( element, editor ) )
     }
 
     /**
@@ -422,7 +428,7 @@ export class Shell {
     static findAbove ( node, editor ) {
         for ( let walk = node ; walk ; walk = walk.parentNode )
             if ( Shell.isShellElement( walk ) )
-                return new Shell( walk, editor )
+                return Shell.from( walk, editor )
     }
 
     /**
@@ -492,6 +498,29 @@ export class Shell {
         ].filter( isOnScreen ).filter( predicate )
     }
 
+    /**
+     * Instead of the Shell constructor, use this function to convert an element
+     * in the document into a functioning Shell instance.  The reason you should
+     * use this function is because the Shell constructor always creates an Shell
+     * instance, but this function may create an instance of an Shell subclass,
+     * if that's what the element represents.  Thus the resulting object will
+     * have more specialized functionality suitable to the type of shell in
+     * question.  This behavior is powered by the registration of Shell
+     * subclasses using {@link module:Shells.Shell.registerSubclass
+     * registerSubclass()}.
+     * 
+     * @param {HTMLElement} element - an element that has passed the check in
+     *   {@link module:Shells.Shell.isShellElement isShellElement()}
+     * @param {tinymce.Editor} editor - the editor in which the element sits
+     * @returns {Shell} the shell represented by the element
+     */
+    static from ( element, editor ) {
+        const className = element.dataset['metadata_type']
+        const classObject = className ?
+            Shell.subclasses.get( JSON.parse( className ) ) : Shell
+        return new classObject( element, editor )
+    }
+
 }
 
 /**
@@ -524,19 +553,8 @@ export const install = editor => {
     editor.on( 'init', () => {
         // The mouse handler described above
         editor.dom.doc.body.addEventListener( 'click', event => {
-            if ( Shell.isShellElement( event.target ) ) {
-                const receiver = new Shell( event.target, editor )
-                const type = receiver.getType()
-                if ( Shell.handlers.has( type ) ) {
-                    const handlers = Shell.handlers.get( type )
-                    if ( handlers.hasOwnProperty( 'edit' ) )
-                        handlers['edit']( receiver )
-                    else
-                        receiver.edit() // default handler
-                } else {
-                    receiver.edit() // default handler
-                }
-            }
+            if ( Shell.isShellElement( event.target ) )
+                Shell.from( event.target, editor ).edit()
         } )
     } )
     // Whenever anything changes, check to see if any shells were deleted.
@@ -548,13 +566,13 @@ export const install = editor => {
         thisShellElementList.filter(
             element => !lastShellElementList.includes( element )
         ).forEachWithTimeout(
-            element => new Shell( element, editor ).dataChanged()
+            element => Shell.from( element, editor ).dataChanged()
         )
         // Deleted ones also trigger validation clearing:
         lastShellElementList.filter(
             element => !thisShellElementList.includes( element )
         ).forEach(
-            element => new Shell( element, editor ).dataChanged()
+            element => Shell.from( element, editor ).dataChanged()
         )
         lastShellElementList = thisShellElementList
     } )
@@ -567,7 +585,7 @@ export const install = editor => {
         tooltip : 'Insert block representing an environment',
         shortcut : 'Meta+Shift+E',
         onAction : () => {
-            const shell = new Shell( Shell.createElement(
+            const shell = Shell.from( Shell.createElement(
                 editor, 'environment', editor.selection.getContent()
             ), editor )
             shell.editThenInsert()
@@ -628,7 +646,7 @@ export const install = editor => {
         shellTypes.forEach( shellType => {
             if ( !shellType.hasOwnProperty( 'html' ) ) {
                 const element = Shell.createElement( editor, 'environment', '' )
-                const shell = new Shell( element, editor )
+                const shell = Shell.from( element, editor )
                 shell.setEnvironmentType( shellType.name )
                 shellType.html = element.outerHTML
             }

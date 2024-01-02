@@ -67,28 +67,32 @@ const childSelector = type => '.' + childClass( type )
  */
 export class Atom {
 
-    // Internal use only: Stores a mapping from atom types to event handlers for
-    // atoms of that type.  Public use of this data should be done through the
-    // addType() function below; clients do not need to read this data.
-    static handlers = new Map()
+    // Internal use only: Stores a mapping from subclass names to subclasses of
+    // the Atom class.  Public use of this data should be done through the
+    // registerSubclass() function below; clients do not need to read this data.
+    static subclasses = new Map()
 
     /**
-     * This class will watch for various UI events on atoms in the editor, and
-     * will call appropriate event handlers based on the type of atom that was
-     * involved.  To register one or more event handlers, call this function.
-     * The set of event handlers and their signatures are documented below, and
-     * may grow with time.
+     * This class tracks its collection of subclasses so that elements in the
+     * editor can have an appropriate Atom subclass wrapper created around them
+     * as needed, for custom event handling.  To register a subclass, call this
+     * function.  To create an atom that has the right subclass, see
+     * {@link module:Atoms.Atom#from from()}.
      * 
-     *  * "Edit" event signature: one parameter, the Atom instance for which
-     *    editing was initiated (by a click or by highlighting it and pressing
-     *    the Enter key)
+     * Example:
      * 
-     * @param {string} type - the type of atom for which to register an event
-     *   handler
-     * @param {Object} handlers - an object mapping event types (strings like
-     *   "edit") to event handlers (functions)
+     * ```js
+     * class Example extends Atom { ... }
+     * Atom.registerSubclass( 'Example', Example )
+     * ```
+     * 
+     * @param {string} name - the name of the subclass to register
+     * @param {Object} subclass - the subclass itself
      */
-    static addType ( type, handlers ) { Atom.handlers.set( type, handlers ) }
+    static registerSubclass ( name, subclass ) {
+        Atom.subclasses.set( name, subclass )
+        return name
+    }
 
     /**
      * Construct a new instance of this class corresponding to the atom
@@ -109,7 +113,6 @@ export class Atom {
             throw new Error( 'This is not an atom element: ' + element )
         this.element = element
         this.editor = editor
-        this.setupHandlers()
     }
 
     /**
@@ -123,21 +126,6 @@ export class Atom {
      * @see {@link Shell#dataChanged dataChanged() for Shells}
      */
     dataChanged () { }
-
-    // Internal use only
-    // Install any event handlers for this atom's type into this atom itself.
-    // This is called by the constructor (because most Atom instances are
-    // created from atoms already in the document that already have a type) and
-    // it is also called by one of the convenience static methods later that
-    // constructs an Atom from metadata, after its type has been assigned.
-    setupHandlers () {
-        const type = this.getMetadata( 'type' )
-        if ( Atom.handlers.has( type ) ) {
-            const handlers = Atom.handlers.get( type )
-            Object.keys( handlers ).forEach( eventName =>
-                this[eventName] = handlers[eventName] )
-        }
-    }
 
     /**
      * Get the HTML representation of this atom, as it currently sits in the
@@ -466,6 +454,21 @@ export class Atom {
     }
 
     /**
+     * This is a placeholder implementation of this method, to be sure that all
+     * Atom instances have one.  In subclasses, the function should pop up an
+     * editor for the user to edit this atom, and return a promise that resolves
+     * to true if the user saves their edits, and false if they cancel.  The
+     * user's edits should already be saved into the atom when the promise
+     * resolves to true.  This placeholder implementation returns a promise that
+     * false immediately, as if the user canceled their edits instantaneously.
+     * 
+     * @returns {Promise} a promise that resolves to `false`
+     */
+    edit () {
+        return Promise.resolve( false )
+    }
+
+    /**
      * The standard way to insert a new atom into the editor is to create it off
      * screen, open up an editing dialog for that atom, and then if the user
      * saves their edits, insert the new atom into the document, in the final
@@ -479,8 +482,6 @@ export class Atom {
      * @see {@link module:Shells.Shell.editThenInsert editThenInsert()}
      */
     editThenInsert () {
-        if ( !this.edit )
-            throw new Error( `No edit event handler for atom ${this}` )
         // The following line marks where this atom will/ eventually go in the
         // document, in case the editor is contingent upon the location of the
         // atom with respect to earlier definitions.
@@ -577,7 +578,7 @@ export class Atom {
     static findAbove ( node, editor ) {
         for ( let walk = node ; walk ; walk = walk.parentNode )
             if ( Atom.isAtomElement( walk ) )
-                return new Atom( walk, editor )
+                return Atom.from( walk, editor )
         return null
     }
 
@@ -629,12 +630,13 @@ export class Atom {
      * @see {@link module:Atoms.Atom.newBlock newBlock()}
      */
     static create ( editor, tagName, content, metadata = { } ) {
+        // Create a plain atom so we can manipulate it
         const result = new Atom( Atom.createElement( editor, tagName ), editor )
         result.fillChild( 'body', content )
         Object.keys( metadata ).forEach( key =>
             result.setMetadata( key, metadata[key] ) )
-        result.setupHandlers()
-        return result
+        // Now in case its type changed, recreate with the right subclass
+        return Atom.from( result.element, editor )
     }
 
     /**
@@ -704,8 +706,51 @@ export class Atom {
      */
     static allIn ( editor ) {
         return Atom.allElementsIn( editor ).map( element =>
-            new Atom( element, editor ) )
+            Atom.from( element, editor ) )
     }
+
+    /**
+     * Instead of the Atom constructor, use this function to convert an element
+     * in the document into a functioning Atom instance.  The reason you should
+     * use this function is because the Atom constructor always creates an Atom
+     * instance, but this function may create an instance of an Atom subclass,
+     * if that's what the element represents.  Thus the resulting object will
+     * have more specialized functionality suitable to the type of atom in
+     * question.  This behavior is powered by the registration of Atom
+     * subclasses using {@link module:Atoms.Atom.registerSubclass
+     * registerSubclass()}.
+     * 
+     * @param {HTMLElement} element - an element that has passed the check in
+     *   {@link module:Atoms.Atom.isAtomElement isAtomElement()}
+     * @param {tinymce.Editor} editor - the editor in which the element sits
+     * @returns {Atom} the atom represented by the element
+     */
+    static from ( element, editor ) {
+        const className = element.dataset['metadata_type']
+        const classObject = className ?
+            Atom.subclasses.get( JSON.parse( className ) ) : Atom
+        return new classObject( element, editor )
+    }
+
+    /**
+     * This is a placeholder implementation of this method, to be sure that all
+     * Atom instances have one.  In subclasses, the function should return an
+     * array of LogicConcepts that represent the meaning of this atom.  If the
+     * atom has no meaning in terms of LogicConcepts, simply return an empty
+     * array.  That is the default implementation.
+     * 
+     * @returns {LogicConcept[]} an empty array of LogicConcepts, in this
+     *   default implementation
+     */
+    toLCs () { return [ ] }
+
+    /**
+     * This is a placeholder implementation of this method, to be sure that all
+     * Atom instances have one.  In subclasses, the function should update the
+     * visible representation of the atom in the document based on the attributes
+     * stored in its metadata.  The default implementation does nothing.
+     */
+    update () { }
 
 }
 
@@ -735,14 +780,14 @@ export const install = editor => {
     // Install click handler to edit the atom that was clicked
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
-            Atom.findAbove( event.target, editor )?.edit?.() ) )
+            Atom.findAbove( event.target, editor )?.edit() ) )
     // Install Enter key handler for same purpose
     editor.on( 'keydown', event => {
         if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
             return
         const selected = editor.selection.getNode()
         if ( Atom.isAtomElement( selected ) )
-            new Atom( selected, editor ).edit?.()
+            Atom.from( selected, editor ).edit()
     } )
     // Whenever anything changes, check to see which atoms appeared and which
     // disappeared.  New ones need to have their appearance updated, and both
@@ -755,7 +800,7 @@ export const install = editor => {
             element => !lastAtomElementList.includes( element )
         ).forEachWithTimeout(
             element => {
-                const atom = new Atom( element, editor )
+                const atom = Atom.from( element, editor )
                 atom.update()
                 atom.dataChanged()
             }
@@ -764,7 +809,7 @@ export const install = editor => {
         lastAtomElementList.filter(
             element => !thisAtomElementList.includes( element )
         ).forEach(
-            element => new Atom( element, editor ).dataChanged()
+            element => Atom.from( element, editor ).dataChanged()
         )
         lastAtomElementList = thisAtomElementList
     } )

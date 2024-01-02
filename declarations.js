@@ -10,7 +10,7 @@
 
 import { Atom } from './atoms.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
-import { Declaration, LurchSymbol }
+import { Declaration as LDEDeclaration, LurchSymbol }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { getConverter } from './math-live.js'
 import { appSettings } from './settings-install.js'
@@ -301,7 +301,7 @@ export class DeclarationType {
         return list.some( declType =>
             declType.type == type && declType.body == body )
     }
-    
+
 }
 
 /**
@@ -356,8 +356,21 @@ export const declarationHTML = ( declType, symbol, editor ) => {
 }
 
 // Internal use only: Show the dialog whose behavior is described above.
-Atom.addType( 'declaration', {
-    edit : function () {
+export class Declaration extends Atom {
+
+    static subclassName = Atom.registerSubclass( 'declaration', Declaration )
+
+    /**
+     * Shows a multi-part dialog for editing declaration atoms, including
+     * choosing the phrase that defines the declaration as well as the symbol
+     * being declared.  The user can then confirm or cancel the edit,
+     * as per the convention described in {@link module:Atoms.Atom#edit the
+     * edit() function for the Atom class}.
+     * 
+     * @returns {Promise} same convention as specified in
+     *   {@link module:Atoms.Atom#edit edit() for Atoms}
+     */
+    edit () {
         // set up dialog contents
         const symbol = this.getMetadata( 'symbol' )
         const declType = DeclarationType.fromTemplate(
@@ -400,30 +413,41 @@ Atom.addType( 'declaration', {
             this.update()
             return true
         } )
-    },
-    toLCs : function () {
+    }
+
+    /**
+     * This function returns an array of LogicConcepts representing the meaning
+     * of this atom, which in this case will be an array containing precisely
+     * one thing, a Declaration LogicConcept representing the meaning of this
+     * Declaration.
+     * 
+     * @returns {LogicConcept[]} an array containing one LogicConcept, the
+     *   meaning of this declaration
+     */
+    toLCs () {
         return [
-            new Declaration(
+            new LDEDeclaration(
                 new LurchSymbol( this.getMetadata( 'symbol' ) )
             ).attr( {
                 'declaration_template' :
                     this.getMetadata( 'declaration_template' )
             } )
         ]
-    },
-    toNotation : function ( notation ) {
-        if ( !converter ) return
-        const LCs = this.toLCs()
-        let putdown = ''
-        LCs.forEach( LC => putdown += LC.toPutdown() + '\n' )
-        return converter( putdown, 'putdown', notation )
-    },
-    update : function () {
+    }
+
+    /**
+     * Update the HTML representation of this declaration.  We do so by
+     * delegating the work to the
+     * {@link module:Declarations.DeclarationType.documentForm documentForm()}
+     * function of the {@link DeclarationType} class.
+     */
+    update () {
         const symbol = this.getMetadata( 'symbol' )
         const declType = DeclarationType.fromTemplate(
             this.getMetadata( 'declaration_template' ) )
         this.fillChild( 'body', declType.documentForm( symbol ) )
     }
-} )
+
+}
 
 export default { install }
