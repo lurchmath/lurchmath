@@ -119,6 +119,21 @@ const shellTypes = [
 // Should document this later.
 export const getShellType = name => shellTypes.find( type => type.name == name )
 
+/**
+ * For information about the concept of shells in Lurch in general, see the
+ * documentation of {@link module:Shells the Shells module}.  Because shells are
+ * HTML elements, their API is that provided by the browser for all HTML elements,
+ * and is not specific to their role as shells.  To provide an API that makes it
+ * easier to deal with shells in a Lurch document, we create this class.
+ * 
+ * One simply constructs an instance of this class, passing the corresponding
+ * HTML element from within the editor, along with the editor itself, and the
+ * resulting object provides an extensive API (documented below) for interfacing
+ * with the shell in a variety of ways useful for the Lurch app.
+ * 
+ * This is analogous to how we deal with atoms in the editor, using the
+ * {@link Atom} class.
+ */
 export class Shell {
 
     // Internal use only: Stores a mapping from atom types to event handlers for

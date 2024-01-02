@@ -52,7 +52,7 @@ const childSelector = type => '.' + childClass( type )
 
 /**
  * For information about the concept of atoms in Lurch in general, see the
- * document of {@link module:Atoms the Atoms module}.  Because atoms are HTML
+ * documentation of {@link module:Atoms the Atoms module}.  Because atoms are HTML
  * elements, their API is that provided by the browser for all HTML elements,
  * and is not specific to their role as atoms.  To provide an API that makes it
  * easier to deal with atoms in a Lurch document, we create this class.
@@ -61,6 +61,9 @@ const childSelector = type => '.' + childClass( type )
  * HTML element from within the editor, along with the editor itself, and the
  * resulting object provides an extensive API (documented below) for interfacing
  * with the atom in a variety of ways useful for the Lurch app.
+ * 
+ * This is analogous to how we deal with shells in the editor, using the
+ * {@link Shells} class.
  */
 export class Atom {
 
