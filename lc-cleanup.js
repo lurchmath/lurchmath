@@ -21,10 +21,10 @@ const sendNeighborError = ( LC, beforeOrAfter ) => {
 // deleting the erroneous declaration in the process.
 const cleanUpDeclarations = env => {
     env.descendantsSatisfying( descendant =>
-        descendant.hasAttribute( 'declaration-template' )
+        descendant.hasAttribute( 'declaration_template' )
     ).forEach( declaration => {
         const declType = DeclarationType.fromTemplate(
-            declaration.getAttribute( 'declaraton_template' ) )
+            declaration.getAttribute( 'declaration_template' ) )
         if ( declType.body == 'before' ) {
             const body = declaration.previousSibling()
             if ( !body || !( body instanceof Expression ) ) {

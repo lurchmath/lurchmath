@@ -222,10 +222,10 @@ Atom.addType( 'declaration', {
         return [
             new Declaration(
                 new LurchSymbol( this.getMetadata( 'symbol' ) )
-            ).attr(
-                'declaration_template',
-                this.getMetadata( 'declaration_template' )
-            )
+            ).attr( {
+                'declaration_template' :
+                    this.getMetadata( 'declaration_template' )
+            } )
         ]
     },
     toNotation : function ( notation ) {
