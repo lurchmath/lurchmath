@@ -1,0 +1,68 @@
+<div id="loadlink">
+    <p><a>Open this file in the Lurch web app</a></p>
+    <script language="javascript">
+        const link = document.querySelector( '#loadlink > p > a' )
+        const thisURL = encodeURIComponent( window.location.href )
+        link?.setAttribute( 'href', 'http://127.0.0.1:5500/?load=' + thisURL )
+    </script>
+</div>
+<div id="metadata" style="display: none;">
+    <div data-category="main" data-key="header" data-value-type="html">
+        This is where content in the document header goes.
+    </div>
+</div>
+<div id="document">
+    <p>This is the beginning of the actual document.</p>
+    <p>Here's a rule, as an example:</p>
+    <div class="lurch-shell" data-type="environment"
+         data-environment_type_name="Rule"
+         data-environment_type_representation="Rule">
+        <p><span class="lurch-atom" contenteditable="false"
+                 data-metadata_type="&quot;expression&quot;"
+                 data-metadata_asciimath="&quot;P&quot;"
+                 data-metadata_latex="&quot;P&quot;"
+                 data-metadata_given="true">
+                <span class="lurch-atom-prefix">Assume </span>
+                <span class="lurch-atom-body">
+                    <span class="ML__latex"><span class="ML__base"><span class="ML__mathit" style="margin-right: 0.14em;">P</span></span></span>
+                </span>
+            </span>.
+            &nbsp;
+            <span class="lurch-atom" contenteditable="false"
+                  data-metadata_type="&quot;expression&quot;"
+                  data-metadata_asciimath="&quot;Q&quot;"
+                  data-metadata_latex="&quot;Q&quot;"
+                  data-metadata_given="true">
+                <span class="lurch-atom-prefix">Assume </span>
+                <span class="lurch-atom-body">
+                    <span class="ML__latex"><span class="ML__base"><span class="ML__mathit">Q</span></span></span>
+                </span>
+            </span>.
+            &nbsp;
+            Conclude
+            <span class="lurch-atom" contenteditable="false"
+                  data-metadata_type="&quot;expression&quot;"
+                  data-metadata_asciimath="&quot;P&and;Q&quot;"
+                  data-metadata_latex="&quot;P\\wedge Q&quot;"
+                  data-metadata_given="false">
+                <span class="lurch-atom-body">
+                    <span class="ML__latex"><span class="ML__base"><span class="ML__mathit" style="margin-right: 0.14em;">P</span><span class="ML__cmr">&and;</span><span class="ML__mathit">Q</span></span></span>
+                </span>
+            </span>.
+        </p>
+    </div>
+    <p>It has three expressions inside.</p>
+    <p>Here's a declaration: &nbsp;
+        <span class="lurch-atom" contenteditable="false"
+              data-metadata_type="&quot;declaration&quot;"
+              data-metadata_symbol="&quot;x&quot;"
+              data-metadata_declaration_template="&quot;Let [variable] be arbitrary&quot;">
+            <span class="lurch-atom-body">
+                Let
+                <span class="ML__latex"><span class="ML__base"><span class="ML__mathit">x</span></span></span>
+                be arbitrary
+            </span>
+        </span>.
+    </p>
+</div>
+        
