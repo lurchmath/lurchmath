@@ -560,17 +560,22 @@ export const install = editor => {
         }
     } )
     // The user can insert an environment using an autocompleter:
-    let emptyShellHTML = null
     addAutocompleteFunction( editor => {
-        if ( !emptyShellHTML )
-            emptyShellHTML = Shell.createElement( editor, 'environment', '' ).outerHTML
-        return [
-            {
-                shortcut : '{',
-                preview : 'Empty environment',
-                content : emptyShellHTML
+        shellTypes.forEach( shellType => {
+            if ( !shellType.hasOwnProperty( 'html' ) ) {
+                const element = Shell.createElement( editor, 'environment', '' )
+                const shell = new Shell( element, editor )
+                shell.setEnvironmentType( shellType.name )
+                shellType.html = element.outerHTML
             }
-        ]
+        } )
+        return shellTypes.map( shellType => {
+            return {
+                shortcut : shellType.name.toLowerCase(),
+                preview : `${shellType.name} environment`,
+                content : shellType.html
+            }
+        } )
     } )
 }
 
