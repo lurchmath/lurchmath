@@ -1,6 +1,6 @@
 
 import { Atom, className as atomClassName } from './atoms.js'
-import { Shell, className as shellClassName, getShellType } from './shells.js'
+import { Shell } from './shells.js'
 import { getHeader } from './header-editor.js'
 import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { isOnScreen } from './utilities.js'
@@ -282,12 +282,14 @@ export class Message {
         // the document.  They must appear in the same order that their elements
         // do in the document.
         const documentLC = ( array, context = new Environment() ) => {
+            // ensure the document has an ID, to distinguish feedback about it
+            if ( !context.ID() ) context.setID( 'documentEnvironment' )
             // no children? we're done.
             if ( array.length == 0 ) return context
             // first child is an atom? have it serialize itself, add IDs to all
             // the results, and then recur on the rest of the children.
             const head = array.shift()
-            if ( head instanceof Atom ) {
+            if ( !( head instanceof Shell ) ) {
                 let LCs
                 try {
                     LCs = head.toLCs()
@@ -316,35 +318,38 @@ export class Message {
             const outside = after == -1 ? [ ] : array.slice( after )
             // now let's convert the shell to an LC, then recur on the inside,
             // then recur on the outside.
-            const innerContext = head.toLC()
+            const headLCs = head.toLCs()
+            if ( headLCs.length != 1 ) {
+                setTimeout( () => Message.error(
+                    `${head.className} must represent exactly one LC`,
+                    {
+                        id : head.ID(),
+                        errorType : 'parsing error',
+                        reason : `${head.className} must represent exactly one LC`,
+                        valid : false
+                    }
+                ), 0 )
+                return documentLC( outside, context )
+            }
+            const innerContext = headLCs[0]
             assignID( innerContext, head.element )
             const nextEnvironment = documentLC( inside, innerContext )
-            const shellType = getShellType( head.getEnvironmentType() )
-            if ( shellType ) {
-                if ( shellType.given )
-                    nextEnvironment.makeIntoA( 'given' )
-                if ( shellType.children == 'givens' )
-                    nextEnvironment.children().forEach( child => {
-                        if ( child instanceof Environment )
-                            child.makeIntoA( 'given' )
-                    } )
-            }
+            head.finalize( nextEnvironment )
             context.pushChild( nextEnvironment )
             return documentLC( outside, context )
         }
         // Run the documentLC function on all the elements in the document that
-        // represent atoms and shells, including any that appear in the header.
+        // represent atoms, including any that appear in the header.
         // Note that, because dependencies are just hidden parts of the DOM,
         // this will capture their contents just the same as it does any other
         // document content.
-        const selector = `.${shellClassName},.${atomClassName}`
+        const selector = `.${atomClassName}`
         const LC = documentLC(
             [
                 ...( getHeader( editor )?.querySelectorAll( selector ) || [ ] ),
                 ...editor.dom.doc.querySelectorAll( selector )
-            ].filter( isOnScreen ).map( element =>
-                element.classList.contains( atomClassName ) ?
-                Atom.from( element, editor ) : Shell.from( element, editor )
+            ].filter( isOnScreen ).map(
+                element => Atom.from( element, editor )
             )
         )
         // Apply any cleanup necessary to make the LC usable in validation.

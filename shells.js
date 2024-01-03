@@ -14,19 +14,18 @@
  *     boundary around the content, not the content itself) and interacting with
  *     whatever dialog the application pops up in response.
  *  3. There can be many different types of shells.  For example, a theorem
- *     statement may be one type, and a proof or subproof may be another.  The
- *     type is stored as an attribute of the shell's HTML element.
+ *     statement may be one type, and a proof or subproof may be another.
  *  4. Like atoms, each shell will typically have some meaning that will be
  *     important when the document is processed in a mathematical way.
  * 
- * Shells are represented in the document by DIVs with a certain class attached
- * to mark them as shells.
+ * Shells are implemented as a subclass of Atoms, overriding some functions in
+ * the {@link Atom Atom class} that must be done in a different way for shells,
+ * and adding new functions that apply only to Shells.
  * 
  * This module contains tools for working with shells, including the
- * {@link module:Shells.className class name} we use to distinguish them, the
  * {@link module:Shells.install function} we use to install their
- * mouse event handlers, and most importantly, the
- * {@link module:Shells.Atom class} we use to create an API for working with
+ * mouse event handlers and, most importantly, the
+ * {@link module:Shells.Shell class} we use to create an API for working with
  * individual shells.
  *
  * @module Shells
@@ -35,309 +34,139 @@
 
 import { getHeader } from './header-editor.js'
 import { onlyBefore, isOnScreen } from './utilities.js'
-import { className as atomClassName } from './atoms.js'
+import { Atom, className as atomClassName } from './atoms.js'
 import { addAutocompleteFunction } from './auto-completer.js'
 import { Dialog, SelectBoxItem } from './dialog.js'
 import { Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
 /**
- * Class name used to distinguish HTML elements representing shells.  (For an
- * explanation of what a shell is, see the documentation for
- * {@link module:Shells the module itself}.)
- */
-export const className = 'lurch-shell'
-
-// Internal use only
-// The shell types the user is allowed to choose when inserting one
-const shellTypes = [
-    {
-        name : 'Definition',
-        representation : 'Definition',
-        attributeName : 'Rule',
-        given : true,
-        children : 'givens'
-    },
-    {
-        name : 'Rule',
-        representation : 'Rule',
-        attributeName : 'Rule',
-        given : true,
-        children : 'givens'
-    },
-    {
-        name : 'Axiom',
-        representation : 'Axiom',
-        attributeName : 'Rule',
-        given : true,
-        children : 'givens'
-    },
-    {
-        name : 'Theorem',
-        representation : 'Theorem',
-        attributeName : 'theorem',
-        given : false,
-        children : 'givens'
-    },
-    {
-        name : 'Lemma',
-        representation : 'Lemma',
-        attributeName : 'theorem',
-        given : false,
-        children : 'givens'
-    },
-    {
-        name : 'Corollary',
-        representation : 'Corollary',
-        attributeName : 'theorem',
-        given : false,
-        children : 'givens'
-    },
-    {
-        name : 'Proof',
-        representation : 'Proof',
-        attributeName : null,
-        given : false,
-        children : 'claims'
-    },
-    {
-        name : 'Subproof',
-        representation : null,
-        attributeName : null,
-        given : false,
-        children : 'claims'
-    },
-    {
-        name : 'Recall',
-        representation : 'Recall',
-        attributeName : 'hint',
-        given : false,
-        children : 'givens'
-    }
-]
-
-// Should document this later.
-export const getShellType = name => shellTypes.find( type => type.name == name )
-
-/**
  * For information about the concept of shells in Lurch in general, see the
- * documentation of {@link module:Shells the Shells module}.  Because shells are
- * HTML elements, their API is that provided by the browser for all HTML elements,
- * and is not specific to their role as shells.  To provide an API that makes it
- * easier to deal with shells in a Lurch document, we create this class.
+ * documentation of {@link module:Shells the Shells module}.  Because Shells are
+ * a type of {@link Atom}, much of their API comes from the {@link Atom} class.
+ * This subclass changes a few of the base implementations and adds a few new
+ * function specific to shells.
  * 
- * One simply constructs an instance of this class, passing the corresponding
- * HTML element from within the editor, along with the editor itself, and the
- * resulting object provides an extensive API (documented below) for interfacing
- * with the shell in a variety of ways useful for the Lurch app.
- * 
- * This is analogous to how we deal with atoms in the editor, using the
- * {@link Atom} class.
+ * As with atoms, one constructs an instance of this class by passing the
+ * corresponding HTML element from the editor, along with the editor itself, and
+ * the resulting object provides an extensive API (documented below and in the
+ * {@link Atom Atom class}) for interfacing with the shell in a variety of ways
+ * useful for the Lurch app.
  */
-export class Shell {
+export class Shell extends Atom {
 
-    // Internal use only: Stores a mapping from subclass names to subclasses of
-    // the Shell class.  Public use of this data should be done through the
-    // registerSubclass() function below; clients do not need to read this data.
-    static subclasses = new Map()
+    static subclassName = Atom.registerSubclass( 'shell', Shell )
 
     /**
-     * This class tracks its collection of subclasses so that elements in the
-     * editor can have an appropriate Shell subclass wrapper created around them
-     * as needed, for custom event handling.  To register a subclass, call this
-     * function.  To create a shell that has the right subclass, see
-     * {@link module:Shells.Shell#from from()}.
+     * Assign this shell a specific subclass, by name.  You must assign a
+     * subclass by name, using one of the names registered using
+     * {@link module:Atoms.Atom.registerSubclass registerSubclass()}, and that
+     * subclass must be a subclass of {@link module:Shells.Shell Shell}.  This
+     * routine stores the subclass in the shell, updates any other related
+     * information (e.g., how the shell is displayed), and returns a new
+     * instance of the {@link module:Atoms.Atom Atom} class, specifically of the
+     * named subclass, for this shell.
      * 
-     * Example:
-     * 
-     * ```js
-     * class Example extends Shell { ... }
-     * Shell.registerSubclass( 'Example', Example )
-     * ```
-     * 
-     * @param {string} name - the name of the subclass to register
-     * @param {Object} subclass - the subclass itself
+     * @param {string} subclassName - the name of the subclass to assign
+     * @returns {Shell} an instance of the given subclass, representing this
+     *   same shell
      */
-    static registerSubclass ( name, subclass ) {
-        Shell.subclasses.set( name, subclass )
-        return name
-    }
-
-    /**
-     * Construct a new instance of this class corresponding to the shell
-     * represented by the given `HTMLDivElement`.  Recall that the purpose of
-     * this class, as documented above, is to provide an API for consistent and
-     * convenient use of shells, an API that is not part of the `HTMLDivElement`
-     * API.  Thus to use that API, you use this constructor and then call
-     * functions on the resulting object.  The intent is for such instances to
-     * be ephemeral, in the sense that you can create one, use it, and let it be
-     * garbage collected immediately thereafter, with little performance cost.
-     * 
-     * @param {HTMLDivElement} element - the element in the editor representing
-     *   the shell
-     * @param {tinymce.Editor} editor - the editor in which the element sits
-     */
-    constructor ( element, editor ) {
-        if ( !Shell.isShellElement( element ) )
-            throw new Error( 'This is not a shell element: ' + element )
-        this.element = element
-        this.editor = editor
-    }
-
-    /**
-     * This function is a handler for whenever the metadata stored in this shell
-     * changes.  Its default implementation is to do nothing, but having it here
-     * allows {@link module:Validation the validation module} to replace this
-     * handler with one that clears all validation feedback.  We do it this way,
-     * rather than importing the validation module and calling its "clear"
-     * function ourselves, because it prevents a circular dependency.
-     * 
-     * @see {@link Atom#dataChanged dataChanged() for Atoms}
-     */
-    dataChanged () { }
-
-    /**
-     * Get the HTML representation of this shell, as it currently sits in the
-     * document.
-     * 
-     * @returns {string} the HTML representation of this shell
-     * @see {@link module:Atoms.Atom#getHTML getHTML()}
-     */
-    getHTML () { return this.element.outerHTML }
-
-    /**
-     * Each shell may have a type, which is a string that allows for
-     * partitioning the set of shells into categories that behave differently.
-     * To see how to assign different behaviors to each type of shell, see the
-     * {@link module:Shells.Shell.addType addType() static function}.  This
-     * function gets the type of this shell.
-     * 
-     * @returns {string?} the type of this shell
-     * @see {@link module:Shells.Shell.addType addType()}
-     * @see {@link module:Shells.Shell#setType setType()}
-     */
-    getType () { return this.element.dataset.type }
-
-    /**
-     * Each shell may have a type, which is a string that allows for
-     * partitioning the set of shells into categories that behave differently.
-     * To see how to assign different behaviors to each type of shell, see the
-     * {@link module:Shells.Shell.addType addType() static function}.  This
-     * function changes the type of this shell to whatever you pass as the
-     * parameter.
-     * 
-     * @param {string?} type - the type to set (or undefined to clear out the
-     *   old type value, resetting it to undefined)
-     * @see {@link module:Shells.Shell.addType addType()}
-     * @see {@link module:Shells.Shell#getType getType()}
-     */
-    setType ( type ) { this.element.dataset.type = type }
-
-    /**
-     * Set (or clear) the hover text on this shell.  Hover text is what's shown
-     * in a small popup when the user hovers over the shell in the editor.
-     * 
-     * @param {string?} text - the text to set as the hover text for this
-     *   shell's HTMLElement, or `null` to remove the hover text
-     */
-    setHoverText ( text ) {
-        if ( text )
-            this.element.setAttribute( 'title', text )
-        else
-            this.element.removeAttribute( 'title' )
-    }
-
-    // Internal use only:
-    // get/set what type of environment this is (Theorem, Proof, etc.)
-    getEnvironmentType () {
-        return this.element.dataset['environment_type_name']
-            || shellTypes[0].name
-    }
-    setEnvironmentType ( name ) {
-        const shellType = getShellType( name )
-        if ( shellType && shellType.name )
-            this.element.dataset['environment_type_name'] = shellType.name
-        else
-            delete this.element.dataset['environment_type_name']
-        if ( shellType && shellType.representation )
-            this.element.dataset['environment_type_representation'] =
-                shellType.representation
-        else
-            delete this.element.dataset['environment_type_representation']
-        this.dataChanged()
-    }
-
-    /**
-     * Convert this shell into an LC representing it.  It will be a single
-     * Environment, optionally with its given flag set, based on the result of
-     * {@link module:Shells.Shell#isGiven isGiven()}.
-     * 
-     * @returns {Environment} an Environment instance representing this shell
-     * @see {@link module:Shells.Shell#isGiven isGiven()}
-     */
-    toLC () {
-        const result = new Environment()
-        const shellType = getShellType( this.getEnvironmentType() )
-        if ( shellType && shellType.attributeName )
-            result.makeIntoA( shellType.attributeName )
+    setSubclass ( subclassName ) {
+        const subclass = Atom.subclasses.get( subclassName )
+        if ( subclass != Shell && !( subclass.prototype instanceof Shell ) )
+            throw new Error( `${subclassName} is not a subclass of Shell` )
+        this.setMetadata( 'type', subclassName )
+        const result = Atom.from( this.element, this.editor )
+        this.element.dataset['shell_title'] = result.getTitle()
         return result
     }
 
     /**
-     * Opens a dialog for editing the shell.  It provides two choices:  Which
-     * type of shell is this, and is it a given or not?  If the user clicks OK,
-     * any changes they made are saved into the editor, and the returned promise
-     * resolves to true.  If the user clicks Cancel, no edits are saved, and the
-     * promise resolves to false.
+     * Every shell may provide a title to decorate the top of its DIV, on the
+     * left-hand side.  This is optional.  The default is the name of the class,
+     * in title case, followed by a colon.  Subclasses may override this, e.g.,
+     * by returning the empty string to remove the title entirely.
+     * 
+     * @returns {string} the title to use at the top of the shell, when displayed
+     *   in the document
+     */
+    getTitle () {
+        const name = this.getMetadata( 'type' )
+        return name[0].toUpperCase() + name.substring( 1 ) + ':'
+    }
+
+    /**
+     * The default way to convert a Shell to LCs is to represent it as a single
+     * Environment.  Subclasses may override this implementation as needed.
+     * This functionality is used by {@link Message.document the conversion
+     * function} of the whole document into LCs for validation.
+     * 
+     * Note that this does not add any of its child atoms to itself as LCs.
+     * The conversion is done by the function referenced above, which takes care
+     * to give each LC a unique ID, post-process the conversion to respect
+     * various conventions, etc.
+     * 
+     * @returns {LogicConcept[]} an array containing exactly one Environment
+     *   instance, representing this shell, with no children
+     * @see {@link Shell#finalizeChildLCs finalizeChildLCs()}
+     */
+    toLCs () { return [ new Environment() ] }
+
+    /**
+     * After converting a shell to LCs using {@link Shell#toLCs toLCs()}, its
+     * children (if any) will be created and added to it.  Specifically, we
+     * expect that {@link Shell#toLCs toLCs()} will return a single environment,
+     * to which children will be added.  Then this function will be called on
+     * that same environment object, allowing the shell to tweak attributes of
+     * its children to respect the meaning of the shell itself.  For example, if
+     * the shell implies that any child environments should be givens, it can
+     * make them so.
+     * 
+     * This default implementation does nothing.  Subclasses may override it.
+     * 
+     * @param {LogicConcept} shellLC - the Environment LC represneting this shell
+     * @see {@link Shell#toLCs toLCs()}
+     */
+    finalize ( shellLC ) { }
+
+    /**
+     * Opens a dialog for editing the shell.  It provides a drop-down list for
+     * choosing which subclass of shell this one is, so that when we use shells
+     * to implement common mathematical concepts (e.g., Theorem, Proof, Rule,
+     * etc.) the user will automatically have a way to convert among those types
+     * of document structure.
+     * 
+     * Note: If the application has no proper subclasses of {@link Shell}
+     * installed, this function will do nothing and return a Promise that
+     * immediately resolves to false.
      * 
      * @returns {Promise} a promise that resolves to `true` if the user
      *   clicked OK in the dialog, or `false` if the user clicked Cancel
      */
     edit () {
         const dialog = new Dialog( 'Edit environment', this.editor )
+        const shellSubclassNames = Array.from( Atom.subclasses.keys() ).filter(
+            name => Atom.subclasses.get( name ).prototype instanceof Shell )
+        if ( shellSubclassNames.length == 0 )
+            return Promise.resolve( false )
         dialog.addItem( new SelectBoxItem(
-            'shellType', 'Which type of environment to insert?',
-            shellTypes.map( type => type.name )
-        ) )
-        dialog.setDefaultFocus( 'shellType' )
-        dialog.setInitialData( { shellType : this.getEnvironmentType() } )
+            'shellSubclass', 'Type of environment', shellSubclassNames ) )
+        dialog.setDefaultFocus( 'shellSubclass' )
+        dialog.setInitialData( { shellSubclass : this.getMetadata( 'type' ) } )
         return dialog.show().then( userHitOK => {
             if ( !userHitOK ) return false
-            this.setEnvironmentType( dialog.get( 'shellType' ) )
+            this.setSubclass( dialog.get( 'shellSubclass' ) )
             return true
         } )
     }
 
     /**
-     * The standard way to insert a new shell into the editor is to create it
-     * off screen, open up an editing dialog for that shell, and then if the
-     * user saves their edits, insert the new shell into the document, in the
-     * final state that represents the user's edits.  If, however, the user
-     * cancels their edit of the shell, don't insert anything into the document.
-     * 
-     * This function does exactly that, when called on an offscreen shell,
-     * passing the editor into which to insert the shell as the first parameter.
-     * 
-     * @see {@link module:Atoms.Atom.editThenInsert editThenInsert()}
-     */
-    editThenInsert () {
-        this.edit().then( userSaved => {
-            if ( userSaved ) {
-                this.editor.insertContent( this.getHTML() )
-                this.dataChanged()
-            }
-        } )
-    }
-
-    /**
-     * Set the suffix of the shell to reflect its validation result.
-     * 
-     * See the documentation for {@link module:Atoms.Atom#setValidationResult
-     * the setValidationResult() function in the Atom class} for the explanation
-     * of the function and parameters of this method.  It is identical to that
-     * one, except that it operates on shells instead of atoms.
+     * Override the default implementation, which uses a child element, to
+     * instead place the validation result in an attribute of the element,
+     * where it can be found and respected by CSS.
      *
-     * @see {@link module:Atoms.Atom#setValidationResult setValidationResult()}
+     * @see {@link module:Atoms.Atom#setValidationResult
+     * setValidationResult() for Atoms}
      */
     setValidationResult ( result, reason ) {
         if ( !result ) {
@@ -350,85 +179,23 @@ export class Shell {
     }
 
     /**
-     * One can construct an instance of the Shell class to interface with an
-     * element in the editor only if that element actually represents a shell,
-     * as defined in {@link module:Shells the documentation for the Shells
-     * module}.  This function checks to see if the element in question does.
-     * To create elements that do represent shells, see
-     * {@link module:Shells.Shell.createElement createElement()}.
+     * Creating shells is not the same as creating atoms:
      * 
-     * @param {HTMLElement} element - the element to check
-     * @returns {boolean} whether the element represents a shell
-     * @see {@link module:Shells.Shell.createElement createElement()}
-     * @see {@link module:Shells.Shell.findAbove findAbove()}
+     *  - the user cannot choose to use a SPAN element to represent a shell
+     *  - the contents of a shell remain `contenteditable:true`
+     *  - the shell must have some default content, which can be replaced later
+     *
+     * @param {tinymce.Editor} editor - the editor in which to create the shell
+     * @param {string} subclassName - the name of the subclass of {@link Shell}
+     *   to be represented by this element (defaults to `'shell'`)
+     * @see {@link module:Atoms.Atom.createElement createElement() for Atoms}
      */
-    static isShellElement ( element ) {
-        return element.tagName == 'DIV'
-            && element.classList.contains( className )
-    }
-
-    /**
-     * Create an HTMLDivElement that can be placed into the given `editor` and
-     * that represents a shell, whose type is given by the parameter.  The
-     * element will be given an HTML/CSS class that marks it as representing a
-     * shell.
-     * 
-     * @param {tinymce.Editor} editor - the TinyMCE editor in which to create
-     *   the element
-     * @param {string} type - the type of the shell to create
-     * @param {string} content - the content of the new shell (defaults to a
-     *   single non-breaking space)
-     * @returns {HTMLDivElement} the element constructed
-     */
-    static createElement ( editor, type, content='<br data-mce-bogus="1">' ) {
-        const result = editor.dom.doc.createElement( 'div' )
-        result.classList.add( className )
-        result.dataset.type = type
-        result.innerHTML = `<p>${content}</p>`
-        return result
-    }
-
-    /**
-     * Find all elements in the given TinyMCE editor that represent shells, and
-     * return each one in the order they appear in the document.
-     * 
-     * @param {tinymce.Editor} editor - the editor in which to search
-     * @returns {HTMLElement[]} the array of shell elements in the editor's document
-     */
-    static allElementsIn ( editor ) {
-        return Array.from( editor.dom.doc.querySelectorAll( `.${className}` ) )
-            .filter( isOnScreen )
-            .filter( element => editor.dom.doc.body.contains( element ) )
-    }
-
-    /**
-     * Find all elements in the given TinyMCE editor that represent shells, and
-     * return each one, transformed into an instance of the Shell class.  They
-     * are returned in the order they appear in the document.
-     * 
-     * @param {tinymce.Editor} editor - the editor in which to search
-     * @returns {Shell[]} the array of shells in the editor's document
-     * @see {@link module:Shells.Shell.allElementsIn allElementsIn()}
-     */
-    static allIn ( editor ) {
-        return Shell.allElementsIn( editor ).map( element =>
-            Shell.from( element, editor ) )
-    }
-
-    /**
-     * This function can take any DOM node and walk up its ancestor chain and
-     * find whether any element in that chain represents a shell.  If so, it
-     * returns the corresponding Shell instance.  If not, it returns null.
-     * 
-     * @param {Node} node - the DOM node from which to begin searching
-     * @param {tinymce.Editor} editor - the editor in which the node sits
-     * @returns {Shell?} the nearest Shell enclosing the given `node`
-     * @see {@link module:Shells.Shell.isShellElement isShellElement()}
-     */
-    static findAbove ( node, editor ) {
-        for ( let walk = node ; walk ; walk = walk.parentNode )
-            if ( Shell.isShellElement( walk ) )
-                return Shell.from( walk, editor )
+    static createElement ( editor, subclassName='shell' ) {
+        const result = new Shell( Atom.createElement( editor, 'div' ) )
+        result.element.removeAttribute( 'contenteditable' )
+        result.setSubclass( subclassName )
+        result.element.innerHTML = `<p><br data-mce-bogus="1"></p>`
+        return result.element
     }
 
     /**
@@ -455,8 +222,8 @@ export class Shell {
         let walk2 = later
         while ( walk1 ) {
             if ( !walk2 ) return false
-            walk1 = Shell.findAbove( walk1.parentNode, editor )
-            walk2 = Shell.findAbove( walk2.parentNode, editor )
+            walk1 = Atom.findAbove( walk1.parentNode, editor )
+            walk2 = Atom.findAbove( walk2.parentNode, editor )
             if ( walk1 && ( walk1 !== walk2 ) ) return false
         }
         return true
@@ -498,41 +265,12 @@ export class Shell {
         ].filter( isOnScreen ).filter( predicate )
     }
 
-    /**
-     * Instead of the Shell constructor, use this function to convert an element
-     * in the document into a functioning Shell instance.  The reason you should
-     * use this function is because the Shell constructor always creates an Shell
-     * instance, but this function may create an instance of an Shell subclass,
-     * if that's what the element represents.  Thus the resulting object will
-     * have more specialized functionality suitable to the type of shell in
-     * question.  This behavior is powered by the registration of Shell
-     * subclasses using {@link module:Shells.Shell.registerSubclass
-     * registerSubclass()}.
-     * 
-     * @param {HTMLElement} element - an element that has passed the check in
-     *   {@link module:Shells.Shell.isShellElement isShellElement()}
-     * @param {tinymce.Editor} editor - the editor in which the element sits
-     * @returns {Shell} the shell represented by the element
-     */
-    static from ( element, editor ) {
-        const className = element.dataset['metadata_type']
-        const classObject = className ?
-            Shell.subclasses.get( JSON.parse( className ) ) : Shell
-        return new classObject( element, editor )
-    }
-
 }
 
 /**
  * This function should be called in the editor's setup routine.  It installs
  * several things into the editor:
  * 
- *  * a mouse event handler that can watch for click events to any shell, and
- *    route control flow to the event handler for that shell's type, falling
- *    back on the {@link module:Shells.Shell#edit edit()} method for an untyped
- *    shell
- *  * the css classes that can be used to format shells with css, and how to
- *    visually distinguish given shells from claim shells
  *  * a menu item for inserting "environments" (untyped shells)
  *  * an event handler for deleting empty environments (which can occur if the
  *    user creates an environment, leaves it empty, and then positions their
@@ -550,32 +288,6 @@ export class Shell {
  * @function
  */
 export const install = editor => {
-    editor.on( 'init', () => {
-        // The mouse handler described above
-        editor.dom.doc.body.addEventListener( 'click', event => {
-            if ( Shell.isShellElement( event.target ) )
-                Shell.from( event.target, editor ).edit()
-        } )
-    } )
-    // Whenever anything changes, check to see if any shells were deleted.
-    // If so, trigger a clearing of old validation feedback.
-    let lastShellElementList = [ ]
-    editor.on( 'input NodeChange Paste Change Undo Redo', () => {
-        const thisShellElementList = Shell.allElementsIn( editor )
-        // New ones trigger validation clearing:
-        thisShellElementList.filter(
-            element => !lastShellElementList.includes( element )
-        ).forEachWithTimeout(
-            element => Shell.from( element, editor ).dataChanged()
-        )
-        // Deleted ones also trigger validation clearing:
-        lastShellElementList.filter(
-            element => !thisShellElementList.includes( element )
-        ).forEach(
-            element => Shell.from( element, editor ).dataChanged()
-        )
-        lastShellElementList = thisShellElementList
-    } )
     // The first menu item described above
     // (We do not call it "insert environment" because it will go on the insert
     // menu, so it just needs the word "Environment")
@@ -585,18 +297,19 @@ export const install = editor => {
         tooltip : 'Insert block representing an environment',
         shortcut : 'Meta+Shift+E',
         onAction : () => {
-            const shell = Shell.from( Shell.createElement(
-                editor, 'environment', editor.selection.getContent()
-            ), editor )
-            shell.editThenInsert()
+            const content = editor.selection.getContent()
+            const element = Shell.createElement( editor )
+            Atom.from( element, editor ).editThenInsert()
         }
     } )
     // The event handler for the corner case described above
     editor.on( 'NodeChange keyup', () => {
         Array.from(
-            editor.dom.doc.querySelectorAll( `.${className}` )
-        ).forEach( shellElement => {
-            if ( !shellElement.querySelector( 'p' ) ) shellElement.remove()
+            editor.dom.doc.querySelectorAll( `.${Atom.className}` )
+        ).forEach( element => {
+            if ( element.dataset.has( 'shell_title' )
+              && !element.querySelector( 'p' ) )
+                element.remove()
         } )
     } )
     // The two actions for inserting blank paragraphs, described above
@@ -643,22 +356,81 @@ export const install = editor => {
     } )
     // The user can insert an environment using an autocompleter:
     addAutocompleteFunction( editor => {
-        shellTypes.forEach( shellType => {
-            if ( !shellType.hasOwnProperty( 'html' ) ) {
-                const element = Shell.createElement( editor, 'environment', '' )
-                const shell = Shell.from( element, editor )
-                shell.setEnvironmentType( shellType.name )
-                shellType.html = element.outerHTML
+        const shellSubclassNames = Array.from( Atom.subclasses.keys() ).filter(
+            name => Atom.subclasses.get( name ).prototype instanceof Shell )
+        shellSubclassNames.forEach( subclassName => {
+            const subclass = Atom.subclasses.get( subclassName )
+            if ( !subclass.hasOwnProperty( 'defaultHTML' ) ) {
+                const element = Shell.createElement( editor, subclassName )
+                element.innerHTML = '<p></p>'
+                subclass.defaultHTML = element.outerHTML
             }
         } )
-        return shellTypes.map( shellType => {
+        return shellSubclassNames.map( subclassName => {
+            const subclass = Atom.subclasses.get( subclassName )
             return {
-                shortcut : shellType.name.toLowerCase(),
-                preview : `${shellType.name} environment`,
-                content : shellType.html
+                shortcut : subclassName.toLowerCase(),
+                preview : `${subclassName} environment`,
+                content : subclass.defaultHTML
             }
         } )
     } )
 }
 
-export default { className, Shell, install }
+export class Rule extends Shell {
+    static subclassName = Atom.registerSubclass( 'rule', Rule )
+    finalize ( shellLC ) {
+        shellLC.makeIntoA( 'given' )
+        shellLC.makeIntoA( 'Rule' )
+        shellLC.children().forEach( child => {
+            if ( child instanceof Environment ) child.makeIntoA( 'given' )
+        } )
+    }
+}
+
+export class Definition extends Rule {
+    static subclassName = Atom.registerSubclass( 'definition', Definition )
+}    
+
+export class Axiom extends Rule {
+    static subclassName = Atom.registerSubclass( 'axiom', Axiom )
+}
+
+export class Theorem extends Shell {
+    static subclassName = Atom.registerSubclass( 'theorem', Theorem )
+    finalize ( shellLC ) {
+        shellLC.makeIntoA( 'theorem' )
+        shellLC.children().forEach( child => {
+            if ( child instanceof Environment ) child.makeIntoA( 'given' )
+        } )
+    }
+}
+
+export class Lemma extends Theorem {
+    static subclassName = Atom.registerSubclass( 'lemma', Lemma )
+}
+
+export class Corollary extends Theorem {
+    static subclassName = Atom.registerSubclass( 'corollary', Corollary )
+}
+
+export class Proof extends Shell {
+    static subclassName = Atom.registerSubclass( 'proof', Proof )
+}
+
+export class Subproof extends Shell {
+    static subclassName = Atom.registerSubclass( 'subproof', Subproof )
+    getTitle () { return '' }
+}
+
+export class Recall extends Shell {
+    static subclassName = Atom.registerSubclass( 'recall', Recall )
+    finalize ( shellLC ) {
+        shellLC.makeIntoA( 'hint' )
+        shellLC.children().forEach( child => {
+            if ( child instanceof Environment ) child.makeIntoA( 'given' )
+        } )
+    }
+}
+
+export default { Shell, install }

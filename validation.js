@@ -65,8 +65,6 @@ export const install = editor => {
     const clearAll = () => {
         Atom.allIn( editor ).forEach( atom =>
             atom.setValidationResult( null ) )
-        Shell.allIn( editor ).forEach( shell =>
-            shell.setValidationResult( null ) )
     }
 
     // Global(ish) variable used by the function below
@@ -91,11 +89,6 @@ export const install = editor => {
           && editor.dom.doc.body.contains( this.element ) )
             queueClearAll()
     }
-    Shell.prototype.dataChanged = function () {
-        if ( this.editor == editor && isOnScreen( this.element )
-          && editor.dom.doc.body.contains( this.element ) )
-            queueClearAll()
-    }
 
     // Install event handler so that we can decorate the document correctly upon
     // receiving validation feedback.  We install it on both the worker and this
@@ -109,17 +102,17 @@ export const install = editor => {
                 if ( message.element ) {
                     // console.log( message.element )
                     if ( Atom.isAtomElement( message.element ) ) {
-                        Atom.from( message.element, editor ).setValidationResult(
-                            message.getValidationResult(),
-                            message.getValidationReason() )
-                    } else if ( Shell.isShellElement( message.element ) ) {
-                        Shell.from( message.element, editor ).setValidationResult(
-                            message.getValidationResult(),
-                            message.getValidationReason() )
+                        const result = message.getValidationResult()
+                        const reason = message.getValidationReason()
+                        if ( result !== undefined || reason !== undefined )
+                        Atom.from( message.element, editor )
+                            .setValidationResult( result, reason )
                     } else {
                         console.log( 'Warning: feedback message received for unusable element' )
                         // console.log( JSON.stringify( message.content, null, 4 ) )
                     }
+                } else if ( message.content.id == 'documentEnvironment' ) {
+                    // feedback about whole document; ignore for now
                 } else {
                     console.log( 'Warning: feedback message received with no target element' )
                     // console.log( JSON.stringify( message.content, null, 4 ) )

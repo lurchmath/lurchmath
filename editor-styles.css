@@ -48,27 +48,29 @@ span.feedback-marker-error::after {
 }
 
 /* shells */
-div.lurch-shell {
+div.lurch-atom[data-shell_title] {
     position: relative;
     border: 1px solid #bbb;
     border-radius: 6px;
     padding: 0 1em;
     margin: 2ex 0;
 }
-div.lurch-shell.lurch-given {
+div.lurch-atom[data-shell_title].lurch-given {
+    /* This class may no longer be supported
+       and may need some JS code added to support it again. */
     border: 2px dashed #bbb;
 }
-div.lurch-shell[data-environment_type_representation]::before {
-    content: attr(data-environment_type_representation) ':';
+div.lurch-atom[data-shell_title]::before {
+    content: attr(data-shell_title);
     color: #bbb;
     background-color: white;
     font-weight: bold;
     position: absolute;
     top: -9pt;
     left: 6pt;
-    padding: 0 6pt;  
+    padding: 0 6pt;
 }
-div.lurch-shell[data-validation_result="valid"]::after {
+div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
     content: '✓';
     color: #4CAF50;
     background-color: white;
@@ -79,7 +81,7 @@ div.lurch-shell[data-validation_result="valid"]::after {
     right: 6pt;
     padding: 0 6pt;
 }
-div.lurch-shell[data-validation_result="invalid"]::after {
+div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
     content: '✗';
     color: red;
     background-color: white;
@@ -90,7 +92,7 @@ div.lurch-shell[data-validation_result="invalid"]::after {
     right: 6pt;
     padding: 0 6pt;
 }
-div.lurch-shell[data-validation_result="indeterminate"]::after {
+div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
     content: '?';
     color: rgb(216, 180, 0);
     background-color: white;
