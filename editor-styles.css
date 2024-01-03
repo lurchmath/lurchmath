@@ -16,6 +16,25 @@
 .ML__latex {
     font-size : 1.2em;
 }
+/*
+ * The following was an experiment in using background color for expression feedback.
+ * It was not perfect, so is commented out.  But I'm keeping it here so that we have
+ * the appropriate CSS selectors for reference if we want to improve this later.
+ *
+span:has(span > .feedback-marker-valid) {
+    background-color: #4CAF5080;
+}
+span:has(span > .feedback-marker-invalid) {
+    background-color: #FF000080;
+}
+span:has(span > .feedback-marker-indeterminate) {
+    background-color: #D8B40080;
+}
+span:has(span > .feedback-marker-error) {
+    background-color: #FF000080;
+}
+ *
+ */
 span.feedback-marker-valid::after {
     content: '✓';
     font-family: 'Lucida Grande';
