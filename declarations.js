@@ -325,7 +325,7 @@ export const install = editor => {
             const atom = Atom.newInline( editor, '', {
                 type : 'declaration',
                 symbol : 'x',
-                displayText : displayChoices( 'x' )[0]
+                displayText : DeclarationType.allInSettings( true )[0].displayForm( 'x' )
             } )
             atom.update()
             atom.editThenInsert()
