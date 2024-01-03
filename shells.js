@@ -377,6 +377,17 @@ export const install = editor => {
     } )
 }
 
+/**
+ * A rule is a type of shell with the following features.
+ * 
+ *  - It labels itself as a "rule" using the attribute the LDE respects for
+ *    rules of inference, so that validation will treat it as one.
+ *  - It marks itself as a given, which the LDE requires for rules.
+ *  - It marks any child environment as a given, because that is (almost?)
+ *    always what should be the case for any environment inside a rule, since it
+ *    is almost certainly a subproof that the user must provide in order to use
+ *    the rule.
+ */
 export class Rule extends Shell {
     static subclassName = Atom.registerSubclass( 'rule', Rule )
     finalize ( shellLC ) {
@@ -388,14 +399,32 @@ export class Rule extends Shell {
     }
 }
 
+/**
+ * A definition is a type of shell that functions exactly like a {@link Rule},
+ * except has the word "Definition" on top instead of "Rule".
+ */
 export class Definition extends Rule {
     static subclassName = Atom.registerSubclass( 'definition', Definition )
 }    
 
+/**
+ * An axiom is a type of shell that functions exactly like a {@link Rule},
+ * except has the word "Axiom" on top instead of "Rule".
+ */
 export class Axiom extends Rule {
     static subclassName = Atom.registerSubclass( 'axiom', Axiom )
 }
 
+/**
+ * A theorem is a type of shell with the following features.
+ * 
+ *  - It labels itself as a "theorem" using the attribute the LDE respects for
+ *    theorem statements, so that validation will treat it as one.
+ *  - It marks any child environment as a given, because that is (almost?)
+ *    always what should be the case for any environment inside a rule, since it
+ *    is almost certainly a subproof that the user must provide in order to use
+ *    the theorem.
+ */
 export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
     finalize ( shellLC ) {
@@ -406,23 +435,55 @@ export class Theorem extends Shell {
     }
 }
 
+/**
+ * A lemma is a type of shell that functions exactly like a {@link Theorem},
+ * except has the word "Lemma" on top instead of "Theorem".
+ */
 export class Lemma extends Theorem {
     static subclassName = Atom.registerSubclass( 'lemma', Lemma )
 }
 
+/**
+ * A corollary is a type of shell that functions exactly like a {@link Theorem},
+ * except has the word "Corollary" on top instead of "Theorem".
+ */
 export class Corollary extends Theorem {
     static subclassName = Atom.registerSubclass( 'corollary', Corollary )
 }
 
+/**
+ * A proof is a type of shell that has the word "Proof" on top and no other
+ * special functionality.  The LDE will treat it as a container with things
+ * inside that should be validated.
+ */
 export class Proof extends Shell {
     static subclassName = Atom.registerSubclass( 'proof', Proof )
 }
 
+/**
+ * A subproof is a type of shell that has no title on top and no other
+ * special functionality.  It can be used inside proofs to group collections of
+ * subderivations together, but without adding the unnecessary (and confusing)
+ * heading "Proof" on top of them, which would be the case if we were instead
+ * to use the {@link Proof} class.
+ */
 export class Subproof extends Shell {
     static subclassName = Atom.registerSubclass( 'subproof', Subproof )
     getTitle () { return '' }
 }
 
+/**
+ * A "recall" is a type of shell with the following features.
+ * 
+ *  - It labels itself as a "hint" using the attribute the LDE respects for
+ *    hints, so that validation will treat it as one.  A hint is an instantiation
+ *    of a rule of inference, which can help the LDE not have to figure out how
+ *    to find the instantiation on its own.  This can be useful for some rules
+ *    that are very time consuming to instantiate in all possibly relevant ways.
+ *  - It marks any child environment as a given, because it should be parallel
+ *    with the {@link Rule} it's trying to instantiate, and rules make their
+ *    child environments given.
+ */
 export class Recall extends Shell {
     static subclassName = Atom.registerSubclass( 'recall', Recall )
     finalize ( shellLC ) {
