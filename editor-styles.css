@@ -16,12 +16,6 @@
 .ML__latex {
     font-size : 1.2em;
 }
-span.lurch-atom-empty::before {
-    content: 'empty expression';
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-style: italic;
-    color: #bbb;
-}
 span.feedback-marker-valid::after {
     content: '✓';
     font-family: 'Lucida Grande';
