@@ -13,6 +13,7 @@ import { lookup } from './document-settings.js'
 import { Dialog, TextInputItem, HTMLItem, ButtonItem, CheckBoxItem } from './dialog.js'
 import { parse, represent, syntaxTreeHTML } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
+import { appSettings } from './settings-install.js'
 
 let converter = null
 
@@ -93,22 +94,24 @@ export class Expression extends Atom {
         const mathLiveInput = new MathItem( 'latex', 'In standard notation' )
         dialog.addItem( mathLiveInput )
         dialog.addItem( new CheckBoxItem( 'given', 'Is the expression given?', false ) )
-        dialog.addItem( new ButtonItem( 'View meaning', () => {
-            const previewDialog = new Dialog( 'View meaning', dialog.editor )
-            const copy = Atom.newInline( this.editor, '', {
-                type : 'expression',
-                asciimath : dialog.get( 'asciimath' ),
-                latex : dialog.get( 'latex' ),
-                given : dialog.get( 'given' )
-            } )
-            copy.update()
-            previewDialog.addItem( new HTMLItem(
-                `<div class="LC-meaning-preview">
-                    ${ copy.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
-                </div>`
-            ) )
-            previewDialog.show()
-        } ) )
+        if ( appSettings.get( 'show view meaning button' ) ) {
+            dialog.addItem( new ButtonItem( 'View meaning', () => {
+                const previewDialog = new Dialog( 'View meaning', dialog.editor )
+                const copy = Atom.newInline( this.editor, '', {
+                    type : 'expression',
+                    asciimath : dialog.get( 'asciimath' ),
+                    latex : dialog.get( 'latex' ),
+                    given : dialog.get( 'given' )
+                } )
+                copy.update()
+                previewDialog.addItem( new HTMLItem(
+                    `<div class="LC-meaning-preview">
+                        ${ copy.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
+                    </div>`
+                ) )
+                previewDialog.show()
+            } ) )
+        }
         // initialize dialog with data from the atom
         dialog.setInitialData( {
             asciimath : this.getMetadata( 'asciimath' ),

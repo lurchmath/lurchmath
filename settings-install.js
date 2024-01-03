@@ -10,7 +10,7 @@
 import { Settings } from './settings.js'
 import {
     SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata,
-    CategorySettingMetadata, LongTextSettingMetadata
+    CategorySettingMetadata, LongTextSettingMetadata, BoolSettingMetadata
 } from './settings-metadata.js'
 
 /**
@@ -71,6 +71,11 @@ export const appSettings = new Settings(
                 'Default notation to use for new documents',
                 [ 'AsciiMath', 'LaTeX' ],
                 'LaTeX'
+            ),
+            new BoolSettingMetadata(
+                'show view meaning button',
+                'Advanced: In the expression editor, show the "view meaning" button',
+                false
             )
         ),
         new SettingsCategoryMetadata(
