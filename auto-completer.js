@@ -32,8 +32,9 @@
 
 import { lookup } from './document-settings.js'
 import { expressionHTML } from './expressions.js'
-import { getConverter } from './math-live.js'
+import { getConverter, stylesheet } from './math-live.js'
 import { DeclarationType, declarationHTML } from './declarations.js'
+import { loadScript, loadStylesheet, htmlToImage } from './utilities.js'
 
 // Internal use: Stores all autocompletion functions.
 // An autocompletion function has the signature documented below.
@@ -133,18 +134,38 @@ export const install = editor => {
                        || patternContent.toLowerCase().startsWith( 'given ' )
             if ( given )
                 patternContent = patternContent.substring( patternContent.indexOf( ' ' ) + 1 )
-            const givenText = given ? 'given' : 'claim'
             return getConverter().then( converter => {
                 const latex = converter( patternContent, notation.toLowerCase(), 'latex' )
+                const html = converter( patternContent, notation.toLowerCase(), 'html' )
+                const loadingMarker = 'Loading...'
+                // Queue up the rendering of a typeset preview of the expression
+                setTimeout( () => {
+                    loadStylesheet( stylesheet ).then( () => {
+                        Array.from( document.body.querySelectorAll(
+                            '.tox-collection__item .tox-collection__item-label' )
+                        ).filter( element =>
+                            element.innerHTML == loadingMarker
+                        ).forEach( element => {
+                            htmlToImage( html ).then( image => {
+                                element.innerHTML = ''
+                                element.appendChild( image )
+                            } ).catch( _ => {
+                                element.innerHTML = 'Could not create preview.'
+                            } )
+                        } )
+                    } )
+                }, 0 )
+                // Return a single autocompletion, with a "Loading..." marker
+                // in it that will get replaced by the typeset preview soon
                 return [
                     {
                         type : 'cardmenuitem',
                         value : expressionHTML( latex, given, editor ),
-                        label : `${notation} ${givenText} expression: ${patternContent}`,
+                        label : loadingMarker,
                         items : [
                             {
                                 type : 'cardtext',
-                                text : `${notation} ${givenText} expression: ${patternContent}`
+                                text : loadingMarker
                             }
                         ]
                     }

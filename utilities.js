@@ -25,6 +25,7 @@
  * @returns {Promise} a promise that is resolved if the script finishes loading
  *   or rejected if the script encounters an error
  * @function
+ * @see {@link module:Utilities.loadStylesheet loadStylesheet()}
  */
 export const loadScript = url =>
     Array.from( document.head.querySelectorAll( 'script' ) ).some(
@@ -39,6 +40,72 @@ export const loadScript = url =>
         scriptTag.addEventListener( 'error', reject )
         scriptTag.setAttribute( 'src', url )
     } )
+
+/**
+ * Create a link element to load a stylesheet from the given URL, append that
+ * link element to the page's head, and notify us (via a returned `Promise`)
+ * when the stylesheet completes loading successfully or fails with an error.
+ * 
+ * Example use:
+ * ```
+ * loadStylesheet( 'https://some.cdn.org/styles.css' ).then( () => {
+ *     // Run code that depends on the stylesheet having loaded.
+ * } )
+ * ```
+ * 
+ * Note that if this function has already been called on this URL, so that there
+ * already is a link tag with this source, then the promise resolves
+ * immediately without doing anything first.
+ * 
+ * @param {String} url - URL of the stylesheet to load
+ * @returns {Promise} a promise that is resolved if the stylesheet finishes
+ *   loading or rejected if the loading encounters an error
+ * @function
+ * @see {@link module:Utilities.loadScript loadScript()}
+ */
+export const loadStylesheet = url =>
+    Array.from( document.head.querySelectorAll( 'link' ) ).some(
+        link => link.getAttribute( 'href' ) == url ) ?
+    Promise.resolve() :
+    new Promise( ( resolve, reject ) => {
+        const linkTag = document.createElement( 'link' )
+        document.head.append( linkTag )
+        linkTag.setAttribute( 'rel', 'stylesheet' )
+        linkTag.addEventListener( 'load', resolve )
+        linkTag.addEventListener( 'error', reject )
+        linkTag.setAttribute( 'href', url )
+    } )
+
+/**
+ * Convert arbitrary HTML code to an HTML image element whose contents is the
+ * rendered version of the given HTML code.  This uses the html2canvas library,
+ * imported from a CDN on the fly as needed, to accomplish this.  The function
+ * is asynchronous, returning a promise that resolves to the image element on
+ * success, or rejects on failure.
+ * 
+ * @param {string} html - the code to convert to an image
+ * @param {Object} options - the options to pass to html2canvas (detailed in the
+ *   documentation for that library, separately from these docs)
+ * @param {string} tagName - the tag name to use for the temporary element that
+ *   will be created to contain the given HTML code (defaults to `span`)
+ * @returns {Promise} the promise described above
+ */
+export const htmlToImage = (
+    html, options = { backgroundColor : null }, tagName = 'span'
+) => loadScript(
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+).then( () => {
+    const element = document.createElement( tagName )
+    element.innerHTML = html
+    document.body.appendChild( element )
+    return html2canvas( element, options ).then( canvas => {
+        const image = document.createElement( 'img' )
+        image.src = canvas.toDataURL( 'image/png' )
+        return image
+    } ).finally( () => {
+        element.remove()
+    } )
+} )
 
 /**
  * From any JavaScript object, we can create another object by first
