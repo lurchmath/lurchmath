@@ -25,8 +25,8 @@ export const latexToLurch = input => {
                 const prefix = input.substring( 0, match[0].length )
                 result += prefix.replace( ...replacements[i] )
                 input = input.substring( prefix.length )
+                break
             }
-            break
         }
         if ( input.length == lengthBefore ) {
             result += input[0]
