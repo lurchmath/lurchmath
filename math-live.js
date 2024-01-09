@@ -301,8 +301,8 @@ export const getConverter = () => loadMathFieldClass().then( () => {
         // handle all other cases
         switch ( `${inputFormat} ${outputFormat}` ) {
             case 'latex putdown':
-                return convert( convert( data, 'latex', 'mathjson' ),
-                    'mathjson', 'putdown' )
+                return convert( convert( data, 'latex', 'asciimath' ),
+                    'asciimath', 'putdown' )
             case 'latex html':
                 return MathLive.convertLatexToMarkup( data )
             case 'latex mathjson':
