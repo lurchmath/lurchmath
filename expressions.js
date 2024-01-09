@@ -167,14 +167,13 @@ export class Expression extends Atom {
      * @returns {LogicConcept[]} an array containing zero or one LogicConcepts
      */
     toLCs () {
-        // Get the LaTeX form and attempt to parse it
-        const latex = this.getMetadata( 'latex' )
-        const result = parse( latex, 'latex' )
+        // Get the Lurch form and attempt to parse it
+        const lurchNotation = this.getMetadata( 'asciimath' )
+        const result = parse( lurchNotation, 'lurchNotation' )
         // If there was an error, log it and return no LCs
         if ( result.message ) {
-            console.log( latex, 'latex', result )
-            console.log( converter( latex, 'latex', 'putdown' ) )
-            // console.log( converter( latex, 'latex', 'mathjson' ) )
+            console.log( lurchNotation, 'lurchNotation', result )
+            console.log( converter( lurchNotation, 'asciimath', 'putdown' ) )
             return [ ]
         }
         // If there was more than one LC created, complain and return no LCs
@@ -197,8 +196,8 @@ export class Expression extends Atom {
      * prefix to be `'Assume '` if the expression is given, otherwise empty.
      */
     update () {
-        const latex = this.getMetadata( 'latex' )
-        const repr = `${represent( latex, 'latex' )}`
+        const lurchNotation = this.getMetadata( 'asciimath' )
+        const repr = `${represent( lurchNotation, 'lurchNotation' )}`
         this.fillChild( 'body', repr )
         if ( this.getMetadata( 'given' ) )
             this.fillChild( 'prefix', 'Assume ' )
