@@ -98,17 +98,49 @@ export class Expression extends Atom {
                 )
             } )
         }
-        // Otherwise, just redirect to intermediate mode, because beginner mode
-        // is not yet implemented.  (We will fix that later.)
-        return new Promise( ( resolve, reject ) => {
-            Dialog.failure(
-                this.editor,
-                'Beginner mode is not yet implemented.  Redirecting you to intermediate mode.',
-                'Not yet implemented'
-            ).then( () =>
-                this.editInIntermediateMode().then( resolve ).catch( reject )
-            )
+        // set up dialog contents
+        const dialog = new Dialog( 'Edit expression', this.editor )
+        const mathLiveInput = new MathItem( 'latex', '' )
+        mathLiveInput.setFocusWhenShown( true )
+        dialog.addItem( mathLiveInput )
+        dialog.addItem( new CheckBoxItem( 'given', 'Assumption', false ) )
+        // initialize dialog with data from the atom
+        dialog.setInitialData( {
+            latex : this.getMetadata( 'latex' ),
+            given : this.getMetadata( 'given' )
         } )
+        // utilities used below
+        const convertToLurchNotation = () => {
+            try {
+                return converter( dialog.get( 'latex' ), 'latex', 'lurch' )
+            } catch {
+                return null
+            }
+        }
+        const latexIsValid = () => {
+            try {
+                const lurchNotation = convertToLurchNotation()
+                if ( lurchNotation === null ) return null
+                const asLCs = parse( lurchNotation, 'lurchNotation' )
+                return asLCs.length == 1 && ( asLCs[0] instanceof LCExpression )
+            } catch {
+                return null
+            }
+        }
+        dialog.onChange = () =>
+            dialog.dialog.setEnabled( 'OK', latexIsValid() )
+        // Show it and if they accept any changes, apply them to the atom.
+        const result = dialog.show().then( userHitOK => {
+            if ( !userHitOK || !latexIsValid() ) return false
+            // save the data
+            this.setMetadata( 'lurchNotation', convertToLurchNotation() )
+            this.setMetadata( 'latex', dialog.get( 'latex' ) )
+            this.setMetadata( 'given', dialog.get( 'given' ) )
+            this.update()
+            return true
+        } )
+        dialog.dialog.setEnabled( 'OK', latexIsValid() )
+        return result
     }
 
     // Internal use only.
