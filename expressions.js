@@ -14,6 +14,8 @@ import { Dialog, TextInputItem, HTMLItem, ButtonItem, CheckBoxItem } from './dia
 import { parse, represent, syntaxTreeHTML } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
 import { appSettings } from './settings-install.js'
+import { Expression as LCExpression }
+    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
 let converter = null
 
@@ -80,6 +82,24 @@ export class Expression extends Atom {
     // Internal use only.
     // Used by edit() if the user's settings are in beginner mode.
     editInBeginnerMode () {
+        // If the Lurch notation is not for a single expression, we must use
+        // advanced mode.
+        const LCs = this.toLCs()
+        if ( ( LCs.length > 1 ) ||
+             ( ( LCs.length == 1 ) && !( LCs[0] instanceof LCExpression ) ) ) {
+            return new Promise( ( resolve, reject ) => {
+                Dialog.failure(
+                    this.editor,
+                    'This content can be edited only in advanced mode.  '
+                  + 'Redirecting you to advanced mode.',
+                    'Content too complex'
+                ).then( () =>
+                    this.editInAdvancedMode().then( resolve ).catch( reject )
+                )
+            } )
+        }
+        // Otherwise, just redirect to intermediate mode, because beginner mode
+        // is not yet implemented.  (We will fix that later.)
         return new Promise( ( resolve, reject ) => {
             Dialog.failure(
                 this.editor,
@@ -94,6 +114,22 @@ export class Expression extends Atom {
     // Internal use only.
     // Used by edit() if the user's settings are in intermediate mode.
     editInIntermediateMode () {
+        // If the Lurch notation is not for a single expression, we must use
+        // advanced mode.
+        const LCs = this.toLCs()
+        if ( ( LCs.length > 1 ) ||
+             ( ( LCs.length == 1 ) && !( LCs[0] instanceof LCExpression ) ) ) {
+            return new Promise( ( resolve, reject ) => {
+                Dialog.failure(
+                    this.editor,
+                    'This content can be edited only in advanced mode.  '
+                  + 'Redirecting you to advanced mode.',
+                    'Content too complex'
+                ).then( () =>
+                    this.editInAdvancedMode().then( resolve ).catch( reject )
+                )
+            } )
+        }
         // set up dialog contents
         const dialog = new Dialog( 'Edit expression', this.editor )
         const lurchInput = new TextInputItem( 'lurchNotation', 'In plain text', '' )
@@ -127,6 +163,21 @@ export class Expression extends Atom {
             given : this.getMetadata( 'given' )
         } )
         dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
+        // utilities used below
+        const convertLatex = () => {
+            try {
+                return converter( dialog.get( 'lurchNotation' ), 'lurch', 'latex' )
+            } catch {
+                return null
+            }
+        }
+        const convertLurchNotation = () => {
+            try {
+                return converter( dialog.get( 'latex' ), 'latex', 'lurch' )
+            } catch {
+                return null
+            }
+        }
         // if they edit the Lurch notation or latex, keep them in sync
         let syncEnabled = false
         setTimeout( () => syncEnabled = true, 0 ) // after dialog populates
@@ -134,39 +185,21 @@ export class Expression extends Atom {
             if ( !syncEnabled ) return
             syncEnabled = false // prevent syncing to fixed point/infinity
             if ( component.name == 'lurchNotation' ) {
-                const lurchNotation = dialog.get( 'lurchNotation' )
-                try {
-                    const latex = converter( lurchNotation, 'lurch', 'latex' )
-                    mathLiveInput.setValue( latex )
-                    // console.log( '\nLurch input contains:', lurchNotation )
-                    // console.log( 'Corresponding LaTeX:', latex )
-                } catch ( e ) {
-                    console.log( 'Could not convert Lurch notation to LaTeX:', lurchNotation )
-                    // console.log( e )
-                }
+                const converted = convertLatex()
+                if ( converted )
+                    mathLiveInput.setValue( converted )
+                dialog.dialog.setEnabled( 'OK', !!converted )
             } else if ( component.name == 'latex' ) {
-                const latex = dialog.get( 'latex' )
-                try {
-                    const lurchNotation = converter( latex, 'latex', 'lurch' )
-                    dialog.dialog.setData( { lurchNotation : lurchNotation } )
-                    // console.log( '\nMathLive widget contains:', latex )
-                    // console.log( 'Can it parse that?',
-                    //     JSON.stringify( MathfieldElement.computeEngine.parse( latex,
-                    //         { canonical : false } ).json ) )
-                    // console.log( 'Can we convert it to putdown?',
-                    //     converter( latex, 'latex', 'putdown' ) )
-                    // const tmp = parse( latex, 'latex' )
-                    // console.log( 'Is the putdown valid?', tmp.message || 'yes' )
-                } catch ( e ) {
-                    console.log( 'Could not convert LaTeX to Lurch notation:', latex )
-                    // console.log( e )
-                }
+                const converted = convertLurchNotation()
+                if ( converted )
+                    dialog.dialog.setData( { lurchNotation : converted } )
+                dialog.dialog.setEnabled( 'OK', !!converted )
             }
             syncEnabled = true
         }
         // Show it and if they accept any changes, apply them to the atom.
-        return dialog.show().then( userHitOK => {
-            if ( !userHitOK ) return false
+        const result = dialog.show().then( userHitOK => {
+            if ( !userHitOK || !convertLatex() ) return false
             // save the data
             this.setMetadata( 'lurchNotation', dialog.get( 'lurchNotation' ) )
             this.setMetadata( 'latex', dialog.get( 'latex' ) )
@@ -174,20 +207,78 @@ export class Expression extends Atom {
             this.update()
             return true
         } )
+        dialog.dialog.setEnabled( 'OK', !!convertLatex() )
+        return result
     }
 
     // Internal use only.
     // Used by edit() if the user's settings are in advanced mode.
     editInAdvancedMode () {
-        return new Promise( ( resolve, reject ) => {
-            Dialog.failure(
-                this.editor,
-                'Advanced mode is not yet implemented.  Redirecting you to intermediate mode.',
-                'Not yet implemented'
-            ).then( () =>
-                this.editInIntermediateMode().then( resolve ).catch( reject )
-            )
+        // set up dialog contents
+        const dialog = new Dialog( 'Edit expression', this.editor )
+        dialog.hideHeader = dialog.hideFooter = true
+        const lurchInput = new TextInputItem( 'lurchNotation', '', '' )
+        dialog.addItem( lurchInput )
+        const mathLiveInput = new MathItem( 'latex', '' )
+        mathLiveInput.finishSetup = () => {
+            mathLiveInput.mathLiveEditor.readOnly = true
+            mathLiveInput.mathLiveEditor.style.border = 0
+        }
+        dialog.addItem( mathLiveInput )
+        if ( appSettings.get( 'show view meaning button' ) ) {
+            dialog.addItem( new ButtonItem( 'View meaning', () => {
+                const previewDialog = new Dialog( 'View meaning', dialog.editor )
+                previewDialog.removeButton( 'Cancel' )
+                const copy = Atom.newInline( this.editor, '', {
+                    type : 'expression',
+                    lurchNotation : dialog.get( 'lurchNotation' ),
+                    latex : dialog.get( 'latex' )
+                } )
+                copy.update()
+                previewDialog.addItem( new HTMLItem(
+                    `<div class="LC-meaning-preview">
+                        ${ copy.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
+                    </div>`
+                ) )
+                previewDialog.show()
+            } ) )
+        }
+        // initialize dialog with data from the atom
+        dialog.setInitialData( {
+            lurchNotation : this.getMetadata( 'lurchNotation' ),
+            latex : this.getMetadata( 'latex' )
         } )
+        dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
+        // utility used below
+        const convertLatex = () => {
+            try {
+                return converter( dialog.get( 'lurchNotation' ), 'lurch', 'latex' )
+            } catch {
+                return null
+            }
+        }
+        // if they edit the Lurch notation or latex, keep them in sync
+        dialog.onChange = ( _, component ) => {
+            if ( component.name == 'lurchNotation' ) {
+                const converted = convertLatex()
+                if ( converted )
+                    mathLiveInput.setValue( converted )
+                dialog.dialog.setEnabled( 'OK', !!converted )
+            }
+        }
+        // Show it and if they accept any changes, apply them to the atom.
+        const result = dialog.show().then( userHitOK => {
+            if ( !userHitOK || !convertLatex() ) return false
+            // save the data
+            this.setMetadata( 'lurchNotation', dialog.get( 'lurchNotation' ) )
+            this.setMetadata( 'latex', dialog.get( 'latex' ) )
+            const LCs = this.toLCs()
+            this.setMetadata( 'given', LCs.length == 1 && LCs[0].isA( 'given' ) )
+            this.update()
+            return true
+        } )
+        dialog.dialog.setEnabled( 'OK', !!convertLatex() )
+        return result
     }
 
     /**
@@ -208,7 +299,11 @@ export class Expression extends Atom {
      * 
      * **Advanced mode does this:**
      * 
-     * (It is not yet implemented.  Check back later.)
+     * The dialog is extremely minimalist, no title bar, no footer buttons, no
+     * miniature headings over each input/output, and the only input is the
+     * Lurch notation.  The MathLive widget is a read-only preview.  There is no
+     * checkbox for given/claim status, but that status is inferred from the
+     * Lurch notation.
      * 
      * @returns {Promise} same convention as specified in
      *   {@link module:Atoms.Atom#edit edit() for Atoms}
@@ -242,12 +337,15 @@ export class Expression extends Atom {
             console.log( converter( lurchNotation, 'lurch', 'putdown' ) )
             return [ ]
         }
-        // If there was more than one LC created, complain and return no LCs
-        if ( result.length != 1 ) {
-            console.log( 'Expression yielded more than one LC:' )
-            console.log( result.map( LC => LC.toPutdown() ) )
-            return [ ]
-        }
+        // Because hackers in advanced mode may use it to create >1 LC in one
+        // expression, we comment this out for now.  We may re-institute it
+        // later once the application is sufficiently debugged that we don't
+        // need to be doing this kind of hacking any longer.
+        // if ( result.length != 1 ) {
+        //     console.log( 'Expression yielded more than one LC:' )
+        //     console.log( result.map( LC => LC.toPutdown() ) )
+        //     return [ ]
+        // }
         // Mark the one LC as a given or claim and return it (in a list)
         if ( this.getMetadata( 'given' ) )
             result[0].makeIntoA( 'given' )

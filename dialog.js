@@ -29,8 +29,17 @@ export class Dialog {
                 items : [ ]
             },
             buttons : [
-                { text : 'OK', type : 'submit', buttonType : 'primary' },
-                { text : 'Cancel', type : 'cancel' }
+                {
+                    name : 'OK',
+                    text : 'OK',
+                    type : 'submit',
+                    buttonType : 'primary'
+                },
+                {
+                    name : 'Cancel',
+                    text : 'Cancel',
+                    type : 'cancel'
+                }
             ],
             onChange : ( ...args ) => this.onChange?.( ...args ),
             onAction : ( ...args ) => {

@@ -44,6 +44,12 @@ export class MathItem {
     /**
      * Construct a MathLive editing component.
      * 
+     * Once the component has been shown on screen and a MathLiveEditor instance
+     * placed into it, the member function `finishSetup()` will be called.  If
+     * you have particular setup code that should be done at that point, feel
+     * free to override that method in any instance you create.  At that time,
+     * the MathLiveEditor instance will be in the field `this.mathLiveEditor`.
+     * 
      * @param {string} name - the name of the control in the dialog, used for
      *   querying its value when the dialog closes, or providing an initial
      *   value when the dialog opens
@@ -134,6 +140,7 @@ export class MathItem {
                 () => this.saveValue() )
             if ( this.focusWhenShown )
                 this.mathLiveEditor.focus()
+            this.finishSetup?.()
         } )
     }
 
