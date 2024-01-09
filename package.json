@@ -2,6 +2,7 @@
   "devDependencies": {
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
+    "peggy": "^3.0.2",
     "tidy-jsdoc": "^1.4.1"
   }
 }
