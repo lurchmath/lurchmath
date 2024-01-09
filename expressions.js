@@ -132,11 +132,11 @@ export class Expression extends Atom {
         }
         // set up dialog contents
         const dialog = new Dialog( 'Edit expression', this.editor )
-        const lurchInput = new TextInputItem( 'lurchNotation', 'In plain text', '' )
+        const lurchInput = new TextInputItem( 'lurchNotation', 'Plain text', '' )
         dialog.addItem( lurchInput )
-        const mathLiveInput = new MathItem( 'latex', 'In standard notation' )
+        const mathLiveInput = new MathItem( 'latex', 'Standard notation' )
         dialog.addItem( mathLiveInput )
-        dialog.addItem( new CheckBoxItem( 'given', 'Is the expression given?', false ) )
+        dialog.addItem( new CheckBoxItem( 'given', 'Assumption', false ) )
         if ( appSettings.get( 'show view meaning button' ) ) {
             dialog.addItem( new ButtonItem( 'View meaning', () => {
                 const previewDialog = new Dialog( 'View meaning', dialog.editor )
@@ -162,16 +162,19 @@ export class Expression extends Atom {
             latex : this.getMetadata( 'latex' ),
             given : this.getMetadata( 'given' )
         } )
-        dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
+        if ( lookup( this.editor, 'notation' ) == 'latex' )
+            mathLiveInput.setFocusWhenShown( true )
+        else
+            dialog.setDefaultFocus( 'lurchNotation' )
         // utilities used below
-        const convertLatex = () => {
+        const convertToLatex = () => {
             try {
                 return converter( dialog.get( 'lurchNotation' ), 'lurch', 'latex' )
             } catch {
                 return null
             }
         }
-        const convertLurchNotation = () => {
+        const convertToLurchNotation = () => {
             try {
                 return converter( dialog.get( 'latex' ), 'latex', 'lurch' )
             } catch {
@@ -185,12 +188,12 @@ export class Expression extends Atom {
             if ( !syncEnabled ) return
             syncEnabled = false // prevent syncing to fixed point/infinity
             if ( component.name == 'lurchNotation' ) {
-                const converted = convertLatex()
+                const converted = convertToLatex()
                 if ( converted )
                     mathLiveInput.setValue( converted )
                 dialog.dialog.setEnabled( 'OK', !!converted )
             } else if ( component.name == 'latex' ) {
-                const converted = convertLurchNotation()
+                const converted = convertToLurchNotation()
                 if ( converted )
                     dialog.dialog.setData( { lurchNotation : converted } )
                 dialog.dialog.setEnabled( 'OK', !!converted )
@@ -199,7 +202,7 @@ export class Expression extends Atom {
         }
         // Show it and if they accept any changes, apply them to the atom.
         const result = dialog.show().then( userHitOK => {
-            if ( !userHitOK || !convertLatex() ) return false
+            if ( !userHitOK || !convertToLatex() ) return false
             // save the data
             this.setMetadata( 'lurchNotation', dialog.get( 'lurchNotation' ) )
             this.setMetadata( 'latex', dialog.get( 'latex' ) )
@@ -207,7 +210,7 @@ export class Expression extends Atom {
             this.update()
             return true
         } )
-        dialog.dialog.setEnabled( 'OK', !!convertLatex() )
+        dialog.dialog.setEnabled( 'OK', !!convertToLatex() )
         return result
     }
 
@@ -248,9 +251,9 @@ export class Expression extends Atom {
             lurchNotation : this.getMetadata( 'lurchNotation' ),
             latex : this.getMetadata( 'latex' )
         } )
-        dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
+        dialog.setDefaultFocus( 'lurchNotation' )
         // utility used below
-        const convertLatex = () => {
+        const convertToLatex = () => {
             try {
                 return converter( dialog.get( 'lurchNotation' ), 'lurch', 'latex' )
             } catch {
@@ -260,7 +263,7 @@ export class Expression extends Atom {
         // if they edit the Lurch notation or latex, keep them in sync
         dialog.onChange = ( _, component ) => {
             if ( component.name == 'lurchNotation' ) {
-                const converted = convertLatex()
+                const converted = convertToLatex()
                 if ( converted )
                     mathLiveInput.setValue( converted )
                 dialog.dialog.setEnabled( 'OK', !!converted )
@@ -268,7 +271,7 @@ export class Expression extends Atom {
         }
         // Show it and if they accept any changes, apply them to the atom.
         const result = dialog.show().then( userHitOK => {
-            if ( !userHitOK || !convertLatex() ) return false
+            if ( !userHitOK || !convertToLatex() ) return false
             // save the data
             this.setMetadata( 'lurchNotation', dialog.get( 'lurchNotation' ) )
             this.setMetadata( 'latex', dialog.get( 'latex' ) )
@@ -277,7 +280,7 @@ export class Expression extends Atom {
             this.update()
             return true
         } )
-        dialog.dialog.setEnabled( 'OK', !!convertLatex() )
+        dialog.dialog.setEnabled( 'OK', !!convertToLatex() )
         return result
     }
 
