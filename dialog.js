@@ -265,10 +265,13 @@ export class Dialog {
         if ( this.json.body.tabs )
             this.currentTabName = this.json.body.tabs[0].name
         this.dialog = this.editor.windowManager.open( this.json )
+        this.element = Dialog.getTopDialogElement()
         return new Promise( ( resolve, reject ) => {
             this.resolver = resolve
             this.rejecter = reject
             this.runItemShowHandlers()
+        } ).finally( () => {
+            delete this.element
         } )
     }
 
@@ -323,6 +326,57 @@ export class Dialog {
     reload () {
         this.dialog?.redial( this.json )
         this.runItemShowHandlers()
+    }
+
+    /**
+     * Behaves exactly like `document.querySelector()`, except that it is run on
+     * just the element representing this dialog box, and thus will return only
+     * an element that appears in this dialog.  Or, if this dialog has no
+     * element matching the given selector, it returns undefined.
+     * 
+     * @param {string} selector - the CSS selector to use for the query
+     * @returns {HTMLElement} the first element that matches the selector
+     * @see {@link Dialog#querySelectorAll querySelectorAll()}
+     * @see {@link Dialog.getTopDialogElement getTopDialogElement()}
+     */
+    querySelector ( selector ) {
+        return this.element?.querySelector( selector )
+    }
+
+    /**
+     * Behaves exactly like `document.querySelectorAll()`, except that it is run
+     * on just the element representing this dialog box, and thus will return
+     * only elements that appear in this dialog.  Or, if this dialog has no
+     * element matching the given selector, it returns an empty node list.
+     * 
+     * @param {string} selector - the CSS selector to use for the query
+     * @returns {NodeList} the list of elements that match the selector
+     * @see {@link Dialog#querySelector querySelector()}
+     * @see {@link Dialog.getTopDialogElement getTopDialogElement()}
+     */
+    querySelectorAll ( selector ) {
+        return this.element?.querySelectorAll( selector )
+    }
+
+    /**
+     * TinyMCE may have open zero or more dialog boxes at any given time.  This
+     * method returns the HTML element (a DIV) corresponding to the topmost
+     * dialog box, or undefined if there are no open dialogs.
+     * 
+     * Whenever an instance of this class is placed on screen using its
+     * {@link Dialog#show show()} method, this method is used to notice which
+     * DOM element represents that dialog, and it is stored in the dialog's
+     * `element` field for later use by functions like
+     * {@link Dialog#querySelector querySelector()} and
+     * {@link Dialog#querySelectorAll querySelectorAll()}.
+     * 
+     * @returns {HTMLDivElement} the DIV element in the DOM representing the
+     *   topmost TinyMCE dialog
+     */
+    static getTopDialogElement () {
+        const allDialogElements =
+            document.querySelectorAll( 'div.tox-dialog[role="dialog"]' )
+        return allDialogElements[allDialogElements.length - 1]
     }
 
     /**

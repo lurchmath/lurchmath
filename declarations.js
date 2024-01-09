@@ -390,7 +390,7 @@ export class Declaration extends Atom {
         dialog.setDefaultFocus( 'symbol' )
         // if they edit the symbol, update the dropdown
         const getSelectBox = () =>
-            document.querySelector( '.tox-selectfield > select' )
+            dialog.querySelector( '.tox-selectfield > select' )
         let lastSelectedIndex = declTypes.map( dt => dt.template )
             .indexOf( declType.template )
         console.log( declType.template, declTypes.map( dt => dt.template ), lastSelectedIndex )
