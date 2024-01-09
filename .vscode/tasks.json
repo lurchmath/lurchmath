@@ -8,6 +8,12 @@
             "type": "shell",
             "command": "rm -rf docs && jsdoc *.js -d docs -R doc-main.md -c jsdoc-conf.json --verbose",
             "problemMatcher": []
+        },
+        {
+            "label": "Download and rebuild parsers",
+            "type": "shell",
+            "command": "cd parsers && sh build-all.sh",
+            "problemMatcher": []
         }
     ]
 }
