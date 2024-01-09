@@ -24,4 +24,8 @@ echo '   Compiling peggy source for: LurchMath-to-putdown'
 node ../node_modules/peggy/bin/peggy.js lurch-to-putdown.peggy
 
 echo 'Results:'
-ls -al *.js *.peggy
+ls -al \
+    lurch-to-tex.peggy \
+    lurch-to-tex.js \
+    lurch-to-putdown.peggy \
+    lurch-to-putdown.js
