@@ -129,6 +129,8 @@ export class Expression extends Atom {
                 const asciiMath = dialog.get( 'asciimath' )
                 const latex = converter( asciiMath, 'asciimath', 'latex' )
                 mathLiveInput.setValue( latex )
+                // console.log( '\nAsciiMath input contains:', asciiMath )
+                // console.log( 'Corresponding LaTeX:', latex )
             } else if ( component.name == 'latex' ) {
                 const latex = dialog.get( 'latex' )
                 const asciiMath = converter( latex, 'latex', 'asciimath' )
