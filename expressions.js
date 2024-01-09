@@ -77,16 +77,23 @@ export class Expression extends Atom {
 
     static subclassName = Atom.registerSubclass( 'expression', Expression )
 
-    /**
-     * Shows a multi-part dialog for editing expression atoms using Lurch
-     * notation or a MathLive editor widget.  The user can then confirm or
-     * cancel the edit, as per the convention described in
-     * {@link module:Atoms.Atom#edit the edit() function for the Atom class}.
-     * 
-     * @returns {Promise} same convention as specified in
-     *   {@link module:Atoms.Atom#edit edit() for Atoms}
-     */
-    edit () {
+    // Internal use only.
+    // Used by edit() if the user's settings are in beginner mode.
+    editInBeginnerMode () {
+        return new Promise( ( resolve, reject ) => {
+            Dialog.failure(
+                this.editor,
+                'Beginner mode is not yet implemented.  Redirecting you to intermediate mode.',
+                'Not yet implemented'
+            ).then( () =>
+                this.editInIntermediateMode().then( resolve ).catch( reject )
+            )
+        } )
+    }
+
+    // Internal use only.
+    // Used by edit() if the user's settings are in intermediate mode.
+    editInIntermediateMode () {
         // set up dialog contents
         const dialog = new Dialog( 'Edit expression', this.editor )
         const lurchInput = new TextInputItem( 'lurchNotation', 'In plain text', '' )
@@ -167,6 +174,54 @@ export class Expression extends Atom {
             this.update()
             return true
         } )
+    }
+
+    // Internal use only.
+    // Used by edit() if the user's settings are in advanced mode.
+    editInAdvancedMode () {
+        return new Promise( ( resolve, reject ) => {
+            Dialog.failure(
+                this.editor,
+                'Advanced mode is not yet implemented.  Redirecting you to intermediate mode.',
+                'Not yet implemented'
+            ).then( () =>
+                this.editInIntermediateMode().then( resolve ).catch( reject )
+            )
+        } )
+    }
+
+    /**
+     * Shows a dialog for editing an expression atom, but it may show one of
+     * three different dialogs, depending on whether the user has chosen
+     * beginner, intermediate, or advanced mode in their settings.
+     * 
+     * **Beginner mode does this:**
+     * 
+     * (It is not yet implemented.  Check back later.)
+     * 
+     * **Intermediate mode does this:**
+     * 
+     * Shows a multi-part dialog for editing expression atoms using Lurch
+     * notation or a MathLive editor widget.  The user can then confirm or
+     * cancel the edit, as per the convention described in
+     * {@link module:Atoms.Atom#edit the edit() function for the Atom class}.
+     * 
+     * **Advanced mode does this:**
+     * 
+     * (It is not yet implemented.  Check back later.)
+     * 
+     * @returns {Promise} same convention as specified in
+     *   {@link module:Atoms.Atom#edit edit() for Atoms}
+     */
+    edit () {
+        switch ( appSettings.get( 'expression editor type' ) ) {
+            case 'Beginner':
+                return this.editInBeginnerMode()
+            case 'Intermediate':
+                return this.editInIntermediateMode()
+            case 'Advanced':
+                return this.editInAdvancedMode()
+        }
     }
 
     /**

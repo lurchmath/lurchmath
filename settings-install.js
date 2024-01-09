@@ -72,6 +72,12 @@ export const appSettings = new Settings(
                 [ 'Lurch notation', 'LaTeX' ],
                 'LaTeX'
             ),
+            new CategorySettingMetadata(
+                'expression editor type',
+                'Type of expression editor to use',
+                [ 'Beginner', 'Intermediate', 'Advanced' ],
+                'Beginner'
+            ),
             new BoolSettingMetadata(
                 'show view meaning button',
                 'Advanced: In the expression editor, show the "view meaning" button',
