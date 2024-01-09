@@ -17,24 +17,12 @@
  * the process of making all autocompletions in Lurch behave consistently, with
  * minimal coding needed on the part of the various modules in the Lurch UI.
  * 
- * It also installs an autocompletion that uses `$...$` notation, in imitation
- * of $\LaTeX$ inline math expressions.  That autocompletion allows the user to
- * replace any content between dollar signs with an expression, in the user's
- * default notation, in the sense of the {@link module:ExpressionAtoms expressions
- * in the Notation Atoms module}.
- * 
  * Clients can import this module and then call its
  * {@link module:AutoComplete.install install()} function to add autocompletion
  * support to TinyMCE.
  * 
  * @module AutoComplete
  */
-
-import { lookup } from './document-settings.js'
-import { expressionHTML } from './expressions.js'
-import { getConverter, stylesheet } from './math-live.js'
-import { DeclarationType, declarationHTML } from './declarations.js'
-import { loadScript, loadStylesheet, htmlToImage } from './utilities.js'
 
 // Internal use: Stores all autocompletion functions.
 // An autocompletion function has the signature documented below.
@@ -82,7 +70,7 @@ export const addAutocompleteFunction = f => autocompleteFunctions.push( f )
  *   autocompletion
  */
 export const install = editor => {
-    // First, the autocompleter that is extensible using the
+    // Install the metea-autocompleter, which is extensible using the
     // addAutocompleteFunction() API given above:
     editor.ui.registry.addAutocompleter( 'lurch-general-complete', {
         trigger : '\\',
@@ -109,100 +97,6 @@ export const install = editor => {
                 ]
             } ) )
         )
-    } )
-    // Second, the autocompleter that is just for expressions in one of the
-    // pre-installed notations from notations.js:
-    editor.ui.registry.addAutocompleter( 'lurch-expression-autocomplete', {
-        trigger : '$',
-        minChars : 1,
-        columns : 1,
-        onAction : ( autocompleter, range, newContent ) => {
-            editor.selection.setRng( range )
-            editor.insertContent( newContent )
-            autocompleter.hide()
-        },
-        fetch : pattern => {
-            let exprCode = pattern.replaceAll( '\\\\', '' ).replaceAll( '\\$', '' )
-            if ( !exprCode.endsWith( '$' ) )
-                return Promise.resolve( [ ] )
-            exprCode = exprCode.substring( 0, exprCode.length - 1 )
-            if ( exprCode.includes( '$' ) )
-                return Promise.resolve( [ ] )
-            const notation = lookup( editor, 'notation' )
-            let patternContent = pattern.substring( 0, pattern.length - 1 )
-            const given = patternContent.toLowerCase().startsWith( 'assume ' )
-                       || patternContent.toLowerCase().startsWith( 'given ' )
-            if ( given )
-                patternContent = patternContent.substring( patternContent.indexOf( ' ' ) + 1 )
-            return getConverter().then( converter => {
-                const latex = converter( patternContent, notation.toLowerCase(), 'latex' )
-                const html = converter( patternContent, notation.toLowerCase(), 'html' )
-                const loadingMarker = 'Loading...'
-                // Queue up the rendering of a typeset preview of the expression
-                setTimeout( () => {
-                    loadStylesheet( stylesheet ).then( () => {
-                        Array.from( document.body.querySelectorAll(
-                            '.tox-collection__item .tox-collection__item-label' )
-                        ).filter( element =>
-                            element.innerHTML == loadingMarker
-                        ).forEach( element => {
-                            htmlToImage( html ).then( image => {
-                                element.innerHTML = ''
-                                element.appendChild( image )
-                            } ).catch( _ => {
-                                element.innerHTML = 'Could not create preview.'
-                            } )
-                        } )
-                    } )
-                }, 0 )
-                // Return a single autocompletion, with a "Loading..." marker
-                // in it that will get replaced by the typeset preview soon
-                return [
-                    {
-                        type : 'cardmenuitem',
-                        value : expressionHTML( latex, given, editor ),
-                        label : loadingMarker,
-                        items : [
-                            {
-                                type : 'cardtext',
-                                text : loadingMarker
-                            }
-                        ]
-                    }
-                ]
-            } )
-        }
-    } )
-    // Third, the autocompleter that is for declarations:
-    editor.ui.registry.addAutocompleter( 'lurch-declaration-autocomplete', {
-        trigger : '$',
-        minChars : 2,
-        columns : 1,
-        onAction : ( autocompleter, range, newContent ) => {
-            editor.selection.setRng( range )
-            editor.insertContent( newContent )
-            autocompleter.hide()
-        },
-        fetch : pattern => {
-            let exprCode = pattern.replaceAll( '\\\\', '' ).replaceAll( '\\$', '' )
-            const result = [ ]
-            DeclarationType.allInSettings( true ).forEach( declType => {
-                const symbol = declType.match( exprCode )
-                if ( symbol ) {
-                    const display = declType.displayForm( symbol )
-                    const html = declarationHTML( declType, symbol, editor )
-                    result.push( {
-                        type : 'cardmenuitem',
-                        value : html,
-                        label : display,
-                        items : [
-                            { type : 'cardtext', text : display }
-                        ]
-                    } )
-                }
-            } )
-            return Promise.resolve( result )
-        }
     } )
 }
 
