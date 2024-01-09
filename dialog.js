@@ -53,6 +53,8 @@ export class Dialog {
         this.currentTabName = null
         this.items = [ ]
         this.focusItem = null
+        this.hideHeader = false
+        this.hideFooter = false
     }
 
     /**
@@ -266,6 +268,10 @@ export class Dialog {
             this.currentTabName = this.json.body.tabs[0].name
         this.dialog = this.editor.windowManager.open( this.json )
         this.element = Dialog.getTopDialogElement()
+        if ( this.hideHeader )
+            this.querySelector( '.tox-dialog__header' ).style.display = 'none'
+        if ( this.hideFooter )
+            this.querySelector( '.tox-dialog__footer' ).style.display = 'none'
         return new Promise( ( resolve, reject ) => {
             this.resolver = resolve
             this.rejecter = reject
