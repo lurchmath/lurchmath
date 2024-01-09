@@ -97,6 +97,7 @@ export class Expression extends Atom {
         if ( appSettings.get( 'show view meaning button' ) ) {
             dialog.addItem( new ButtonItem( 'View meaning', () => {
                 const previewDialog = new Dialog( 'View meaning', dialog.editor )
+                previewDialog.removeButton( 'Cancel' )
                 const copy = Atom.newInline( this.editor, '', {
                     type : 'expression',
                     lurchNotation : dialog.get( 'lurchNotation' ),
