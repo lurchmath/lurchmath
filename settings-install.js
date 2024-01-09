@@ -69,7 +69,7 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'notation',
                 'Default notation to use for new documents',
-                [ 'AsciiMath', 'LaTeX' ],
+                [ 'Lurch notation', 'LaTeX' ],
                 'LaTeX'
             ),
             new BoolSettingMetadata(

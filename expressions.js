@@ -2,7 +2,7 @@
 /**
  * This file installs one tool into the user interface, a menu item for
  * inserting an inline atom into the document, one that allows the user to write
- * mathematical expressions in either AsciiMath or LaTeX notation using a
+ * mathematical expressions in either Lurch notation or LaTeX notation using a
  * MathLive equation editor.
  * 
  * @module ExpressionAtoms
@@ -38,7 +38,7 @@ export const install = editor => {
         onAction : () => {
             const atom = Atom.newInline( editor, '', {
                 type : 'expression',
-                asciimath : '',
+                lurchNotation : '',
                 latex : '',
                 given : false
             } )
@@ -64,7 +64,7 @@ export const install = editor => {
 export const expressionHTML = ( latex, given, editor ) => {
     const atom = Atom.newInline( editor, '', {
         type : 'expression',
-        asciimath : converter( latex, 'latex', 'asciimath' ),
+        lurchNotation : converter( latex, 'latex', 'lurch' ),
         latex : latex,
         given : given
     } )
@@ -78,10 +78,10 @@ export class Expression extends Atom {
     static subclassName = Atom.registerSubclass( 'expression', Expression )
 
     /**
-     * Shows a multi-part dialog for editing expression atoms using AsciiMath or
-     * a MathLive editor widget.  The user can then confirm or cancel the edit,
-     * as per the convention described in {@link module:Atoms.Atom#edit the
-     * edit() function for the Atom class}.
+     * Shows a multi-part dialog for editing expression atoms using Lurch
+     * notation or a MathLive editor widget.  The user can then confirm or
+     * cancel the edit, as per the convention described in
+     * {@link module:Atoms.Atom#edit the edit() function for the Atom class}.
      * 
      * @returns {Promise} same convention as specified in
      *   {@link module:Atoms.Atom#edit edit() for Atoms}
@@ -89,8 +89,8 @@ export class Expression extends Atom {
     edit () {
         // set up dialog contents
         const dialog = new Dialog( 'Edit expression', this.editor )
-        const asciiMathInput = new TextInputItem( 'asciimath', 'In plain text', '' )
-        dialog.addItem( asciiMathInput )
+        const lurchInput = new TextInputItem( 'lurchNotation', 'In plain text', '' )
+        dialog.addItem( lurchInput )
         const mathLiveInput = new MathItem( 'latex', 'In standard notation' )
         dialog.addItem( mathLiveInput )
         dialog.addItem( new CheckBoxItem( 'given', 'Is the expression given?', false ) )
@@ -99,7 +99,7 @@ export class Expression extends Atom {
                 const previewDialog = new Dialog( 'View meaning', dialog.editor )
                 const copy = Atom.newInline( this.editor, '', {
                     type : 'expression',
-                    asciimath : dialog.get( 'asciimath' ),
+                    lurchNotation : dialog.get( 'lurchNotation' ),
                     latex : dialog.get( 'latex' ),
                     given : dialog.get( 'given' )
                 } )
@@ -114,21 +114,21 @@ export class Expression extends Atom {
         }
         // initialize dialog with data from the atom
         dialog.setInitialData( {
-            asciimath : this.getMetadata( 'asciimath' ),
+            lurchNotation : this.getMetadata( 'lurchNotation' ),
             latex : this.getMetadata( 'latex' ),
             given : this.getMetadata( 'given' )
         } )
         dialog.setDefaultFocus( lookup( this.editor, 'notation' ).toLowerCase() )
-        // if they edit the asciimath or latex, keep them in sync
+        // if they edit the Lurch notation or latex, keep them in sync
         let syncEnabled = false
         setTimeout( () => syncEnabled = true, 0 ) // after dialog populates
         dialog.onChange = ( _, component ) => {
             if ( !syncEnabled ) return
             syncEnabled = false // prevent syncing to fixed point/infinity
-            if ( component.name == 'asciimath' ) {
-                const lurchNotation = dialog.get( 'asciimath' )
+            if ( component.name == 'lurchNotation' ) {
+                const lurchNotation = dialog.get( 'lurchNotation' )
                 try {
-                    const latex = converter( lurchNotation, 'asciimath', 'latex' )
+                    const latex = converter( lurchNotation, 'lurch', 'latex' )
                     mathLiveInput.setValue( latex )
                     // console.log( '\nLurch input contains:', lurchNotation )
                     // console.log( 'Corresponding LaTeX:', latex )
@@ -139,8 +139,8 @@ export class Expression extends Atom {
             } else if ( component.name == 'latex' ) {
                 const latex = dialog.get( 'latex' )
                 try {
-                    const lurchNotation = converter( latex, 'latex', 'asciimath' )
-                    dialog.dialog.setData( { asciimath : lurchNotation } )
+                    const lurchNotation = converter( latex, 'latex', 'lurch' )
+                    dialog.dialog.setData( { lurchNotation : lurchNotation } )
                     // console.log( '\nMathLive widget contains:', latex )
                     // console.log( 'Can it parse that?',
                     //     JSON.stringify( MathfieldElement.computeEngine.parse( latex,
@@ -160,7 +160,7 @@ export class Expression extends Atom {
         return dialog.show().then( userHitOK => {
             if ( !userHitOK ) return false
             // save the data
-            this.setMetadata( 'asciimath', dialog.get( 'asciimath' ) )
+            this.setMetadata( 'lurchNotation', dialog.get( 'lurchNotation' ) )
             this.setMetadata( 'latex', dialog.get( 'latex' ) )
             this.setMetadata( 'given', dialog.get( 'given' ) )
             this.update()
@@ -178,12 +178,12 @@ export class Expression extends Atom {
      */
     toLCs () {
         // Get the Lurch form and attempt to parse it
-        const lurchNotation = this.getMetadata( 'asciimath' )
+        const lurchNotation = this.getMetadata( 'lurchNotation' )
         const result = parse( lurchNotation, 'lurchNotation' )
         // If there was an error, log it and return no LCs
         if ( result.message ) {
             console.log( lurchNotation, 'lurchNotation', result )
-            console.log( converter( lurchNotation, 'asciimath', 'putdown' ) )
+            console.log( converter( lurchNotation, 'lurch', 'putdown' ) )
             return [ ]
         }
         // If there was more than one LC created, complain and return no LCs
@@ -206,7 +206,7 @@ export class Expression extends Atom {
      * prefix to be `'Assume '` if the expression is given, otherwise empty.
      */
     update () {
-        const lurchNotation = this.getMetadata( 'asciimath' )
+        const lurchNotation = this.getMetadata( 'lurchNotation' )
         const repr = `${represent( lurchNotation, 'lurchNotation' )}`
         this.fillChild( 'body', repr )
         if ( this.getMetadata( 'given' ) )

@@ -39,7 +39,7 @@ export const documentSettingsMetadata = new SettingsMetadata(
         new CategorySettingMetadata(
             'notation',
             'Default notation to use for new expressions',
-            [ 'AsciiMath', 'LaTeX' ],
+            [ 'Lurch', 'LaTeX' ],
             appSettings.get( 'notation' )
         )
     )

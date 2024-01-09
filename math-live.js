@@ -193,7 +193,7 @@ const mathJSONToPutdown = json => {
  * An array of names of all the input formats known by the converter defined in
  * {@link module:MathLive.getConverter getConverter()}.
  */
-export const inputFormats = [ 'latex', 'mathjson', 'asciimath' ]
+export const inputFormats = [ 'latex', 'mathjson', 'lurch' ]
 
 /**
  * An array of names of all the output formats known by the converter defined in
@@ -263,7 +263,7 @@ const prepLatexForMathLive = latex => {
  * Thre are five formats that this function knows about.  Two are output-only
  * formats: `'html'` and `'putdown'`.  You cannot convert from these formats
  * into any other format.  The other three are storage formats: `'latex'`,
- * `'mathjson'`, and `'asciimath'`.  The formats are case-insensitive, so you
+ * `'mathjson'`, and `'lurch'`.  The formats are case-insensitive, so you
  * can write `'LaTeX'` or `'MathJSON'` instead if you like.  All of the three
  * storage formats can be converted into one another, and into any of the
  * output formats.  So the only constraint is that the output format cannot be
@@ -301,8 +301,8 @@ export const getConverter = () => loadMathFieldClass().then( () => {
         // handle all other cases
         switch ( `${inputFormat} ${outputFormat}` ) {
             case 'latex putdown':
-                return convert( convert( data, 'latex', 'asciimath' ),
-                    'asciimath', 'putdown' )
+                return convert( convert( data, 'latex', 'lurch' ),
+                    'lurch', 'putdown' )
             case 'latex html':
                 return MathLive.convertLatexToMarkup( data )
             case 'latex mathjson':
@@ -314,7 +314,7 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                 data = prepLatexForMathLive( data )
                 return MathfieldElement.computeEngine.parse(
                     data, { canonical: false } ).json
-            case 'latex asciimath':
+            case 'latex lurch':
                 return latexToLurch( data )
             case 'mathjson latex':
                 return MathLive.serializeMathJsonToLatex( data )
@@ -323,18 +323,18 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                     'latex', 'putdown' )
             case 'mathjson putdown':
                 return mathJSONToPutdown( data )
-            case 'mathjson asciimath':
+            case 'mathjson lurch':
                 return convert( convert( data, 'mathjson', 'latex' ),
-                    'latex', 'asciimath' )
-            case 'asciimath latex':
+                    'latex', 'lurch' )
+            case 'lurch latex':
                 return lurchToLatex( data )
-            case 'asciimath html':
-                return convert( convert( data, 'asciimath', 'latex' ),
+            case 'lurch html':
+                return convert( convert( data, 'lurch', 'latex' ),
                     'latex', 'html' )
-            case 'asciimath putdown':
+            case 'lurch putdown':
                 return lurchToPutdown( data )
-            case 'asciimath mathjson':
-                return convert( convert( data, 'asciimath', 'latex' ),
+            case 'lurch mathjson':
+                return convert( convert( data, 'lurch', 'latex' ),
                     'latex', 'mathjson' )
             default: throw new Error(
                 `Unsupported conversion: ${inputFormat} -> ${outputFormat}` )

@@ -185,9 +185,9 @@ addRepresentation( 'latex', latex =>
 // Installs Lurch notation as a language (that can be interpreted under the hood
 // using putdown)
 addParser( 'lurchNotation', lurchNotation =>
-    parse( mathConverter?.( lurchNotation, 'asciimath', 'putdown' ), 'putdown' ) )
+    parse( mathConverter?.( lurchNotation, 'lurch', 'putdown' ), 'putdown' ) )
 addRepresentation( 'lurchNotation', lurchNotation =>
-    mathConverter?.( lurchNotation, 'asciimath', 'html' ) )
+    mathConverter?.( lurchNotation, 'lurch', 'html' ) )
 
 // Internal use only
 // Installs default notation, which is putdown
