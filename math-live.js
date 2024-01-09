@@ -99,7 +99,7 @@ export class MathItem {
     saveValue () {
         if ( this.mathValue != this.mathLiveEditor?.value ) {
             this.mathValue = this.mathLiveEditor?.value
-            this.dialog.onChange( this.dialog, this )
+            this.dialog.onChange?.( this.dialog, this )
         }
     }
     // Internal use only; how to fetch the value stored by saveValue().
