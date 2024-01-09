@@ -126,23 +126,33 @@ export class Expression extends Atom {
             if ( !syncEnabled ) return
             syncEnabled = false // prevent syncing to fixed point/infinity
             if ( component.name == 'asciimath' ) {
-                const asciiMath = dialog.get( 'asciimath' )
-                const latex = converter( asciiMath, 'asciimath', 'latex' )
-                mathLiveInput.setValue( latex )
-                // console.log( '\nAsciiMath input contains:', asciiMath )
-                // console.log( 'Corresponding LaTeX:', latex )
+                const lurchNotation = dialog.get( 'asciimath' )
+                try {
+                    const latex = converter( lurchNotation, 'asciimath', 'latex' )
+                    mathLiveInput.setValue( latex )
+                    // console.log( '\nLurch input contains:', lurchNotation )
+                    // console.log( 'Corresponding LaTeX:', latex )
+                } catch ( e ) {
+                    console.log( 'Could not convert Lurch notation to LaTeX:', lurchNotation )
+                    // console.log( e )
+                }
             } else if ( component.name == 'latex' ) {
                 const latex = dialog.get( 'latex' )
-                const asciiMath = converter( latex, 'latex', 'asciimath' )
-                dialog.dialog.setData( { asciimath : asciiMath } )
-                // console.log( '\nMathLive widget contains:', latex )
-                // console.log( 'Can it parse that?',
-                //     JSON.stringify( MathfieldElement.computeEngine.parse( latex,
-                //         { canonical : false } ).json ) )
-                // console.log( 'Can we convert it to putdown?',
-                //     converter( latex, 'latex', 'putdown' ) )
-                // const tmp = parse( latex, 'latex' )
-                // console.log( 'Is the putdown valid?', tmp.message || 'yes' )
+                try {
+                    const lurchNotation = converter( latex, 'latex', 'asciimath' )
+                    dialog.dialog.setData( { asciimath : lurchNotation } )
+                    // console.log( '\nMathLive widget contains:', latex )
+                    // console.log( 'Can it parse that?',
+                    //     JSON.stringify( MathfieldElement.computeEngine.parse( latex,
+                    //         { canonical : false } ).json ) )
+                    // console.log( 'Can we convert it to putdown?',
+                    //     converter( latex, 'latex', 'putdown' ) )
+                    // const tmp = parse( latex, 'latex' )
+                    // console.log( 'Is the putdown valid?', tmp.message || 'yes' )
+                } catch ( e ) {
+                    console.log( 'Could not convert LaTeX to Lurch notation:', latex )
+                    // console.log( e )
+                }
             }
             syncEnabled = true
         }
