@@ -762,7 +762,7 @@ export class Atom {
  * being pressed on an atom, and routes control flow to the event handler for
  * that atom's type.
  * 
- * Finally, it installs an event handler that calls every atom's update handler
+ * Second, it installs an event handler that calls every atom's update handler
  * whenever the editor's content changes.  This could be slow if there are many
  * atoms in the document, and therefore we use the
  * {@link module:Utilities.forEachWithTimeout forEachWithTimeout()} function to
@@ -771,6 +771,9 @@ export class Atom {
  * generated from MathLive) are not always typeset correctly the first time that
  * their HTML is placed into the atom.  For some reason, the stylesheet does not
  * seem to apply correctly until the *second* insertion of the typeset HTML.
+ * 
+ * Finally, it installs a context menu function that may create a custom context
+ * menu if the user right-clicks on an atom in the document.
  * 
  * @param {tinymce.Editor} editor - the editor in which to install the event
  *   handlers
@@ -812,6 +815,13 @@ export const install = editor => {
             element => Atom.from( element, editor ).dataChanged()
         )
         lastAtomElementList = thisAtomElementList
+    } )
+    // Custom context menu creator
+    editor.ui.registry.addContextMenu( 'atoms', {
+        update : element => {
+            const atom = Atom.findAbove( element, editor )
+            return atom ? atom?.contextMenu() : [ ]
+        }
     } )
 }
 

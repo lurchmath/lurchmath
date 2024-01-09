@@ -98,6 +98,7 @@ loadScript( TinyMCEURL ).then( () => {
         toolbar : toolbarData,
         menubar : 'file edit insert format document help',
         menu : menuData,
+        contextmenu : 'atoms',
         // plugins : 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {

@@ -77,11 +77,6 @@ export const appSettings = new Settings(
                 'Type of expression editor to use',
                 [ 'Beginner', 'Intermediate', 'Advanced' ],
                 'Beginner'
-            ),
-            new BoolSettingMetadata(
-                'show view meaning button',
-                'Advanced: In the expression editor, show the "view meaning" button',
-                false
             )
         ),
         new SettingsCategoryMetadata(

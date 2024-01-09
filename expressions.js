@@ -169,25 +169,6 @@ export class Expression extends Atom {
         const mathLiveInput = new MathItem( 'latex', 'Standard notation' )
         dialog.addItem( mathLiveInput )
         dialog.addItem( new CheckBoxItem( 'given', 'Assumption', false ) )
-        if ( appSettings.get( 'show view meaning button' ) ) {
-            dialog.addItem( new ButtonItem( 'View meaning', () => {
-                const previewDialog = new Dialog( 'View meaning', dialog.editor )
-                previewDialog.removeButton( 'Cancel' )
-                const copy = Atom.newInline( this.editor, '', {
-                    type : 'expression',
-                    lurchNotation : dialog.get( 'lurchNotation' ),
-                    latex : dialog.get( 'latex' ),
-                    given : dialog.get( 'given' )
-                } )
-                copy.update()
-                previewDialog.addItem( new HTMLItem(
-                    `<div class="LC-meaning-preview">
-                        ${ copy.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
-                    </div>`
-                ) )
-                previewDialog.show()
-            } ) )
-        }
         // initialize dialog with data from the atom
         dialog.setInitialData( {
             lurchNotation : this.getMetadata( 'lurchNotation' ),
@@ -260,24 +241,6 @@ export class Expression extends Atom {
             mathLiveInput.mathLiveEditor.style.border = 0
         }
         dialog.addItem( mathLiveInput )
-        if ( appSettings.get( 'show view meaning button' ) ) {
-            dialog.addItem( new ButtonItem( 'View meaning', () => {
-                const previewDialog = new Dialog( 'View meaning', dialog.editor )
-                previewDialog.removeButton( 'Cancel' )
-                const copy = Atom.newInline( this.editor, '', {
-                    type : 'expression',
-                    lurchNotation : dialog.get( 'lurchNotation' ),
-                    latex : dialog.get( 'latex' )
-                } )
-                copy.update()
-                previewDialog.addItem( new HTMLItem(
-                    `<div class="LC-meaning-preview">
-                        ${ copy.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
-                    </div>`
-                ) )
-                previewDialog.show()
-            } ) )
-        }
         // initialize dialog with data from the atom
         dialog.setInitialData( {
             lurchNotation : this.getMetadata( 'lurchNotation' ),
@@ -402,6 +365,24 @@ export class Expression extends Atom {
             this.fillChild( 'prefix', 'Assume ' )
         else
             this.fillChild( 'prefix', '' )
+    }
+
+    contextMenu () {
+        return [
+            {
+                text : 'View meaning',
+                onAction : () => {
+                    const previewDialog = new Dialog( 'Meaning', this.editor )
+                    previewDialog.removeButton( 'Cancel' )
+                    previewDialog.addItem( new HTMLItem(
+                        `<div class="LC-meaning-preview">
+                            ${ this.toLCs().map( syntaxTreeHTML ).join( '\n' ) }
+                        </div>`
+                    ) )
+                    previewDialog.show()
+                }
+            }
+        ]
     }
 
 }
