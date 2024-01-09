@@ -18,7 +18,7 @@
  */
 
 import { loadScript } from './utilities.js'
-import asciiMathToLatex from './asciimath-to-latex.js'
+import { lurchToLatex, latexToLurch, lurchToPutdown } from './parsers/index.js'
 
 // Internal use only.
 // Ensures the MathLive scripts are loaded, so you can do whatever you want with
@@ -315,7 +315,7 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                 return MathfieldElement.computeEngine.parse(
                     data, { canonical: false } ).json
             case 'latex asciimath':
-                return MathLive.convertLatexToAsciiMath( data )
+                return latexToLurch( data )
             case 'mathjson latex':
                 return MathLive.serializeMathJsonToLatex( data )
             case 'mathjson html':
@@ -327,13 +327,12 @@ export const getConverter = () => loadMathFieldClass().then( () => {
                 return convert( convert( data, 'mathjson', 'latex' ),
                     'latex', 'asciimath' )
             case 'asciimath latex':
-                return asciiMathToLatex( data )
+                return lurchToLatex( data )
             case 'asciimath html':
                 return convert( convert( data, 'asciimath', 'latex' ),
                     'latex', 'html' )
             case 'asciimath putdown':
-                return convert( convert( data, 'asciimath', 'mathjson' ),
-                    'mathjson', 'putdown' )
+                return lurchToPutdown( data )
             case 'asciimath mathjson':
                 return convert( convert( data, 'asciimath', 'latex' ),
                     'latex', 'mathjson' )
