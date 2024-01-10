@@ -78,14 +78,31 @@ export class Expression extends Atom {
 
     static subclassName = Atom.registerSubclass( 'expression', Expression )
 
+    // Utility function: Does this Atom's Lurch notation represent just one expr?
+    notationContainsOneExpression ( lurchNotation = null ) {
+        if ( !lurchNotation )
+            lurchNotation = this.getMetadata( 'lurchNotation' )
+        const LCs = parse( lurchNotation, 'lurchNotation' )
+        return ( LCs.length == 1 ) && ( LCs[0] instanceof LCExpression )
+    }
+    // Utility function: Does this Atom's Lurch notation represent a given expr?
+    // (Note that notationContainsOneGivenExpression() implies
+    // notationContainsOneExpression().)
+    notationContainsOneGivenExpression ( lurchNotation = null ) {
+        if ( !lurchNotation )
+            lurchNotation = this.getMetadata( 'lurchNotation' )
+        const LCs = parse( lurchNotation, 'lurchNotation' )
+        return ( LCs.length == 1 ) && ( LCs[0] instanceof LCExpression )
+            && LCs[0].isA( 'given' )
+    }
+
     // Internal use only.
     // Used by edit() if the user's settings are in beginner mode.
     editInBeginnerMode () {
-        // If the Lurch notation is not for a single expression, we must use
-        // advanced mode.
-        const LCs = this.toLCs()
-        if ( ( LCs.length > 1 ) ||
-             ( ( LCs.length == 1 ) && !( LCs[0] instanceof LCExpression ) ) ) {
+        // If the Lurch notation is nonempty and not for a single expression,
+        // we must use advanced mode.
+        if ( this.getMetadata( 'lurchNotation' ).trim() != ''
+          && !this.notationContainsOneExpression() ) {
             return new Promise( ( resolve, reject ) => {
                 Dialog.failure(
                     this.editor,
@@ -120,8 +137,7 @@ export class Expression extends Atom {
             try {
                 const lurchNotation = convertToLurchNotation()
                 if ( lurchNotation === null ) return null
-                const asLCs = parse( lurchNotation, 'lurchNotation' )
-                return asLCs.length == 1 && ( asLCs[0] instanceof LCExpression )
+                return this.notationContainsOneExpression( lurchNotation )
             } catch {
                 return null
             }
@@ -145,11 +161,10 @@ export class Expression extends Atom {
     // Internal use only.
     // Used by edit() if the user's settings are in intermediate mode.
     editInIntermediateMode () {
-        // If the Lurch notation is not for a single expression, we must use
-        // advanced mode.
-        const LCs = this.toLCs()
-        if ( ( LCs.length > 1 ) ||
-             ( ( LCs.length == 1 ) && !( LCs[0] instanceof LCExpression ) ) ) {
+        // If the Lurch notation is nonempty and not for a single expression,
+        // we must use advanced mode.
+        if ( this.getMetadata( 'lurchNotation' ).trim() != ''
+          && !this.notationContainsOneExpression() ) {
             return new Promise( ( resolve, reject ) => {
                 Dialog.failure(
                     this.editor,
@@ -267,10 +282,10 @@ export class Expression extends Atom {
         const result = dialog.show().then( userHitOK => {
             if ( !userHitOK || !convertToLatex() ) return false
             // save the data
-            this.setMetadata( 'lurchNotation', dialog.get( 'lurchNotation' ) )
+            const lurchNotation = dialog.get( 'lurchNotation' )
+            this.setMetadata( 'lurchNotation', lurchNotation )
             this.setMetadata( 'latex', dialog.get( 'latex' ) )
-            const LCs = this.toLCs()
-            this.setMetadata( 'given', LCs.length == 1 && LCs[0].isA( 'given' ) )
+            this.setMetadata( 'given', this.notationContainsOneGivenExpression() )
             this.update()
             return true
         } )
@@ -363,7 +378,8 @@ export class Expression extends Atom {
         const lurchNotation = this.getMetadata( 'lurchNotation' )
         const repr = `${represent( lurchNotation, 'lurchNotation' )}`
         this.fillChild( 'body', repr )
-        if ( this.getMetadata( 'given' ) )
+        if ( this.getMetadata( 'given' )
+          && !this.notationContainsOneGivenExpression( lurchNotation ) )
             this.fillChild( 'prefix', 'Assume ' )
         else
             this.fillChild( 'prefix', '' )
