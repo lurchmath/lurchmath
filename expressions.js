@@ -54,10 +54,9 @@ export const install = editor => {
  * Create the HTML for an expression atom with the given content and notation.
  * This type of expression atom is written in the given notation.
  * 
- * @param {string} content - the content of the expression, written in the
- *   notation named in the second argument
- * @param {string} notation - the name of the notation that should be used
- *   (e.g., putdown or smackdown)
+ * @param {string} latex - the representation of the expression using LaTeX
+ *   notation
+ * @param {boolean} given - whether the expression is an assumption
  * @param {tinymce.Editor} editor - the TinyMCE editor instance into which the
  *   expression may eventually be inserted (used primarily for constructing
  *   HTML elements using its document object)
@@ -286,7 +285,10 @@ export class Expression extends Atom {
      * 
      * **Beginner mode does this:**
      * 
-     * (It is not yet implemented.  Check back later.)
+     * Shows a dialog containing just a MathLive editor and a checkbox for
+     * given/claim status.  The user can then confirm or cancel the edit, as
+     * per the convention described in
+     * {@link module:Atoms.Atom#edit the edit() function for the Atom class}.
      * 
      * **Intermediate mode does this:**
      * 
