@@ -19,6 +19,9 @@ import {
 } from './settings-metadata.js'
 import { LurchDocument } from './lurch-document.js'
 
+// Necessary for the use of appSettings below
+appSettings.load()
+
 /**
  * This metadata object can be used to create a {@link Settings} instance for
  * any given document, which can then present a UI to the user for editing the
@@ -39,7 +42,7 @@ export const documentSettingsMetadata = new SettingsMetadata(
         new CategorySettingMetadata(
             'notation',
             'Default notation to use for new expressions',
-            [ 'Lurch', 'LaTeX' ],
+            [ 'Lurch notation', 'LaTeX' ],
             appSettings.get( 'notation' )
         )
     )
