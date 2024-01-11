@@ -290,6 +290,17 @@ export class Expression extends Atom {
             return true
         } )
         dialog.dialog.setEnabled( 'OK', !!convertToLatex() )
+        // prevent enter to confirm if the input is invalid
+        dialog.querySelector( 'input[type="text"]' )?.addEventListener(
+            'keydown',
+            event => {
+                if ( event.key == 'Enter' && !convertToLatex() ) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    return false
+                }
+            }
+        )
         return result
     }
 
