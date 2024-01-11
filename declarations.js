@@ -10,7 +10,7 @@
 
 import { Atom } from './atoms.js'
 import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
-import { Declaration as LDEDeclaration, LurchSymbol }
+import { Declaration as LCDeclaration, LurchSymbol }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { getConverter } from './math-live.js'
 import { appSettings } from './settings-install.js'
@@ -427,7 +427,7 @@ export class Declaration extends Atom {
      */
     toLCs () {
         return [
-            new LDEDeclaration(
+            new LCDeclaration(
                 new LurchSymbol( this.getMetadata( 'symbol' ) )
             ).attr( {
                 'declaration_template' :
