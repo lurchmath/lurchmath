@@ -293,6 +293,9 @@ export class Atom {
      * should provide a value that is amenable to JSON encoding.  It will be
      * stored using its JSON encoding, as a string.
      * 
+     * If the caller omits the `value` parameter, or sets it to undefined, this
+     * function does nothing.
+     * 
      * @param {string} key - the key under which to store the value
      * @param {any} value - the value to store
      * @see {@link module:Atoms.Atom#getMetadata getMetadata()}
@@ -301,6 +304,7 @@ export class Atom {
      * @see {@link module:Atoms.Atom#setHTMLMetadata setHTMLMetadata()}
      */
     setMetadata ( key, value ) {
+        if ( value === undefined ) return
         this.element.dataset[metadataKey( key )] = JSON.stringify( value )
         this.dataChanged()
     }
