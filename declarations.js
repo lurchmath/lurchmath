@@ -1,21 +1,11 @@
 
-/**
- * This file installs one tool into the user interface, a menu item for
- * inserting an inline atom into the document, one that allows the user to
- * declare a new symbol using any of the five standard methods supported by the
- * Lurch Deductive Engine.
- * 
- * @module DeclarationAtoms
- */
-
-import { Atom } from './atoms.js'
-import { Dialog, TextInputItem, SelectBoxItem } from './dialog.js'
-import { Declaration as LCDeclaration, LurchSymbol }
+import { Declaration as LCDeclaration, Expression as LCExpression, LurchSymbol }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
-import { getConverter } from './math-live.js'
 import { appSettings } from './settings-install.js'
+import { getConverter } from './math-live.js'
 
 let converter = null
+getConverter().then( result => converter = result )
 
 /**
  * Declarations of new symbols can be phrased in a wide variety of ways.  This
@@ -104,6 +94,7 @@ export class DeclarationType {
      * @returns {string} the template with all placeholders replaced with
      *   readable text
      * @see {@link DeclarationType#documentForm documentForm()}
+     * @see {@link DeclarationType#lurchNotationForm lurchNotationForm()}
      */
     displayForm ( symbol ) {
         return this.template.replace( '[statement]', '...' ).trim()
@@ -119,23 +110,91 @@ export class DeclarationType {
      * 
      *  1. The symbol being declared will be represented either using LaTeX-style
      *     typesetting or fixed-width font, depending on the type of declaration.
-     *  2. The placeholder `"[statement]"` will be removed entirely, because we
-     *     expect that the actual statement should be sitting adjacent to the
-     *     declaration in the document, and thus the placeholder should go away.
+     *  2. The placeholder `"[statement]"` will be replaced with the provided
+     *     HTML, which defaults to the empty string, thus removing the body.
      * 
      * @param {string} symbol - the symbol being declared
+     * @param {string} [bodyHTML] - the HTML representation of the body of the
+     *   declaration, if it has a body (optional)
      * @returns {string} the template in HTML, with the symbol placeholder
      *   filled in and the body placeholder removed
      * @see {@link DeclarationType#displayForm displayForm()}
+     * @see {@link DeclarationType#lurchNotationForm lurchNotationForm()}
      */
-    documentForm ( symbol ) {
-        if ( this.type == 'constant' && this.body == 'none' )
-            symbol = `<code class="putdown-notation">${symbol}</code>`
-        else
-            symbol = converter( symbol, 'latex', 'html' )
-        return this.template.replace( '[statement]', '' ).trim()
+    documentForm ( symbol, bodyHTML = '' ) {
+        if ( symbol.length > 1 )
+            symbol = `\\mathrm{${symbol}}`
+        symbol = converter( symbol, 'latex', 'html' )
+        return this.template.replace( '[statement]', bodyHTML ).trim()
                             .replace( '[variable]', symbol )
                             .replace( '[constant]', symbol )
+    }
+
+    /**
+     * Just as {@link DeclarationType#displayForm displayForm()} converts the
+     * template into readable text, this function does the same but produces
+     * Lurch notation instead, which could be parsed into a meaningful
+     * LogicConcept (which would be a Declaration instance).
+     * 
+     * Although Lurch notation supports declaring multiple symbols in one
+     * declaration, this function only supports one symbol; it could be extended
+     * later to support multiple symbols.
+     * 
+     * @param {string} symbol - the symbol being declared
+     * @param {string?} body - the body of the declaration, if this
+     *   declaration type requires one, or omit it if not; this must be in Lurch
+     *   notation already because it will be used as-is
+     * @returns {string} the declaration in Lurch notation, using the given
+     *   symbol and optional body
+     * @see {@link DeclarationType#displayForm displayForm()}
+     * @see {@link DeclarationType#documentForm documentForm()}
+     */
+    lurchNotationForm ( symbol, body ) {
+        if ( !/^\w+$/.test( symbol ) ) symbol = JSON.stringify( symbol )
+        switch ( `${this.type} ${this.body}` ) {
+            case 'variable none':
+                return `Let ${symbol}`
+            case 'variable before':
+            case 'variable after':
+                return `Let ${symbol} be such that ${body}`
+            case 'constant none':
+                return `Declare ${symbol}`
+            case 'constant before':
+            case 'constant after':
+                return `${body} for some ${symbol}`
+        }
+    }
+
+    /**
+     * Given a symbol to declare and an optional body of the declaration, create
+     * a LogicConcept instance representing a declaration of this type with
+     * those data.  If you provide a body when one is not required by the type,
+     * or you fail to provide a body when one is required, an error is thrown.
+     * If the provided body is not a LogicConcept of type Expression, an error
+     * is thrown.
+     * 
+     * @param {string} symbol - the symbol being declared
+     * @param {LogicConcept?} bodyLC - the body of the declaration, if this
+     *   declaration type requires one, or omit it if not; if it is provided, it
+     *   is used as-is, not copied, so pass a copy if you need your original
+     * @return {Declaration} the declaration as a LogicConcept instance, of type
+     *   Declaration, as documented in the LDE repository
+     */
+    toLC ( symbol, body ) {
+        const result = new LCDeclaration( new LurchSymbol( symbol ) )
+        if ( body ) {
+            if ( this.body == 'none' )
+                throw new Error( 'Declaration type does not support a body' )
+            if ( !( body instanceof LCExpression ) )
+                throw new Error( 'Declaration body must be an Expression' )
+            result.lastChild().replaceWith( body )
+            result.makeIntoA( this.type == 'variable' ? 'Let' : 'ForSome' )
+        } else {
+            if ( this.body != 'none' )
+                throw new Error( 'Declaration type requires a body' )
+        }
+        if ( !result.isA( 'ForSome' ) ) result.makeIntoA( 'given' )
+        return result
     }
 
     /**
@@ -303,152 +362,3 @@ export class DeclarationType {
     }
 
 }
-
-/**
- * Install into a TinyMCE editor instance a new menu item:
- * "Declaration," intended for the Insert menu.  It creates an inline atom that
- * can be inserted into the user's document, then initiates editing on it, so
- * that the user can customize it and then confirm or cancel the insertion of it.
- * The inline atom represents the declaration of a new symbol.
- * 
- * @param {tinymce.Editor} editor the TinyMCE editor instance into which the new
- *   menu item should be installed
- * @function
- */
-export const install = editor => {
-    getConverter().then( result => converter = result )
-    editor.ui.registry.addMenuItem( 'declaration', {
-        text : 'Declaration',
-        tooltip : 'Insert declaration',
-        shortcut : 'Meta+D',
-        onAction : () => {
-            const atom = Atom.newInline( editor, '', {
-                type : 'declaration',
-                symbol : 'x',
-                'declaration_template' :
-                    DeclarationType.allInSettings( true )[0].displayForm( 'x' )
-            } )
-            atom.update()
-            atom.editThenInsert()
-        }
-    } )
-}
-
-/**
- * Create the HTML for a declaration atom with the given type and symbol.
- * 
- * @param {DeclarationType} declType - the type of the declaration
- * @param {string} symbol - the symbol to be declared
- * @param {tinymce.Editor} editor - the TinyMCE editor instance into which the
- *   declaration may eventually be inserted (used primarily for constructing
- *   HTML elements using its document object)
- * @function
- * 
- * @see {@link DeclarationType} for details about the first parameter
- */
-export const declarationHTML = ( declType, symbol, editor ) => {
-    const atom = Atom.newInline( editor, '', {
-        type : 'declaration',
-        symbol : symbol,
-        'declaration_template' : declType.template
-    } )
-    atom.update()
-    return atom.getHTML()
-}
-
-// Internal use only: Show the dialog whose behavior is described above.
-export class Declaration extends Atom {
-
-    static subclassName = Atom.registerSubclass( 'declaration', Declaration )
-
-    /**
-     * Shows a multi-part dialog for editing declaration atoms, including
-     * choosing the phrase that defines the declaration as well as the symbol
-     * being declared.  The user can then confirm or cancel the edit,
-     * as per the convention described in {@link module:Atoms.Atom#edit the
-     * edit() function for the Atom class}.
-     * 
-     * @returns {Promise} same convention as specified in
-     *   {@link module:Atoms.Atom#edit edit() for Atoms}
-     */
-    edit () {
-        // set up dialog contents
-        const symbol = this.getMetadata( 'symbol' )
-        const declType = DeclarationType.fromTemplate(
-            this.getMetadata( 'declaration_template' ) )
-        const dialog = new Dialog( 'Edit declaration', this.editor )
-        const declTypes = DeclarationType.allInSettings( true )
-        dialog.addItem( new SelectBoxItem( 'declaration_display',
-            'Declaration type',
-            declTypes.map( dt => dt.displayForm( symbol ) ) ) )
-        dialog.addItem( new TextInputItem( 'symbol', 'Symbol to declare', symbol ) )
-        // initialize dialog with data from the atom
-        dialog.setInitialData( {
-            symbol : symbol,
-            'declaration_display' : declType.displayForm( symbol ),
-        } )
-        dialog.setDefaultFocus( 'symbol' )
-        // if they edit the symbol, update the dropdown
-        const getSelectBox = () =>
-            dialog.querySelector( '.tox-selectfield > select' )
-        let lastSelectedIndex = declTypes.map( dt => dt.template )
-            .indexOf( declType.template )
-        console.log( declType.template, declTypes.map( dt => dt.template ), lastSelectedIndex )
-        dialog.onChange = ( _, component ) => {
-            const selectBox = getSelectBox()
-            lastSelectedIndex = selectBox.selectedIndex
-            if ( component.name == 'symbol' ) {
-                const symbol = dialog.get( 'symbol' )
-                selectBox.innerHTML = declTypes.map( dt =>
-                    `<option>${dt.displayForm( symbol )}</option>` ).join( '' )
-                selectBox.selectedIndex = lastSelectedIndex
-            }
-        }
-        // Show it and if they accept any changes, apply them to the atom.
-        return dialog.show().then( userHitOK => {
-            if ( !userHitOK ) return false
-            // save the data
-            this.setMetadata( 'symbol', dialog.get( 'symbol' ) )
-            this.setMetadata( 'declaration_template',
-                declTypes[lastSelectedIndex].template )
-            this.update()
-            return true
-        } )
-    }
-
-    /**
-     * This function returns an array of LogicConcepts representing the meaning
-     * of this atom, which in this case will be an array containing precisely
-     * one thing, a Declaration LogicConcept representing the meaning of this
-     * Declaration.
-     * 
-     * @returns {LogicConcept[]} an array containing one LogicConcept, the
-     *   meaning of this declaration
-     */
-    toLCs () {
-        return [
-            new LCDeclaration(
-                new LurchSymbol( this.getMetadata( 'symbol' ) )
-            ).attr( {
-                'declaration_template' :
-                    this.getMetadata( 'declaration_template' )
-            } )
-        ]
-    }
-
-    /**
-     * Update the HTML representation of this declaration.  We do so by
-     * delegating the work to the
-     * {@link module:Declarations.DeclarationType.documentForm documentForm()}
-     * function of the {@link DeclarationType} class.
-     */
-    update () {
-        const symbol = this.getMetadata( 'symbol' )
-        const declType = DeclarationType.fromTemplate(
-            this.getMetadata( 'declaration_template' ) )
-        this.fillChild( 'body', declType.documentForm( symbol ) )
-    }
-
-}
-
-export default { install }

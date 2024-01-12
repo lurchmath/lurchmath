@@ -4,7 +4,6 @@ import { Shell } from './shells.js'
 import { getHeader } from './header-editor.js'
 import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { isOnScreen } from './utilities.js'
-import { cleanLC } from './lc-cleanup.js'
 
 /**
  * This class simplifies communication between the main thread and worker
@@ -352,8 +351,6 @@ export class Message {
                 element => Atom.from( element, editor )
             )
         )
-        // Apply any cleanup necessary to make the LC usable in validation.
-        cleanLC( LC )
         // Create a message that could be sent to the validation worker, including
         // the encoding produced above of the document's atoms and shells.
         return new Message( {

@@ -14,7 +14,6 @@ import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
 import Expressions from './expressions.js'
-import Declarations from './declarations.js'
 import Dependencies from './dependencies.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
@@ -51,7 +50,7 @@ const menuData = {
     insert : buildMenu( 'Insert',
         'link emoticons hr',
         'insertdatetime',
-        'expression declaration',
+        'expression',
         'environment paragraphabove paragraphbelow'
     ),
     format : buildMenu( 'Format',
@@ -112,7 +111,6 @@ loadScript( TinyMCEURL ).then( () => {
             Settings.install( editor )
             Atoms.install( editor )
             Expressions.install( editor )
-            Declarations.install( editor )
             Shells.install( editor )
             Dependencies.install( editor )
             Validation.install( editor )
