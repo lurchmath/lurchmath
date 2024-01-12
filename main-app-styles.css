@@ -45,3 +45,8 @@ textarea#editor {
 #logo #check { 
     color:#4CAF50;
 }
+
+/* Various expression-editing dialogs */
+div#math-latex {
+    padding: 0.5rem 0 0 0.5rem;
+}
