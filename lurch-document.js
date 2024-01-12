@@ -103,7 +103,6 @@ export class LurchDocument {
     setFileID ( id ) {
         this.editor.lastLurchFileID = id
         this.getFilenameElement().textContent = id
-        console.log( this.getFilenameElement(), id )
     }
 
     /**
@@ -127,7 +126,6 @@ export class LurchDocument {
     clearFileID () {
         delete this.editor.lastLurchFileID
         this.getFilenameElement().textContent = ''
-        console.log( this.getFilenameElement() )
     }
 
     /**
