@@ -807,9 +807,14 @@ export const install = editor => {
             element => !lastAtomElementList.includes( element )
         ).forEachWithTimeout(
             element => {
-                const atom = Atom.from( element, editor )
-                atom.update()
-                atom.dataChanged()
+                try {
+                    const atom = Atom.from( element, editor )
+                    atom.update()
+                    atom.dataChanged()
+                } catch ( e ) {
+                    console.log( 'Error when updating atom', element )
+                    console.log( e )
+                }
             }
         )
         // Deleted ones trigger validation clearing:
