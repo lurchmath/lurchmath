@@ -552,6 +552,7 @@ export class Expression extends Atom {
         mathLivePreview.finishSetup = () => {
             mathLivePreview.mathLiveEditor.readOnly = true
             mathLivePreview.mathLiveEditor.style.border = 0
+            mathLivePreview.mathLiveEditor.style.padding = '0.5rem 0 0 0.5rem'
         }
         dialog.addItem( mathLivePreview )
         // initialize dialog with data from the atom
