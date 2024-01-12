@@ -241,9 +241,16 @@ addRepresentation( 'smackdown', code =>
 export const syntaxTreeHTML = LC => {
     const bulletize = list => list.length == 0 ? '' :
         '<ul>' + list.map( x => `<li>${x}</li>` ).join( '\n' ) + '</ul>'
-    const attributes = LC =>
-        LC.getAttributeKeys().filter( key => key != 'symbol text' ).map( key =>
-            `Attribute: ${key} = ${escapeHTML( JSON.stringify( LC.getAttribute( key ) ) )}` )
+    const formatKeyValuePair = ( key, value ) => {
+        if ( key.startsWith( '_type_' ) && ( value === true ) ) {
+            return `Attribute: is a "${key.substring( 6 )}"`
+        } else {
+            return `Attribute: ${key} = ${escapeHTML( JSON.stringify( value ) )}`
+        }
+    }
+    let attributes = LC =>
+        LC.getAttributeKeys().filter( key => key != 'symbol text' ).map(
+            key => formatKeyValuePair( key, LC.getAttribute( key ) ) )
     if ( LC.constructor.className == 'Symbol' )
         return escapeHTML( LC.text() ) + bulletize( attributes( LC ) )
     else
