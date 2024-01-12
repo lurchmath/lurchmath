@@ -78,6 +78,12 @@ export const appSettings = new Settings(
                 [ 'Beginner', 'Intermediate', 'Advanced' ],
                 'Beginner'
             ),
+            new CategorySettingMetadata(
+                'preferred meaning style',
+                'Preferred style to use when viewing content\'s meaning',
+                [ 'Hierarchy', 'Code' ],
+                'Hierarchy'
+            ),
             new LongTextSettingMetadata(
                 'declaration type templates',
                 'Phrases for variable and constant declarations',

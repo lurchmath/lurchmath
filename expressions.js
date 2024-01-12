@@ -779,6 +779,10 @@ export class Expression extends Atom {
             {
                 text : 'View meaning',
                 onAction : () => {
+                    const previewDialog = new Dialog( 'Meaning', this.editor )
+                    previewDialog.removeButton( 'Cancel' )
+                    previewDialog.setTabs( 'Hierarchy', 'Code' )
+                    // Hierarchy tab
                     const LCs = this.toLCs()
                     let html = ''
                     // Adding styles here may seem like a hack, but TinyMCE
@@ -789,11 +793,23 @@ export class Expression extends Atom {
                         html += heading( `Logic Concept ${index+1} of ${LCs.length}:` )
                         html += content( syntaxTreeHTML( LC ) )
                     } )
-                    const previewDialog = new Dialog( 'Meaning', this.editor )
-                    previewDialog.removeButton( 'Cancel' )
-                    previewDialog.addItem( new HTMLItem(
-                        `<div class="LC-meaning-preview">${html}</div>` ) )
+                    previewDialog.addItem(
+                        new HTMLItem( `<div class="LC-meaning-preview">${html}</div>` ),
+                        'Hierarchy' )
+                    // Code tab
+                    let putdown = ''
+                    LCs.map( ( LC, index ) => {
+                        putdown += `// Logic Concept ${index+1} of ${LCs.length}:\n`
+                        putdown += LC.toPutdown() + '\n\n'
+                    } )
+                    // Same comments as above apply here re: inline styles
+                    previewDialog.addItem(
+                        new HTMLItem( `<div class="LC-code-preview">
+                            <div style="font-family: monospace; white-space: pre;"
+                            >${putdown}</pre></div>` ),
+                        'Code' )
                     previewDialog.show()
+                    previewDialog.showTab( appSettings.get( 'preferred meaning style' ) )
                 }
             }
         ]
@@ -802,3 +818,7 @@ export class Expression extends Atom {
 }
 
 export default { install }
+
+window.to_tex = lurch => converter( lurch, 'lurch', 'latex' )
+window.to_lurch = latex => converter( latex, 'latex', 'lurch' )
+window.to_putdown = lurch => converter( lurch, 'lurch', 'putdown' )
