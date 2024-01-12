@@ -38,7 +38,7 @@ export const documentSettingsMetadata = new SettingsMetadata(
         new LongTextSettingMetadata( 'abstract', 'Abstract', '' )
     ),
     new SettingsCategoryMetadata(
-        'Meaningful content',
+        'Math content',
         new CategorySettingMetadata(
             'notation',
             'Default notation to use for new expressions',

@@ -65,7 +65,7 @@ export const appSettings = new Settings(
             )
         ),
         new SettingsCategoryMetadata(
-            'Expressions',
+            'Math content',
             new CategorySettingMetadata(
                 'notation',
                 'Default notation to use for new documents',
@@ -77,10 +77,7 @@ export const appSettings = new Settings(
                 'Type of expression editor to use',
                 [ 'Beginner', 'Intermediate', 'Advanced' ],
                 'Beginner'
-            )
-        ),
-        new SettingsCategoryMetadata(
-            'Declarations',
+            ),
             new LongTextSettingMetadata(
                 'declaration type templates',
                 'Phrases for variable and constant declarations',
