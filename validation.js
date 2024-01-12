@@ -25,7 +25,6 @@
 
 import { Message } from './validation-messages.js'
 import { Atom } from './atoms.js'
-import { Shell } from './shells.js'
 import { Dialog } from './dialog.js'
 import { isOnScreen } from './utilities.js'
 
@@ -156,7 +155,7 @@ export const install = editor => {
                 progressBar : true
             } )
             // Send the document to the worker to initiate background validation
-            Message.document( editor, 'json' ).send( worker )
+            Message.document( editor, 'putdown' ).send( worker )
         }
     } )
 }
