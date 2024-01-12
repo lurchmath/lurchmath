@@ -56,6 +56,22 @@ export class LurchDocument {
         this.editor.lurchMetadata.setAttribute( 'id', 'metadata' )
         this.editor.lurchMetadata.style.display = 'none'
     }
+    // Internal use only.  Ensure the editor has an element for showing a filename.
+    getFilenameElement () {
+        let filenameDisplay = document.getElementById( 'lurch-filename-display' )
+        if ( !filenameDisplay ) {
+            const menubar = document.querySelector( '.tox-menubar' )
+            if ( !menubar )
+                throw new Error( 'No TinyMCE menubar found in DOM' )
+            filenameDisplay = document.createElement( 'div' )
+            filenameDisplay.id = 'lurch-filename-display'
+            filenameDisplay.classList.add( 'tox-mbtn' )
+            filenameDisplay.style.color = '#aaaaaa'
+            filenameDisplay.style.paddingLeft = '1rem'
+            menubar.appendChild( filenameDisplay )
+        }
+        return filenameDisplay
+    }
 
     /**
      * Clear out the contents of the editor given at construction time.  This
@@ -84,7 +100,11 @@ export class LurchDocument {
      * @see {@link LurchDocument#getFileID getFileID()}
      * @see {@link LurchDocument#clearFileID clearFileID()}
      */
-    setFileID ( id ) { this.editor.lastLurchFileID = id }
+    setFileID ( id ) {
+        this.editor.lastLurchFileID = id
+        this.getFilenameElement().textContent = id
+        console.log( this.getFilenameElement(), id )
+    }
 
     /**
      * See the description of {@link LurchDocument#setFileID setFileID()} for an
@@ -104,7 +124,11 @@ export class LurchDocument {
      * 
      * @see {@link LurchDocument#setFileID setFileID()}
      */
-    clearFileID () { delete this.editor.lastLurchFileID }
+    clearFileID () {
+        delete this.editor.lastLurchFileID
+        this.getFilenameElement().textContent = ''
+        console.log( this.getFilenameElement() )
+    }
 
     /**
      * A Lurch document has two main parts, a DIV storing the metadata followed
