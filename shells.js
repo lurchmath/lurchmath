@@ -297,8 +297,8 @@ export const install = editor => {
         tooltip : 'Insert block representing an environment',
         shortcut : 'Meta+Shift+E',
         onAction : () => {
-            const content = editor.selection.getContent()
             const element = Shell.createElement( editor )
+            element.innerHTML = editor.selection.getContent()
             Atom.from( element, editor ).editThenInsert()
         }
     } )
