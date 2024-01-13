@@ -241,8 +241,12 @@ export const install = editor => {
             dialog.show().then( choseToLoad => {
                 if ( choseToLoad )
                     new LurchDocument( editor ).setDocument( getAutosave() )
+                else
+                    new LurchDocument( editor )
                 removeAutosave()
             } )
+        } else {
+            new LurchDocument( editor )
         }
         // Next, set up the recurring timer for autosaving:
         setInterval( () => {

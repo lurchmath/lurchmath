@@ -55,6 +55,7 @@ export class LurchDocument {
         this.editor.lurchMetadata = this.editor.dom.doc.createElement( 'div' )
         this.editor.lurchMetadata.setAttribute( 'id', 'metadata' )
         this.editor.lurchMetadata.style.display = 'none'
+        this.setMetadata( 'settings', 'shell style', 'json', 'boxed' )
     }
     // Internal use only.  Ensure the editor has an element for showing a filename.
     getFilenameElement () {
@@ -222,6 +223,16 @@ export class LurchDocument {
          && element.dataset.key == key )
     }
 
+    // Internal use only.  Clear all shell style classes from editor.
+    clearShellStyles () {
+        const body = this.editor.dom.doc.body
+        const classes = Array.from( body.classList )
+        classes.forEach( className => {
+            if ( className.startsWith( 'shell-style-' ) )
+                body.classList.remove( className )
+        } )
+    }
+
     /**
      * Store a new piece of metadata in this object, or update an old one.
      * Pieces of metadata are indexed by a category-key pair, facilitating
@@ -234,6 +245,10 @@ export class LurchDocument {
      * booleans, in addition to the more complex types of JSON data) or HTML
      * in string form (for example, if you wish to store an entire dependency).
      * 
+     * Also, some pieces of metadata, when stored, require placing attributes or
+     * classes in the editor's DOM, and this function will take that action as
+     * well, if needed.
+     * 
      * @param {string} category - the category for this piece of metadata
      * @param {string} key - the key for this piece of metadata
      * @param {string} valueType - either "json" or "html" to specify the format
@@ -243,8 +258,10 @@ export class LurchDocument {
      * @see {@link LurchDocument#getMetadata getMetadata()}
      */
     setMetadata ( category, key, valueType, value ) {
+        // Ensure correct value type
         if ( ![ 'json', 'html' ].includes( valueType.toLowerCase() ) )
             throw new Error( 'Invalid setting value type: ' + valueType )
+        // Store the value
         const element = this.findMetadataElement( category, key )
         if ( element ) {
             element.dataset['valueType'] = valueType
@@ -256,6 +273,11 @@ export class LurchDocument {
             newElement.dataset['valueType'] = valueType
             newElement.innerHTML = valueType == 'json' ? JSON.stringify( value ) : value
             this.editor.lurchMetadata.appendChild( newElement )
+        }
+        // Tweak editor DOM if needed
+        if ( category == 'settings' && key == 'shell style' ) {
+            this.clearShellStyles()
+            this.editor.dom.doc.body.classList.add( 'shell-style-' + value )
         }
     }
 
@@ -341,6 +363,10 @@ export class LurchDocument {
      * unique metadata item stored under the given category-key pair if there is
      * one, and does nothing otherwise.
      * 
+     * Also, some pieces of metadata, when deleted, require placing attributes
+     * or classes in the editor's DOM, and this function will take that action
+     * as well, if needed.
+     * 
      * @param {string} category - the category for the piece of metadata to
      *   delete
      * @param {string} key - the key for the piece of metadata to delete
@@ -348,8 +374,12 @@ export class LurchDocument {
      * @see {@link LurchDocument#setMetadata setMetadata()}
      */
     deleteMetadata ( category, key ) {
+        // Delete metadata
         const element = this.findMetadataElement( category, key )
         if ( element ) element.remove()
+        // Tweak editor DOM if needed
+        if ( category == 'settings' && key == 'shell style' )
+            this.clearShellStyles()
     }
 
 }

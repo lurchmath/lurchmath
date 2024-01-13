@@ -61,17 +61,37 @@ span.feedback-marker-error::after {
 }
 
 /* shells */
-div.lurch-atom[data-shell_title] {
+/* Boxed view shows a border all around, with content indented inside it. */
+body.shell-style-boxed div.lurch-atom[data-shell_title] {
     position: relative;
     border: 1px solid #bbb;
     border-radius: 6px;
     padding: 0 1em;
     margin: 2ex 0;
 }
-div.lurch-atom[data-shell_title].lurch-given {
+/* If the shell is a given, we make the border dashed. */
+body.shell-style-boxed div.lurch-atom[data-shell_title].lurch-given {
     /* This class may no longer be supported
        and may need some JS code added to support it again. */
     border: 2px dashed #bbb;
+}
+/* Minimal view shows the border on top and bottom only, and thus the content
+   does not need to be intended to accommodate a left-side border. */
+body.shell-style-minimal div.lurch-atom[data-shell_title] {
+    position: relative;
+    border-top: 1px solid #bbb;
+    border-bottom: 1px solid #bbb;
+    margin: 2ex 0;
+}
+body.shell-style-minimal div.lurch-atom[data-shell_title].lurch-given {
+    /* This class may no longer be supported
+       and may need some JS code added to support it again. */
+    border-top: 2px dashed #bbb;
+    border-bottom: 2px dashed #bbb;
+}
+/* Minimal view of subproofs (shells with no title) is to show no borders at all. */
+body.shell-style-minimal div.lurch-atom[data-shell_title=""] {
+    border: none;
 }
 div.lurch-atom[data-shell_title]::before {
     content: attr(data-shell_title);

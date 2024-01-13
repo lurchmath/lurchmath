@@ -44,6 +44,12 @@ export const documentSettingsMetadata = new SettingsMetadata(
             'Default notation to use for new expressions',
             [ 'Lurch notation', 'LaTeX' ],
             appSettings.get( 'notation' )
+        ),
+        new CategorySettingMetadata(
+            'shell style',
+            'Style for displaying environments',
+            [ 'boxed', 'minimal' ],
+            'boxed'
         )
     )
 )
