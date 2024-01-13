@@ -130,34 +130,97 @@ export class Shell extends Atom {
     finalize ( shellLC ) { }
 
     /**
-     * Opens a dialog for editing the shell.  It provides a drop-down list for
-     * choosing which subclass of shell this one is, so that when we use shells
-     * to implement common mathematical concepts (e.g., Theorem, Proof, Rule,
-     * etc.) the user will automatically have a way to convert among those types
-     * of document structure.
+     * Find the names of all subclasses that have been registered as subclasses
+     * of this class, using the {@link module:Atoms.Atom.registerSubclass
+     * registerSubclass()} method of the {@link Atom} class.  This is useful for
+     * populating the dialog for changing a shell's type.
      * 
-     * Note: If the application has no proper subclasses of {@link Shell}
-     * installed, this function will do nothing and return a Promise that
-     * immediately resolves to false.
-     * 
-     * @returns {Promise} a promise that resolves to `true` if the user
-     *   clicked OK in the dialog, or `false` if the user clicked Cancel
+     * @returns {string[]} the names of all subclasses of Shell
      */
-    edit () {
+    static subclassNames () {
+        return Array.from(
+            Atom.subclasses.keys()
+        ).filter( name =>
+            Atom.subclasses.get( name ).prototype instanceof Shell
+        )
+    }
+
+    /**
+     * Show a dialog to allow the user to edit the type of the shell.  The
+     * dialog will show a drop-down list of all subclasses of Shell, from which
+     * the user can choose this shell's type.  If there are no registered
+     * subclasses of Shell, this function returns a promise that resolves
+     * immediately to false, and does nothing else.
+     * 
+     * @returns {Promise} a promise that resolves to true if the editing dialog
+     *   is shown and the user confirms their edits, or resolves to false if the
+     *   editing dialog cannot be shown or the user cancels
+     */
+    editShellType () {
+        const shellSubclassNames = Shell.subclassNames()
+        if ( shellSubclassNames.length == 0 ) return false
         const dialog = new Dialog( 'Edit environment', this.editor )
-        const shellSubclassNames = Array.from( Atom.subclasses.keys() ).filter(
-            name => Atom.subclasses.get( name ).prototype instanceof Shell )
-        if ( shellSubclassNames.length == 0 )
-            return Promise.resolve( false )
         dialog.addItem( new SelectBoxItem(
-            'shellSubclass', 'Type of environment', shellSubclassNames ) )
+            'shellSubclass',
+            'Type of environment',
+            shellSubclassNames ) )
         dialog.setDefaultFocus( 'shellSubclass' )
-        dialog.setInitialData( { shellSubclass : this.getMetadata( 'type' ) } )
+        dialog.setInitialData( {
+            shellSubclass : this.getMetadata( 'type' )
+        } )
         return dialog.show().then( userHitOK => {
             if ( !userHitOK ) return false
             this.setSubclass( dialog.get( 'shellSubclass' ) )
             return true
         } )
+    }
+
+    /**
+     * The default behavior for clicking a shell is that nothing should happen,
+     * so this function typically just calls {@link module:Atoms.Atom.edit the
+     * superclass method}, which does nothing.  However, when inserting a shell
+     * for the first time, we do want the `edit()` action to do something, so
+     * you can set `shellInstance.inCreationPhase = true` before calling this
+     * method (directly or indirectly through
+     * {@link module:Atoms.Atom.editThenInsert editThenInsert()}), and in that
+     * case, it will call {@link module:Shells.Shell#editShellType
+     * editShellType()}.
+     * 
+     * @returns {Promise} the result of calling
+     *   {@link module:Shells.Shell#editShellType editShellType()} if in the
+     *   creation phase, and a promise that resolves immediately to false
+     *   otherwise
+     */
+    edit () {
+        return this.inCreationPhase ? this.editShellType() : super.edit()
+    }
+
+    /**
+     * Items to be included on the TinyMCE context menu if a shell is
+     * right-clicked.  For information on the format of the returned data,
+     * see the TinyMCE v6 manual on custom context menus.
+     * 
+     * In this case, it adds one item, for editing the type of the shell.  It
+     * opens a dialog that provides a drop-down list for choosing which subclass
+     * of shell this one is, so that when we use shells to implement common
+     * mathematical concepts (e.g., Theorem, Proof, Rule, etc.) the user will
+     * automatically have a way to convert among those types of document
+     * structure.
+     * 
+     * Note: If the application has no proper subclasses of {@link Shell}
+     * installed, this function will not add the item to the context menu.
+     * 
+     * @returns {Object[]} data representing the contents of a TinyMCE context
+     *   menu
+     */
+    contextMenu () {
+        const shellSubclassNames = Shell.subclassNames()
+        return shellSubclassNames.length == 0 ? [ ] : [
+            {
+                text : 'Change environment type',
+                onAction : () => this.editShellType( shellSubclassNames )
+            }
+        ]
     }
 
     /**
@@ -298,8 +361,12 @@ export const install = editor => {
         shortcut : 'Meta+Shift+E',
         onAction : () => {
             const element = Shell.createElement( editor )
-            element.innerHTML = editor.selection.getContent()
-            Atom.from( element, editor ).editThenInsert()
+            const selection = editor.selection.getContent()
+            if ( selection.trim() != '' ) element.innerHTML = selection
+            const shell = Atom.from( element, editor )
+            shell.inCreationPhase = true
+            shell.editThenInsert()
+            delete shell.inCreationPhase
         }
     } )
     // The event handler for the corner case described above

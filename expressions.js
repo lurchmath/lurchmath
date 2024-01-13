@@ -766,6 +766,10 @@ export class Expression extends Atom {
      * is right-clicked.  For information on the format of the returned data,
      * see the TinyMCE v6 manual on custom context menus.
      * 
+     * In this case, it adds one item, for viewing the meaning of the expression
+     * in a pop-up dialog, either as a hierarchy of bullet points and sections,
+     * or as a block of putdown code.
+     * 
      * @returns {Object[]} data representing the contents of a TinyMCE context
      *   menu
      */
