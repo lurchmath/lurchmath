@@ -300,7 +300,7 @@ export class Message {
                         errorType : 'parsing error',
                         reason : 'Could not parse this notation',
                         valid : false
-                    } ), 0 )
+                    } ) )
                     LCs = [ ]
                 }
                 LCs.forEach( LC => {
@@ -327,7 +327,7 @@ export class Message {
                         reason : `${head.className} must represent exactly one LC`,
                         valid : false
                     }
-                ), 0 )
+                ) )
                 return documentLC( outside, context )
             }
             const innerContext = headLCs[0]

@@ -77,7 +77,7 @@ export const install = editor => {
         setTimeout( () => {
             clearAll( editor )
             clearIsPending = false
-        }, 0 )
+        } )
     }
 
     // Install that validation clearing function as the event handler for any

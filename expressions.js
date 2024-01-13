@@ -483,7 +483,7 @@ export class Expression extends Atom {
         }
         // if they edit the Lurch notation or latex, keep them in sync
         let updatesEnabled = false
-        setTimeout( () => updatesEnabled = true, 0 ) // after dialog populates
+        setTimeout( () => updatesEnabled = true ) // after dialog populates
         dialog.onChange = ( _, component ) => {
             if ( !updatesEnabled ) return
             updatesEnabled = false // prevent syncing to fixed point/infinity

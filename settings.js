@@ -206,7 +206,7 @@ export class Settings extends Map {
                                 setTimeout( () => {
                                     this.reset()
                                     this.userEdit( editor )
-                                }, 0 )
+                                } )
                             }
                         } )
                     }

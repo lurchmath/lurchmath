@@ -94,7 +94,7 @@ const showSaveAsDialog = editor => {
                 )
             }
         } )
-        setTimeout( () => dialog.focus( 'filename' ), 0 )
+        setTimeout( () => dialog.focus( 'filename' ) )
     } )
 }
 

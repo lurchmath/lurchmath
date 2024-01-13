@@ -518,7 +518,7 @@ export class Dialog {
             } ).catch( reject )
             setTimeout( () => {
                 dialog.showTab( appSettings.get( 'default open dialog tab' ) )
-            }, 0 )
+            } )
         } )
     }
 
@@ -570,7 +570,7 @@ export class Dialog {
             } ).catch( reject )
             setTimeout( () => {
                 dialog.showTab( appSettings.get( 'default save dialog tab' ) )
-            }, 0 )
+            } )
         } )
     }
 

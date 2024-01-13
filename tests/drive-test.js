@@ -28,7 +28,7 @@ describe( 'Google Drive integration', () => {
                     expect( menuItems.hasOwnProperty( 'opendocument' ) ).to.equal( true )
                     expect( menuItems.hasOwnProperty( 'savedocumentas' ) ).to.equal( true )
                     expect( menuItems.hasOwnProperty( 'savedocument' ) ).to.equal( true )
-                    setTimeout( done, 0 )
+                    setTimeout( done )
                 }
             } )
         } )
