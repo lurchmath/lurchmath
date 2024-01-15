@@ -35,6 +35,7 @@
  */
 
 import { removeScriptTags, isOnScreen } from './utilities.js'
+import { getConverter } from './math-live.js'
 
 /**
  * Class name used to distinguish HTML elements representing atoms.  (For an
@@ -801,29 +802,32 @@ export const install = editor => {
     // new and deleted ones should trigger a clearing of validation feedback.
     let lastAtomElementList = [ ]
     editor.on( 'input NodeChange Paste Change Undo Redo', () => {
-        const thisAtomElementList = Atom.allElementsIn( editor )
-        // New ones need updating and trigger validation clearing:
-        thisAtomElementList.filter(
-            element => !lastAtomElementList.includes( element )
-        ).forEachWithTimeout(
-            element => {
-                try {
-                    const atom = Atom.from( element, editor )
-                    atom.update()
-                    atom.dataChanged()
-                } catch ( e ) {
-                    console.log( 'Error when updating atom', element )
-                    console.log( e )
+        // New ones need updating and trigger validation clearing, but we can't
+        // do that unless MathLive has been loaded, so first ensure that:
+        getConverter().then( () => {
+            const thisAtomElementList = Atom.allElementsIn( editor )
+            thisAtomElementList.filter(
+                element => !lastAtomElementList.includes( element )
+            ).forEachWithTimeout(
+                element => {
+                    try {
+                        const atom = Atom.from( element, editor )
+                        atom.update()
+                        atom.dataChanged()
+                    } catch ( e ) {
+                        console.log( 'Error when updating atom', element )
+                        console.log( e )
+                    }
                 }
-            }
-        )
-        // Deleted ones trigger validation clearing:
-        lastAtomElementList.filter(
-            element => !thisAtomElementList.includes( element )
-        ).forEach(
-            element => Atom.from( element, editor ).dataChanged()
-        )
-        lastAtomElementList = thisAtomElementList
+            )
+            // Deleted ones trigger validation clearing:
+            lastAtomElementList.filter(
+                element => !thisAtomElementList.includes( element )
+            ).forEach(
+                element => Atom.from( element, editor ).dataChanged()
+            )
+            lastAtomElementList = thisAtomElementList
+        } )
     } )
     // Custom context menu creator
     editor.ui.registry.addContextMenu( 'atoms', {

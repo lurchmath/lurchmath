@@ -23,9 +23,20 @@ import { lurchToLatex, latexToLurch, lurchToPutdown } from './parsers/index.js'
 // Internal use only.
 // Ensures the MathLive scripts are loaded, so you can do whatever you want with
 // the stuff they install in the global (window) object thereafter.
-const loadMathFieldClass = () =>
-    loadScript( 'https://unpkg.com/mathlive' ).then( () =>
-    loadScript( 'https://unpkg.com/@cortex-js/compute-engine' ) )
+const loadMathFieldClass = () => new Promise( ( resolve, reject ) => {
+    loadScript( 'https://unpkg.com/mathlive' ).then( () => {
+        loadScript( 'https://unpkg.com/@cortex-js/compute-engine' ).then( () => {
+            const tryToResolve = () => {
+                if ( window.MathfieldElement ) {
+                    resolve()
+                } else {
+                    setTimeout( tryToResolve, 100 )
+                }
+            }
+            tryToResolve()
+        } )
+    } )
+} )
 
 /**
  * We store here the URL to the MathLive CSS stylesheet, so that we can define
