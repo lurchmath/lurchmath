@@ -71,8 +71,6 @@ export const loadFromQueryString = editor => {
     if ( !params.has( 'load' ) ) return
     const source = params.get( 'load' )
     if ( fileExists( source ) ) {
-        console.log( 'loading this file:' )
-        console.log( readFile( source ) )
         new LurchDocument( editor ).setDocument( readFile( source ) )
         if ( params.has( 'delete' ) && params.get( 'delete' ) == 'true' )
             deleteFile( source )
