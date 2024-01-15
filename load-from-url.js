@@ -41,6 +41,7 @@ const isValidURL = text => {
  */
 export const loadFromURL = url => new Promise( ( resolve, reject ) => {
     const request = new XMLHttpRequest()
+    request.setRequestHeader( 'Cache-Control', 'max-age=0' )
     request.addEventListener( 'load', event => {
         if ( event.target.status != 200 )
             reject( event.currentTarget.responseText )
