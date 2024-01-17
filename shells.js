@@ -40,6 +40,7 @@ import { Dialog, SelectBoxItem } from './dialog.js'
 import { Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { lookup, store } from './document-settings.js'
+import { appSettings } from './settings-install.js'
 
 /**
  * For information about the concept of shells in Lurch in general, see the
@@ -57,6 +58,10 @@ import { lookup, store } from './document-settings.js'
 export class Shell extends Atom {
 
     static subclassName = Atom.registerSubclass( 'shell', Shell )
+
+    // By default, each shell type is not shown on the autocomplete menu for
+    // beginners.  Certain subclasses will override this with "true" instead.
+    static beginnerFriendly = false
 
     /**
      * Assign this shell a specific subclass, by name.  You must assign a
@@ -439,14 +444,17 @@ export const install = editor => {
                 subclass.defaultHTML = element.outerHTML
             }
         } )
+        const inBeginnerMode =
+            appSettings.get( 'expression editor type' ) == 'Beginner'
         return shellSubclassNames.map( subclassName => {
             const subclass = Atom.subclasses.get( subclassName )
+            if ( inBeginnerMode && !subclass.beginnerFriendly ) return null
             return {
                 shortcut : subclassName.toLowerCase(),
                 preview : `${subclassName} environment`,
                 content : subclass.defaultHTML
             }
-        } )
+        } ).filter( x => x !== null )
     } )
     /////////
     //
@@ -505,6 +513,7 @@ export class Axiom extends Rule {
  */
 export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
+    static beginnerFriendly = true
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'theorem' )
     }
@@ -516,6 +525,7 @@ export class Theorem extends Shell {
  */
 export class Lemma extends Theorem {
     static subclassName = Atom.registerSubclass( 'lemma', Lemma )
+    static beginnerFriendly = false
 }
 
 /**
@@ -524,6 +534,7 @@ export class Lemma extends Theorem {
  */
 export class Corollary extends Theorem {
     static subclassName = Atom.registerSubclass( 'corollary', Corollary )
+    static beginnerFriendly = false
 }
 
 /**
@@ -533,6 +544,7 @@ export class Corollary extends Theorem {
  */
 export class Proof extends Shell {
     static subclassName = Atom.registerSubclass( 'proof', Proof )
+    static beginnerFriendly = true
 }
 
 /**
@@ -546,6 +558,7 @@ export class Proof extends Shell {
  */
 export class Subproof extends Shell {
     static subclassName = Atom.registerSubclass( 'subproof', Subproof )
+    static beginnerFriendly = true
     getTitle () { return '' }
 }
 
