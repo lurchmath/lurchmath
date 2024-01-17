@@ -84,6 +84,11 @@ export const appSettings = new Settings(
                 [ 'Hierarchy', 'Code' ],
                 'Hierarchy'
             ),
+            new BoolSettingMetadata(
+                'dollar sign shortcut',
+                'Use $ as a shortcut for entering expressions',
+                false
+            ),
             new LongTextSettingMetadata(
                 'declaration type templates',
                 'Phrases for variable and constant declarations',

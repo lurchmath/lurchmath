@@ -40,31 +40,46 @@ let converter = null
  */
 export const install = editor => {
     getConverter().then( result => converter = result )
+    // Define reusable function that initiates the insertion of an expression
+    const insertExpression = () => {
+        const mode = appSettings.get( 'expression editor type' )
+        const atom = Atom.newInline( editor, '',
+            mode == 'Beginner' ? {
+                type : 'expression',
+                latex : '',
+                given : false
+            } : mode == 'Intermediate' ? {
+                type : 'expression',
+                contentType : 'Statement',
+                latex : '',
+                lurchNotation : '',
+                symbol : ''
+            } : { // mode == 'Advanced'
+                type : 'expression',
+                lurchNotation : ''
+            } )
+        atom.update()
+        atom.editThenInsert()
+    }
+    // Install that function as what happens when you use the Insert expression action
     editor.ui.registry.addMenuItem( 'expression', {
         text : 'Expression',
         icon : 'insert-character',
         tooltip : 'Insert expression',
         shortcut : 'Meta+E',
-        onAction : () => {
-            const mode = appSettings.get( 'expression editor type' )
-            const atom = Atom.newInline( editor, '',
-                mode == 'Beginner' ? {
-                    type : 'expression',
-                    latex : '',
-                    given : false
-                } : mode == 'Intermediate' ? {
-                    type : 'expression',
-                    contentType : 'Statement',
-                    latex : '',
-                    lurchNotation : '',
-                    symbol : ''
-                } : { // mode == 'Advanced'
-                    type : 'expression',
-                    lurchNotation : ''
-                } )
-            atom.update()
-            atom.editThenInsert()
-        }
+        onAction : insertExpression
+    } )
+    // Install that function as what happens when you type a dollar sign,
+    // as in LaTeX.  (Yes, this means that you can't type a dollar sign in Lurch.
+    // We will later make that into a configurable option.)
+    editor.on( 'init', () => {
+        editor.dom.doc.body.addEventListener( 'keypress', event => {
+            if ( event.key == '$' && appSettings.get( 'dollar sign shortcut' ) ) {
+                event.preventDefault()
+                event.stopPropagation()
+                insertExpression()
+            }
+        } )
     } )
 }
 
