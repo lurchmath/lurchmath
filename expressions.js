@@ -823,7 +823,3 @@ export class Expression extends Atom {
 }
 
 export default { install }
-
-window.to_tex = lurch => converter( lurch, 'lurch', 'latex' )
-window.to_lurch = latex => converter( latex, 'latex', 'lurch' )
-window.to_putdown = lurch => converter( lurch, 'lurch', 'putdown' )
