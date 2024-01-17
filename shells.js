@@ -473,19 +473,12 @@ export const install = editor => {
  *  - It labels itself as a "rule" using the attribute the LDE respects for
  *    rules of inference, so that validation will treat it as one.
  *  - It marks itself as a given, which the LDE requires for rules.
- *  - It marks any child environment as a given, because that is (almost?)
- *    always what should be the case for any environment inside a rule, since it
- *    is almost certainly a subproof that the user must provide in order to use
- *    the rule.
  */
 export class Rule extends Shell {
     static subclassName = Atom.registerSubclass( 'rule', Rule )
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'given' )
         shellLC.makeIntoA( 'Rule' )
-        shellLC.children().forEach( child => {
-            if ( child instanceof Environment ) child.makeIntoA( 'given' )
-        } )
     }
 }
 
@@ -506,22 +499,14 @@ export class Axiom extends Rule {
 }
 
 /**
- * A theorem is a type of shell with the following features.
- * 
- *  - It labels itself as a "theorem" using the attribute the LDE respects for
- *    theorem statements, so that validation will treat it as one.
- *  - It marks any child environment as a given, because that is (almost?)
- *    always what should be the case for any environment inside a rule, since it
- *    is almost certainly a subproof that the user must provide in order to use
- *    the theorem.
+ * A theorem is a type of shell that labels itself as a "theorem" using the
+ * attribute the LDE respects for theorem statements, so that validation will
+ * treat it as one.
  */
 export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'theorem' )
-        shellLC.children().forEach( child => {
-            if ( child instanceof Environment ) child.makeIntoA( 'given' )
-        } )
     }
 }
 
@@ -556,6 +541,8 @@ export class Proof extends Shell {
  * subderivations together, but without adding the unnecessary (and confusing)
  * heading "Proof" on top of them, which would be the case if we were instead
  * to use the {@link Proof} class.
+ * 
+ * @see {@link Premise}
  */
 export class Subproof extends Shell {
     static subclassName = Atom.registerSubclass( 'subproof', Subproof )
@@ -563,24 +550,31 @@ export class Subproof extends Shell {
 }
 
 /**
- * A "recall" is a type of shell with the following features.
+ * A premise is a type of shell that functions exactly like a {@link Subproof},
+ * except that it always marks itself as a given environment.
  * 
- *  - It labels itself as a "hint" using the attribute the LDE respects for
- *    hints, so that validation will treat it as one.  A hint is an instantiation
- *    of a rule of inference, which can help the LDE not have to figure out how
- *    to find the instantiation on its own.  This can be useful for some rules
- *    that are very time consuming to instantiate in all possibly relevant ways.
- *  - It marks any child environment as a given, because it should be parallel
- *    with the {@link Rule} it's trying to instantiate, and rules make their
- *    child environments given.
+ * @see {@link Subproof}
+ */
+export class Premise extends Shell {
+    static subclassName = Atom.registerSubclass( 'premise', Premise )
+    getTitle () { return '' }
+    finalize ( shellLC ) {
+        shellLC.makeIntoA( 'given' )
+    }
+}
+
+/**
+ * A "recall" is a type of shell that labels itself as a "hint" using the
+ * attribute the LDE respects for hints, so that validation will treat it as
+ * one.  A hint is an instantiation of a rule of inference, which can help the
+ * LDE not have to figure out how to find the instantiation on its own.  This
+ * can be useful for some rules that are very time consuming to instantiate in
+ * all possibly relevant ways.
  */
 export class Recall extends Shell {
     static subclassName = Atom.registerSubclass( 'recall', Recall )
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'hint' )
-        shellLC.children().forEach( child => {
-            if ( child instanceof Environment ) child.makeIntoA( 'given' )
-        } )
     }
 }
 
