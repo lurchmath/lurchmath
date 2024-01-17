@@ -45,6 +45,7 @@ const menuData = {
         'cut copy paste pastetext',
         'selectall',
         'searchreplace',
+        'listprops',
         'preferences'
     ),
     insert : buildMenu( 'Insert',
@@ -70,7 +71,8 @@ const menuData = {
 }
 let toolbarData = 'undo redo | '
                 + 'styles bold italic | '
-                + 'alignleft aligncenter alignright outdent indent'
+                + 'alignleft aligncenter alignright outdent indent | '
+                + 'numlist bullist'
 
 // If this instance of the app is just a popup for editing the header in the
 // document of a different instance of the app, we will need to delete
@@ -98,7 +100,7 @@ loadScript( TinyMCEURL ).then( () => {
         menubar : 'file edit insert format document help',
         menu : menuData,
         contextmenu : 'atoms',
-        // plugins : 'fullscreen', // enable full screen mode
+        plugins : 'lists', // 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {
             // As soon as the editor is ready, ensure it's not in front
