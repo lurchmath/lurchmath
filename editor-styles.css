@@ -168,3 +168,9 @@ div.LC-meaning-preview {
     height: 10em;
     overflow-y: scroll;
 }
+
+/* Make the body of the editor look completely different if we are editing the
+   header of a document, so that users do not confuse headers with documents. */
+body.header-editor {
+    background-color: #eeeeee;
+}

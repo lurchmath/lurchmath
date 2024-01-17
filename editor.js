@@ -125,6 +125,9 @@ loadScript( TinyMCEURL ).then( () => {
             } else {
                 // Install tools we need only if we are the secondary app window:
                 Headers.listen( editor )
+                editor.on( 'init', () => {
+                    editor.dom.doc.body.classList.add( 'header-editor' )
+                } )
             }
             // Create keyboard shortcuts for all menu items
             const menuItems = editor.ui.registry.getAll().menuItems
