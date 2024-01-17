@@ -64,7 +64,7 @@ const menuData = {
         'editheader extractheader embedheader',
         'dependency',
         'clearvalidation validate',
-        'docsettings'
+        'docsettings temptoggle'
     ),
     help : buildMenu( 'Help', 'help' )
 }

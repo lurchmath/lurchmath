@@ -39,6 +39,7 @@ import { addAutocompleteFunction } from './auto-completer.js'
 import { Dialog, SelectBoxItem } from './dialog.js'
 import { Environment }
     from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { lookup, store } from './document-settings.js'
 
 /**
  * For information about the concept of shells in Lurch in general, see the
@@ -446,6 +447,23 @@ export const install = editor => {
                 content : subclass.defaultHTML
             }
         } )
+    } )
+    /////////
+    //
+    //  TEMPORARY
+    //
+    //  The following code is here only to help Ken in his Spring 2024 course.
+    //  It will be changed later when styles for shells are upgraded.
+    //
+    /////////
+    editor.ui.registry.addMenuItem( 'temptoggle', {
+        text : 'Toggle environment style',
+        tooltip : 'Toggle between minimal and boxed styles for environments',
+        shortcut : 'Meta+Shift+B',
+        onAction : () => {
+            const current = lookup( editor, 'shell style' )
+            store( editor, 'shell style', current == 'boxed' ? 'minimal' : 'boxed' )
+        }
     } )
 }
 

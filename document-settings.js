@@ -19,8 +19,9 @@ import {
 } from './settings-metadata.js'
 import { LurchDocument } from './lurch-document.js'
 
-// Necessary for the use of appSettings below
-appSettings.load()
+// Necessary for the use of appSettings below, except when being loaded in a web
+// worker, because localStorage does not exist there from which to load settings:
+if ( typeof( localStorage ) !== 'undefined' ) appSettings.load()
 
 /**
  * This metadata object can be used to create a {@link Settings} instance for
@@ -128,6 +129,19 @@ export const lookup = ( editor, key ) => {
     // conversion function specified in the metadata, then return it.
     const value = LDoc.getMetadata( 'settings', key )
     return metadata ? metadata.convert( value ) : value
+}
+
+/**
+ * Change the value of a given setting in a given editor's document.  This will
+ * write the given value into the metadata for the current document in the given
+ * editor.
+ * 
+ * @param {tinymce.Editor} editor - the editor in which to write the setting
+ * @param {string} key - the name of the setting to change
+ * @param {any} value - the value to write (JSONable)
+ */
+export const store = ( editor, key, value ) => {
+    new LurchDocument( editor ).setMetadata( 'settings', key, 'json', value )
 }
 
 export default { documentSettingsMetadata, install }
