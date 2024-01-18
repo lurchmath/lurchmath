@@ -116,6 +116,21 @@ window.Lurch = {
      *    for overriding just pieces of them.  E.g., you can provide `menuData`
      *    as `{ 'file' : { ... } }` and it will affect only the file menu,
      *    because it is incorporated into the defaults using `Object.assign()`.
+     *  - `options.fileOpenTabs` can be used to reorder or subset the list of
+     *    tabs in the File > Open dialog box, which defaults to
+     *    `[ 'From browser storage', 'From your computer', 'From the web' ]`.
+     *    If you remove `'From browser storage'` from the list, you may also
+     *    want to edit the file menu's contents so that it does not contain the
+     *    "Delete" option.
+     *  - `options.fileSaveTabs` can be used to reorder or subset the list of
+     *    tabs in the File > Save dialog box, which defaults to
+     *    `[ 'To browser storage', 'To your computer' ]`.  Again, if you remove
+     *    `'To browser storage'` from the list, you may also want to edit the
+     *    file menu's contents so that it does not contain the "Delete" option.
+     * 
+     * The `options` object is stored as an `appOptions` member in the TinyMCE
+     * editor instance once it is created, so that any part of the app can refer
+     * back to these options later.
      * 
      * @param {HTMLElement} element - the element into which to install the app
      * @param {Object?} options - the options to use for the new app
@@ -217,6 +232,9 @@ window.Lurch = {
                 plugins : 'lists link', // 'fullscreen', // enable full screen mode
                 statusbar : false,
                 setup : editor => {
+                    // Save the options object for any part of the app to reference:
+                    editor.appOptions = options
+
                     // As soon as the editor is ready, ensure it's not in front
                     // of any future Google Drive dialogs
                     editor.on( 'init', () => {

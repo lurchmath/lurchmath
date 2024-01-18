@@ -184,7 +184,21 @@ menu or toolbar setup, and thus the previous two options are available
 for overriding just pieces of them.  E.g., you can provide <code>menuData</code>
 as <code>{ 'file' : { ... } }</code> and it will affect only the file menu,
 because it is incorporated into the defaults using <code>Object.assign()</code>.</li>
+<li><code>options.fileOpenTabs</code> can be used to reorder or subset the list of
+tabs in the File &gt; Open dialog box, which defaults to
+<code>[ 'From browser storage', 'From your computer', 'From the web' ]</code>.
+If you remove <code>'From browser storage'</code> from the list, you may also
+want to edit the file menu's contents so that it does not contain the
+&quot;Delete&quot; option.</li>
+<li><code>options.fileSaveTabs</code> can be used to reorder or subset the list of
+tabs in the File &gt; Save dialog box, which defaults to
+<code>[ 'To browser storage', 'To your computer' ]</code>.  Again, if you remove
+<code>'To browser storage'</code> from the list, you may also want to edit the
+file menu's contents so that it does not contain the &quot;Delete&quot; option.</li>
 </ul>
+<p>The <code>options</code> object is stored as an <code>appOptions</code> member in the TinyMCE
+editor instance once it is created, so that any part of the app can refer
+back to these options later.</p>
 </div>
 
 
@@ -342,7 +356,7 @@ because it is incorporated into the defaults using <code>Object.assign()</code>.
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.78">, line 78</a>
+            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.93">, line 93</a>
         </li>
     </ul>
 
@@ -491,7 +505,7 @@ setting defaults</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.238">, line 238</a>
+            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.256">, line 256</a>
         </li>
     </ul>
 
@@ -640,7 +654,7 @@ setting defaults</p></div>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.264">, line 264</a>
+            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.282">, line 282</a>
         </li>
     </ul>
 
