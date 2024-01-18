@@ -370,7 +370,6 @@ export const install = editor => {
             const selection = editor.selection.getContent()
             if ( selection.trim() != '' ) {
                 element.innerHTML = selection
-                console.log( element )
                 if ( !element.childNodes[0].tagName )
                     element.innerHTML = '<p>' + selection + '</p>'
             }
