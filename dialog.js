@@ -481,10 +481,16 @@ export class Dialog {
     static loadFile ( editor, title = 'File' ) {
         const dialog = new Dialog( title, editor )
         dialog.json.size = 'medium'
-        dialog.setTabs( 'From browser storage', 'From your computer', 'From the web' )
-        dialog.addItem( new ChooseLocalFileItem( 'localFile' ), 'From browser storage' )
-        dialog.addItem( new UploadItem( 'uploadedFile' ), 'From your computer' )
-        dialog.addItem( new ImportFromURLItem( 'importedFile' ), 'From the web' )
+        const tabNames = editor.appOptions.fileOpenTabs || [
+            'From browser storage', 'From your computer', 'From the web'
+        ]
+        dialog.setTabs( ...tabNames )
+        if ( tabNames.includes( 'From browser storage' ) )
+            dialog.addItem( new ChooseLocalFileItem( 'localFile' ), 'From browser storage' )
+        if ( tabNames.includes( 'From your computer' ) )
+            dialog.addItem( new UploadItem( 'uploadedFile' ), 'From your computer' )
+        if ( tabNames.includes( 'From the web' ) )
+            dialog.addItem( new ImportFromURLItem( 'importedFile' ), 'From the web' )
         return new Promise( ( resolve, reject ) => {
             dialog.show().then( userHitOK => {
                 if ( !userHitOK ) return resolve()
@@ -517,7 +523,9 @@ export class Dialog {
                 }
             } ).catch( reject )
             setTimeout( () => {
-                dialog.showTab( appSettings.get( 'default open dialog tab' ) )
+                const defaultTab = appSettings.get( 'default open dialog tab' )
+                if ( tabNames.includes( defaultTab ) )
+                    dialog.showTab( defaultTab )
             } )
         } )
     }
@@ -544,14 +552,21 @@ export class Dialog {
      */
     static saveFile ( editor, title = 'File' ) {
         const dialog = new Dialog( title, editor )
-        dialog.setTabs( 'To browser storage', 'To your computer' )
-        dialog.addItem( new TextInputItem( 'filename', 'Filename' ),
-                        'To browser storage' )
-        dialog.setDefaultFocus( 'filename' )
-        dialog.addItem( new HTMLItem( `
-            <p>Clicking OK below will download the current Lurch document to
-            your computer as an HTML file.</p>
-        ` ), 'To your computer' )
+        const tabNames = editor.appOptions.fileSaveTabs || [
+            'To browser storage', 'To your computer'
+        ]
+        dialog.setTabs( ...tabNames )
+        if ( tabNames.includes( 'To browser storage' ) ) {
+            dialog.addItem( new TextInputItem( 'filename', 'Filename' ),
+                            'To browser storage' )
+            dialog.setDefaultFocus( 'filename' )
+        }
+        if ( tabNames.includes( 'To your computer' ) ) {
+            dialog.addItem( new HTMLItem( `
+                <p>Clicking OK below will download the current Lurch document to
+                your computer as an HTML file.</p>
+            ` ), 'To your computer' )
+        }
         dialog.json.size = 'medium'
         return new Promise( ( resolve, reject ) => {
             dialog.show().then( userHitOK => {
@@ -569,7 +584,9 @@ export class Dialog {
                 }
             } ).catch( reject )
             setTimeout( () => {
-                dialog.showTab( appSettings.get( 'default save dialog tab' ) )
+                const defaultTab = appSettings.get( 'default save dialog tab' )
+                if ( tabNames.includes( defaultTab ) )
+                    dialog.showTab( defaultTab )
             } )
         } )
     }
