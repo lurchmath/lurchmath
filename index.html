@@ -10,7 +10,14 @@
     </head>
     <body>
         <div id="editor-container">
-          <div id="logo">Lurch<span id="check">&#x2713</span></div>
+            <div id="logo">Lurch<span id="check">&#x2713</span></div>
         </div>
+        <script>
+            window.addEventListener( 'load', () => {
+                Lurch.createApp( document.getElementById( 'editor-container' ), {
+                    // options go here
+                } )
+            } )
+        </script>
     </body>
 </html>
