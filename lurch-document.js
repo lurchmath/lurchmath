@@ -103,7 +103,8 @@ export class LurchDocument {
      */
     setFileID ( id ) {
         this.editor.lastLurchFileID = id
-        this.getFilenameElement().textContent = id
+        const bareName = id.startsWith( 'file:///' ) ? id.slice( 8 ) : id
+        this.getFilenameElement().textContent = bareName
     }
 
     /**

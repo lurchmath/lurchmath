@@ -7,6 +7,7 @@
  */
 
 import { LurchDocument } from './lurch-document.js'
+import { isValidURL } from './utilities.js'
 
 /**
  * Immediately initiates the download of the contents of the Lurch document
@@ -22,8 +23,13 @@ export const downloadFile = editor => {
     const content = LD.getDocument()
     const anchor = document.createElement( 'a' )
     anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
-        + encodeURIComponent( content ) ) 
-    anchor.setAttribute( 'download', LD.getFileID() || 'lurch-document.html' )
+        + encodeURIComponent( content ) )
+    let filename = LD.getFileID() || 'lurch-document.html'
+    if ( filename.startsWith( 'file:///' ) )
+        filename = filename.slice( 8 )
+    else if ( isValidURL( filename ) )
+        filename = filename.split( '/' ).pop()
+    anchor.setAttribute( 'download', filename )
     document.body.appendChild( anchor )
     anchor.click()
     anchor.remove()
@@ -133,7 +139,7 @@ export class UploadItem {
     // the dialog's get() function
     get ( key ) {
         if ( key == this.name ) return {
-            filename : this.uploadedName,
+            filename : `file:///${ this.uploadedName }`,
             content : this.uploadedContent
         }
     }

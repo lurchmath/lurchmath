@@ -18,6 +18,8 @@
 
 import { LurchDocument } from './lurch-document.js'
 import { Dialog, AlertItem } from './dialog.js'
+import { isValidURL } from './utilities.js'
+import { downloadFile } from './upload-download.js'
 
 // Internal use only
 // Prefix for distinguishing which LocalStorage keys are for Lurch files
@@ -134,9 +136,19 @@ const ensureWorkIsSaved = editor => new Promise( ( resolve, reject ) => {
  */
 const silentFileSave = editor => {
     const LD = new LurchDocument( editor )
-    writeFile( LD.getFileID(), LD.getDocument() )
-    editor.setDirty( false )
-    removeAutosave()
+    const filename = LD.getFileID()
+    if ( filename.startsWith( 'file:///' ) ) {
+        downloadFile( editor )
+    } else if ( isValidURL( filename ) ) {
+        Dialog.notify( editor, 'error', `
+            You loaded this file from the web, so you cannot save it back there.
+            Instead, use File > Save As to choose where to save it.
+        ` )
+    } else {
+        writeFile( filename, LD.getDocument() )
+        editor.setDirty( false )
+        removeAutosave()
+    }
 }
 
 /**

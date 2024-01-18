@@ -3,7 +3,8 @@ import { ChooseLocalFileItem, saveAs } from './local-storage-drive.js'
 import { UploadItem, downloadFile } from './upload-download.js'
 import { ImportFromURLItem, loadFromURL } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
-import { appURL } from './utilities.js'
+import { appURL, isValidURL } from './utilities.js'
+import { LurchDocument } from './lurch-document.js'
 
 /**
  * This class makes it easier to create and use TinyMCE dialogs that have
@@ -562,10 +563,21 @@ export class Dialog {
             dialog.setDefaultFocus( 'filename' )
         }
         if ( tabNames.includes( 'To your computer' ) ) {
+            dialog.addItem( new TextInputItem( 'downloadFilename', 'Filename' ),
+                            'To your computer' )
             dialog.addItem( new HTMLItem( `
                 <p>Clicking OK below will download the current Lurch document to
                 your computer as an HTML file.</p>
             ` ), 'To your computer' )
+        }
+        const LD = new LurchDocument( editor )
+        let filename = LD.getFileID()
+        if ( filename && filename.startsWith( 'file:///' ) ) {
+            dialog.setInitialData( {
+                downloadFilename : filename.substring( 8 )
+            } )
+        } else if ( filename && !isValidURL( filename ) ) {
+            dialog.setInitialData( { filename } )
         }
         dialog.json.size = 'medium'
         return new Promise( ( resolve, reject ) => {
@@ -577,6 +589,7 @@ export class Dialog {
                     saveAs( editor, filename )
                     resolve( filename )
                 } else if ( title == 'To your computer' ) {
+                    LD.setFileID( `file:///${ dialog.get( 'downloadFilename' ) }` )
                     downloadFile( editor )
                     resolve( true )
                 } else {

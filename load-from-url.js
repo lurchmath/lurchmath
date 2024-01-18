@@ -8,21 +8,11 @@
  */
 
 import { LurchDocument } from './lurch-document.js'
-import { appURL } from './utilities.js'
+import { appURL, isValidURL } from './utilities.js'
 import { Dialog } from './dialog.js'
 import {
     fileExists, readFile, writeFile, deleteFile
 } from './local-storage-drive.js'
-
-// Internal use only: Check to see if a string is a valid URL
-const isValidURL = text => {
-    try {
-        new URL( text ) // will throw an error if the text is not a valid URL
-        return true
-    } catch ( e ) {
-        return false
-    }
-}
 
 /**
  * Download a file from the web asynchronously, returning a Promise that

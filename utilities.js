@@ -320,3 +320,20 @@ Array.prototype.forEachWithTimeout = function( func, timeout = 0 ) {
  */
 export const isOnScreen = node => node.parentNode &&
     !node.parentNode.classList.contains( 'mce-offscreen-selection' )
+
+/**
+ * This function tries to run the built-in browser `URL` constructor on the
+ * given text.  If an error is thrown, it returns false.  Otherwise it returns
+ * true.
+ * 
+ * @param {string} text - the text that may or may not be a URL, to be tested
+ * @returns {boolean} whether the text contains a valid URL
+ */
+export const isValidURL = text => {
+    try {
+        new URL( text ) // will throw an error if the text is not a valid URL
+        return true
+    } catch ( e ) {
+        return false
+    }
+}
