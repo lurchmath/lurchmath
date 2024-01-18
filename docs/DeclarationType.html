@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: BoolSettingMetadata</title>
+    <title>Lurch Web User Interface: DeclarationType</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Class</p>
-    <h1 class="page-title">BoolSettingMetadata</h1>
+    <h1 class="page-title">DeclarationType</h1>
     
 
 
@@ -51,7 +51,7 @@
 
     
         
-        <!-- <h2>BoolSettingMetadata</h2> -->
+        <!-- <h2>DeclarationType</h2> -->
 
         
 
@@ -59,7 +59,47 @@
 
         
             
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for boolean values</p></div>
+            <div class="class-description"><p>Declarations of new symbols can be phrased in a wide variety of ways.  This
+class helps detect and work with the essential properties that any of those
+phrasings will exhibit.  Those essential properties are:</p>
+<ol>
+<li>Does it declare a variable or a constant?
+<ul>
+<li>A &quot;variable&quot; declaration is typically used for introducing a new,
+arbitrary symbol at the start of a proof or subproof, and functions
+like a hypothesis</li>
+<li>A &quot;constant&quot; declaration names a concept that is usually known to
+exist before the declaration, and may be justified by an existential</li>
+</ul>
+</li>
+<li>Does it have a body, and if so, where does it belong?
+<ul>
+<li>Not every declaration has a body (that is, a corresponding expression).
+For example, we can write &quot;Let x be arbitrary&quot; and that declares a new
+variable with no assumptions about it (no expression attached).</li>
+<li>A declaration like &quot;Let epsilon be arbitrary with epsilon&gt;0&quot; is like
+the previous case, but now with an attached assumption (its &quot;body&quot;
+following after the declaration).</li>
+<li>A declaration like &quot;m=2k for some k&quot; is a declaration of k, with its
+body preceding the declaration, and may need to be justified by a fact
+like &quot;m is even&quot;.</li>
+<li>Thus bodies may or may not exist, and if they do exist, they are in
+one of two places: <em>before</em> or <em>after</em> the declaration.</li>
+</ul>
+</li>
+</ol>
+<p>This class embodies a type of declaration, which includes three pieces of
+data: the <em>type</em> (variable or constant), the <em>body</em> (none, before, or after),
+and the <em>template</em> (which is how the declaration is phrased in English, with
+placeholders, such as &quot;Let [variable] be arbitrary&quot;).  This data is redundant
+in the following ways.</p>
+<ul>
+<li>If you have the type and body, we can construct a simple template.
+Common English phrases for every type-body pair are included in this
+class, and can be filled in where needed.</li>
+<li>If you have the template, the type and body can be computed from the
+values and position of its placeholders.</li>
+</ul></div>
         
     
 </header>
@@ -87,7 +127,7 @@
     
     </div>
 
-    <h4 class="method-name" id="BoolSettingMetadata">new BoolSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
+    <h4 class="method-name" id="DeclarationType">new DeclarationType<span class="signature">(type, body, template<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"></span>
     </h4>
 
 
@@ -96,9 +136,17 @@
 
 <div class="method-description">
     
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-checkbox.</p>
+    <p>Create a declaration type from a given type and body.  The template is
+optional; if not provided, a simple, English template will be generated
+that fits the given type and body.  If the template is provided, it should
+contain precisely one copy of the string <code>&quot;[variable]&quot;</code> or the string
+<code>&quot;[constant]&quot;</code> (depending on the type you're creating) and optionally
+precisely one copy of <code>&quot;[statement]&quot;</code>, which must appear at either the
+start or end of the template, if it appears at all.</p>
+<p>These properties of the third parameter are not validated; the caller
+must ensure that they hold.  Furthermore, the constructor does not verify
+that the type and body implied by the template match those provided in
+the first two parameters; the caller must ensure this as well.</p>
 </div>
 
 
@@ -117,7 +165,7 @@ checkbox.</p>
 
         <li>
             
-                <span class="param-name">args</span>
+                <span class="param-name">type</span>
             
 
             
@@ -125,7 +173,7 @@ checkbox.</p>
 
 
     <span class="param-type">
-        <code>any</code>
+        <code>string</code>
     </span>
     
 
@@ -138,14 +186,84 @@ checkbox.</p>
                 
 
                 
-                    &lt;repeatable&gt;<br>
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>one of &quot;variable&quot; or &quot;constant&quot; as documented above</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">body</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
                 
                 </span>
             
 
             
 
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
+            <div class="param-description"><p>one of &quot;none&quot;, &quot;before&quot;, or &quot;after&quot; as documented
+above</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">template</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+                    &lt;nullable&gt;<br>
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the template in English, with placeholders, as
+documented above</p></div>
             
         </li>
 
@@ -184,6 +302,13 @@ checkbox.</p>
     
 
     
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="DeclarationType.html#.fromTemplate">fromTemplate()</a></li>
+            
+        </ul>
+    
 
     
 </div>
@@ -208,7 +333,7 @@ checkbox.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.87">, line 87</a>
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.46">, line 46</a>
         </li>
     </ul>
 
@@ -223,7 +348,7 @@ checkbox.</p>
         <h3 class="subsection-title">Classes</h3>
 
         <dl>
-            <dt><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></dt>
+            <dt><a href="DeclarationType.html">DeclarationType</a></dt>
             <dd></dd>
         </dl>
     
@@ -258,7 +383,7 @@ checkbox.</p>
     
     </div>
 
-    <h4 class="method-name" id="convert">convert<span class="signature">(data)</span><span class="return-type-signature"> &rarr; {bool}</span>
+    <h4 class="method-name" id="displayForm">displayForm<span class="signature">(symbol)</span><span class="return-type-signature"> &rarr; {string}</span>
     </h4>
 
 
@@ -267,8 +392,12 @@ checkbox.</p>
 
 <div class="method-description">
     
-    <p>Treats <code>true</code> as true and <code>&quot;true&quot;</code> as true, but all other values as
-false.</p>
+    <p>A template like &quot;Let [variable] be arbitrary&quot; can be converted into more
+readable text like &quot;Let x be arbitrary&quot; if we know the name of the symbol
+being declared (in that case, x).  This function performs that
+replacement, and replaces the <code>[statement]</code> placeholder with an ellipsis,
+so that, for example, &quot;For some [constant], [statement]&quot; may become
+&quot;For some c, ...&quot;.</p>
 </div>
 
 
@@ -287,7 +416,7 @@ false.</p>
 
         <li>
             
-                <span class="param-name">data</span>
+                <span class="param-name">symbol</span>
             
 
             
@@ -295,7 +424,7 @@ false.</p>
 
 
     <span class="param-type">
-        <code>any</code>
+        <code>string</code>
     </span>
     
 
@@ -305,7 +434,598 @@ false.</p>
 
             
 
-            <div class="param-description"><p>the data to convert to boolean</p></div>
+            <div class="param-description"><p>the symbol being declared</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="DeclarationType.html#documentForm">documentForm()</a></li>
+            
+                <li><a href="DeclarationType.html#lurchNotationForm">lurchNotationForm()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>string</code>
+            
+            
+                <p>the template with all placeholders replaced with
+readable text</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.99">, line 99</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="documentForm">documentForm<span class="signature">(symbol, bodyHTML<span class="signature-attributes">opt</span>)</span><span class="return-type-signature"> &rarr; {string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Just as <a href="DeclarationType.html#displayForm">displayForm()</a> converts the
+template into readable text, this function does the same but produces
+HTML instead, for use in the editor.  There are two important differences
+between this and <a href="DeclarationType.html#displayForm">displayForm()</a>.</p>
+<ol>
+<li>The symbol being declared will be represented either using LaTeX-style
+typesetting or fixed-width font, depending on the type of declaration.</li>
+<li>The placeholder <code>&quot;[statement]&quot;</code> will be replaced with the provided
+HTML, which defaults to the empty string, thus removing the body.</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">symbol</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the symbol being declared</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">bodyHTML</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+                    &lt;optional&gt;<br>
+                
+
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the HTML representation of the body of the
+declaration, if it has a body (optional)</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="DeclarationType.html#displayForm">displayForm()</a></li>
+            
+                <li><a href="DeclarationType.html#lurchNotationForm">lurchNotationForm()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>string</code>
+            
+            
+                <p>the template in HTML, with the symbol placeholder
+filled in and the body placeholder removed</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.124">, line 124</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="lurchNotationForm">lurchNotationForm<span class="signature">(symbol, body<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"> &rarr; {string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Just as <a href="DeclarationType.html#displayForm">displayForm()</a> converts the
+template into readable text, this function does the same but produces
+Lurch notation instead, which could be parsed into a meaningful
+LogicConcept (which would be a Declaration instance).</p>
+<p>Although Lurch notation supports declaring multiple symbols in one
+declaration, this function only supports one symbol; it could be extended
+later to support multiple symbols.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">symbol</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the symbol being declared</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">body</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+                    &lt;nullable&gt;<br>
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the body of the declaration, if this
+declaration type requires one, or omit it if not; this must be in Lurch
+notation already because it will be used as-is</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="DeclarationType.html#displayForm">displayForm()</a></li>
+            
+                <li><a href="DeclarationType.html#documentForm">documentForm()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>string</code>
+            
+            
+                <p>the declaration in Lurch notation, using the given
+symbol and optional body</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.152">, line 152</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="match">match<span class="signature">(text)</span><span class="return-type-signature"> &rarr; nullable{string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>When the user enters a dollar sign (<code>$</code>) in the editor, the application
+will watch for math-like content thereafter.  If it sees that the user
+seems to be typing a declaration, it will offer to autocomplete it.  In
+order for the application to notice that the user seems to be typing a
+declaration, instances of this class need to evaluate the text the user
+has typed so far and decide whether it fits (the first part of) the
+pattern in our template.  This function does that work.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">text</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>some text the user has typed into the editor, to
+be evaluated for whether it triggers autocompletion using this
+declaration type</p></div>
             
         </li>
 
@@ -355,10 +1075,11 @@ false.</p>
     
         <li class="method-returns">
             
-                <code>bool</code>
+                <code>string</code>
             
             
-                <p>the same data, now as a boolean</p>
+                <p>either the symbol being declared if a match is found,
+or <code>undefined</code> if no match is found</p>
             
         </li>
     
@@ -382,7 +1103,1233 @@ false.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.108">, line 108</a>
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.215">, line 215</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="toLC">toLC<span class="signature">(symbol, bodyLC<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"> &rarr; {Declaration}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Given a symbol to declare and an optional body of the declaration, create
+a LogicConcept instance representing a declaration of this type with
+those data.  If you provide a body when one is not required by the type,
+or you fail to provide a body when one is required, an error is thrown.
+If the provided body is not a LogicConcept of type Expression, an error
+is thrown.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">symbol</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the symbol being declared</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">bodyLC</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>LogicConcept</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+                    &lt;nullable&gt;<br>
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the body of the declaration, if this
+declaration type requires one, or omit it if not; if it is provided, it
+is used as-is, not copied, so pass a copy if you need your original</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Declaration</code>
+            
+            
+                <p>the declaration as a LogicConcept instance, of type
+Declaration, as documented in the LDE repository</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.183">, line 183</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".allInSettings">allInSettings<span class="signature">(addDefaults)</span><span class="return-type-signature"> &rarr; {Array.&lt;<a href="DeclarationType.html">DeclarationType</a>>}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>The application settings allows the user to choose a set of phrases that
+can be used as templates for declaration types.  This function fetches
+those phrases and creates a declaration type instance for each.  Also, if
+the parameter is set to true, it adds in default types for any type-body
+pair not represented by a phrase in the settings.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">addDefaults</span>
+            
+
+            
+
+            
+
+            
+                
+                    <span class="param-default">
+                        false
+                    </span>
+                
+            
+
+            <div class="param-description"></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Array.&lt;DeclarationType></code>
+            
+            
+                <p>an array of all DeclarationType instances
+mentioned in the user's settings, plus any default types needed, if the
+caller requested them with <code>addDefaults</code></p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.329">, line 329</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".defaultTemplate">defaultTemplate<span class="signature">(type, body)</span><span class="return-type-signature"> &rarr; {string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>When we need to create a declaration type given just the type and body
+information, without a template phrase, we need a simple way to generate
+a suitable phrase.  This function knows six simple English phrases, one
+suitable for each of the six type-body combinations.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">type</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>one of &quot;variable&quot; or &quot;constant&quot; as documented at
+the top of this class</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">body</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>one of &quot;none&quot;, &quot;before&quot;, or &quot;after&quot; as documented
+at the top of this class</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>string</code>
+            
+            
+                <p>a simple English template for the given type and body</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.259">, line 259</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".existsTemplateFor">existsTemplateFor<span class="signature">(type, body, list<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"> &rarr; {boolean}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Given a list of declaration types, does one of them have the given type
+and body?  This function determines that.  It defaults to searching the
+list of declaration types in the user's current settings, but you can
+pass whatever list you want the function to search.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">type</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>one of &quot;variable&quot; or &quot;constant&quot; as documented at
+the top of this class</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">body</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>one of &quot;none&quot;, &quot;before&quot;, or &quot;after&quot; as documented
+at the top of this class</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">list</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Array.&lt;<a href="DeclarationType.html">DeclarationType</a>></code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+                    &lt;nullable&gt;<br>
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the list of declaration types in which
+to search (which defaults to the list in the user's current settings)</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>boolean</code>
+            
+            
+                <p>whether a declaration on the list has the given type
+and body</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.358">, line 358</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".fromTemplate">fromTemplate<span class="signature">(template)</span><span class="return-type-signature"> &rarr; {<a href="DeclarationType.html">DeclarationType</a>}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>The constructor for this class expects you to provide a type and body,
+but if you already have a template phrase, you can use this function to
+construct a DeclarationType instance from that phrase alone, because the
+type and body can be computed from the phrase using
+<a href="DeclarationType.html#.templateToType">templateToType()</a> and
+<a href="DeclarationType.html#.templateToBody">templateToBody()</a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">template</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>a template phrase as documented in the
+constructor</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>DeclarationType</code>
+            
+            
+                <p>a new DeclarationType instance that uses the
+given template, and has a type and body appropriate to it</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.309">, line 309</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".templateToBody">templateToBody<span class="signature">(template)</span><span class="return-type-signature"> &rarr; {string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Given a template phrase (as documented in the constructor), discern
+whether it describes a declaration that expects a body before it, after
+it, or does not expect a body.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">template</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>a template phrase as documented in the
+constructor</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>string</code>
+            
+            
+                <p>one of &quot;none&quot;, &quot;before&quot;, or &quot;after&quot;</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.291">, line 291</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".templateToType">templateToType<span class="signature">(template)</span><span class="return-type-signature"> &rarr; {string}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Given a template phrase (as documented in the constructor), discern
+whether it describes the declaration of a variable or constant.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">template</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>string</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>a template phrase as documented in the
+constructor</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>string</code>
+            
+            
+                <p>one of &quot;variable&quot; or &quot;constant&quot;</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="declarations.js.html">declarations.js</a><a href="declarations.js.html#source.278">, line 278</a>
         </li>
     </ul>
 

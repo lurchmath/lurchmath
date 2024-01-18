@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: BoolSettingMetadata</title>
+    <title>Lurch Web User Interface: Expression</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main ">
   <div class="container">
     <p class="page-kind">Class</p>
-    <h1 class="page-title">BoolSettingMetadata</h1>
+    <h1 class="page-title">Expression</h1>
     
 
 
@@ -51,7 +51,8 @@
 
     
         
-        <!-- <h2>BoolSettingMetadata</h2> -->
+        <!-- <h2>
+            <span class="ancestors"><a href="module-ExpressionAtoms.html">ExpressionAtoms</a>.</span>Expression</h2> -->
 
         
 
@@ -59,7 +60,7 @@
 
         
             
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for boolean values</p></div>
+            <div class="class-description"><p>An Atom that represents a mathematical expression or declaration.</p></div>
         
     
 </header>
@@ -87,19 +88,13 @@
     
     </div>
 
-    <h4 class="method-name" id="BoolSettingMetadata">new BoolSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
+    <h4 class="method-name" id="Expression">new Expression<span class="signature">()</span><span class="return-type-signature"></span>
     </h4>
 
 
 
 
 
-<div class="method-description">
-    
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-checkbox.</p>
-</div>
 
 
 
@@ -107,50 +102,6 @@ checkbox.</p>
 
 
 
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">args</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
-            
-        </li>
-
-    
-</ul>
 
 
 
@@ -208,7 +159,7 @@ checkbox.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.87">, line 87</a>
+            <a href="expressions.js.html">expressions.js</a><a href="expressions.js.html#source.89">, line 89</a>
         </li>
     </ul>
 
@@ -219,13 +170,6 @@ checkbox.</p>
 
     
 
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></dt>
-            <dd></dd>
-        </dl>
     
 
      
@@ -258,7 +202,7 @@ checkbox.</p>
     
     </div>
 
-    <h4 class="method-name" id="convert">convert<span class="signature">(data)</span><span class="return-type-signature"> &rarr; {bool}</span>
+    <h4 class="method-name" id="contextMenu">contextMenu<span class="signature">()</span><span class="return-type-signature"> &rarr; {Array.&lt;Object>}</span>
     </h4>
 
 
@@ -267,8 +211,12 @@ checkbox.</p>
 
 <div class="method-description">
     
-    <p>Treats <code>true</code> as true and <code>&quot;true&quot;</code> as true, but all other values as
-false.</p>
+    <p>Items to be included on the TinyMCE context menu if an atom of this class
+is right-clicked.  For information on the format of the returned data,
+see the TinyMCE v6 manual on custom context menus.</p>
+<p>In this case, it adds one item, for viewing the meaning of the expression
+in a pop-up dialog, either as a hierarchy of bullet points and sections,
+or as a block of putdown code.</p>
 </div>
 
 
@@ -278,39 +226,6 @@ false.</p>
 
 
 
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">data</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the data to convert to boolean</p></div>
-            
-        </li>
-
-    
-</ul>
 
 
 
@@ -355,10 +270,11 @@ false.</p>
     
         <li class="method-returns">
             
-                <code>bool</code>
+                <code>Array.&lt;Object></code>
             
             
-                <p>the same data, now as a boolean</p>
+                <p>data representing the contents of a TinyMCE context
+menu</p>
             
         </li>
     
@@ -382,7 +298,389 @@ false.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.108">, line 108</a>
+            <a href="expressions.js.html">expressions.js</a><a href="expressions.js.html#source.791">, line 791</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="edit">edit<span class="signature">()</span><span class="return-type-signature"> &rarr; {Promise}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>Shows a dialog for editing an expression atom, but it may show one of
+three different dialogs, depending on whether the user has chosen
+beginner, intermediate, or advanced mode in their settings.</p>
+<p><strong>Beginner mode does this:</strong></p>
+<p>Shows a dialog containing just a MathLive editor and a checkbox for
+given/claim status.  The user can then confirm or cancel the edit, as
+per the convention described in
+<a href="module-Atoms.Atom.html#edit">the edit() function for the Atom class</a>.</p>
+<p><strong>Intermediate mode does this:</strong></p>
+<p>Shows a multi-part dialog for editing expression atoms using Lurch
+notation or a MathLive editor widget.  The user can then confirm or
+cancel the edit, as per the convention described in
+<a href="module-Atoms.Atom.html#edit">the edit() function for the Atom class</a>.</p>
+<p><strong>Advanced mode does this:</strong></p>
+<p>The dialog is extremely minimalist, no title bar, no footer buttons, no
+miniature headings over each input/output, and the only input is the
+Lurch notation.  The MathLive widget is a read-only preview.  There is no
+checkbox for given/claim status, but that status is inferred from the
+Lurch notation.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Promise</code>
+            
+            
+                <p>same convention as specified in
+<a href="module-Atoms.Atom.html#edit">edit() for Atoms</a></p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="expressions.js.html">expressions.js</a><a href="expressions.js.html#source.648">, line 648</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="toLCs">toLCs<span class="signature">()</span><span class="return-type-signature"> &rarr; {Array.&lt;LogicConcept>}</span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>The behavior of this function depends on whether the atom was last edited
+using beginner mode, intermediate mode, or advanced mode.</p>
+<p>If it was created using beginner mode, then we check to ensure that the
+LaTeX version of the MathLive editor's contents represents a single
+mathematical expression, optionally marked as an assumption.  If so, we
+return an array containing just that expression (possibly marked as a
+given).  If not, we return an empty array.</p>
+<p>If it was created using intermediate mode, then it may represent a
+statement (i.e., claim expression), an assumption (i.e., given
+expression), or a declaration (of any of a variety of types, with or
+without body).  As long as one of these holds true, we return a
+JavaScript array containing the single LogicConcept represented by this
+atom.  If not, we return an empty array.</p>
+<p>If it was created using advanced mode, then we parse the Lurch notation
+that was typed into the advanced mode dialog.  This will produce zero or
+more LogicConcepts, in an array, which we return.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+    <h4 class="method-heading">Returns</h4>
+    <ul>
+    
+        <li class="method-returns">
+            
+                <code>Array.&lt;LogicConcept></code>
+            
+            
+                <p>an array containing zero or one LogicConcepts</p>
+            
+        </li>
+    
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="expressions.js.html">expressions.js</a><a href="expressions.js.html#source.682">, line 682</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    
+    </div>
+
+    <h4 class="method-name" id="update">update<span class="signature">()</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>The behavior of this function depends on whether the atom was last edited
+using beginner mode, intermediate mode, or advanced mode.</p>
+<p>If it was created using beginner mode, then we place its HTML
+representation in the body of the atom, and possibly place the word
+&quot;Assume&quot; into the prefix of the atom, iff the atom is marked as an
+assumption.  The atom suffix is not involved.</p>
+<p>If it was created using intermediate mode and is a statement or
+assumption, then we treat it as in beginner mode.  However, if it is a
+declaration, we use <a href="DeclarationType.html#documentForm">documentForm()</a>
+to convert it to HTML and use that as the body of the atom.  Any former
+prefix in the atom is removed.  The atom suffix is not involved.</p>
+<p>If it was created using advanced mode, then we apply a Lurch notation to
+LaTeX conversion function, followed by a rendering of that LaTeX as HTML,
+which goes into the body of the atom.  Any former prefix in the atom is
+removed.  The atom suffix is not involved.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="expressions.js.html">expressions.js</a><a href="expressions.js.html#source.749">, line 749</a>
         </li>
     </ul>
 

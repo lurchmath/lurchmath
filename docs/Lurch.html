@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: BoolSettingMetadata</title>
+    <title>Lurch Web User Interface: Lurch</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -36,8 +36,8 @@
 
 <main class="layout-main ">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">BoolSettingMetadata</h1>
+    <p class="page-kind">Namespace</p>
+    <h1 class="page-title">Lurch</h1>
     
 
 
@@ -46,20 +46,17 @@
 <section>
 
 
-<header class="class">
+<header class="not-class">
 
 
     
         
-        <!-- <h2>BoolSettingMetadata</h2> -->
+        <!-- <h2>Lurch</h2> -->
 
         
 
         
 
-        
-            
-            <div class="class-description"><p>A subclass of <a href="SettingMetadata.html">SettingMetadata</a> for boolean values</p></div>
         
     
 </header>
@@ -71,89 +68,17 @@
 
     
         
+            <div class="description"><p>This namespace is installed globally when importing <code>editor.js</code>.  It allows
+the client to customize the behavior of the Lurch app, then install that app
+wherever in their page they want it installed.</p>
+<p>To customize the default settings for the application and any documents it
+loads, see <a href="Lurch.html#.setAppDefaults">setAppDefaults()</a> and
+<a href="Lurch.html#.setDocumentDefaults">setDocumentDefaults()</a>.  To create
+an instance of the Lurch app on your page, see
+<a href="Lurch.html#.createApp">createApp()</a>.</p></div>
+        
 
-
-
-
-
-    
-
-
-    
-    <h3 class="subtitle">Constructor</h3>
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="BoolSettingMetadata">new BoolSettingMetadata<span class="signature">(&hellip;args)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Passes the parameters to the superclass for initialization, then marks
-this setting as one that should be represented in the UI using a
-checkbox.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">args</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>any</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                    &lt;repeatable&gt;<br>
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>same arguments as for the superclass constructor</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
+        
 
 
 <div class="details">
@@ -189,43 +114,12 @@ checkbox.</p>
 </div>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.87">, line 87</a>
-        </li>
-    </ul>
-
-
-
+        
     
     </div>
 
     
 
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="BoolSettingMetadata.html">BoolSettingMetadata</a></dt>
-            <dd></dd>
-        </dl>
     
 
      
@@ -255,10 +149,10 @@ checkbox.</p>
     
 
     <div class="method-type">
-    
+    <span class="method-type-signature is-static">static</span>
     </div>
 
-    <h4 class="method-name" id="convert">convert<span class="signature">(data)</span><span class="return-type-signature"> &rarr; {bool}</span>
+    <h4 class="method-name" id=".createApp">createApp<span class="signature">(element, options<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"> &rarr; {Promise}</span>
     </h4>
 
 
@@ -267,8 +161,30 @@ checkbox.</p>
 
 <div class="method-description">
     
-    <p>Treats <code>true</code> as true and <code>&quot;true&quot;</code> as true, but all other values as
-false.</p>
+    <p>This is the main function that is to be used by clients.  It creates an
+instance of the Lurch app in any element on the page.  Typically, one
+calls this on a textarea to be used as the editor, or on a DIV into which
+you want this function to automatically create a new texteditor to use
+as the base for the app.</p>
+<p>It returns a Promise that resolves when TinyMCE (the underlying editor
+technology on which Lurch is built) has completed its setup phase (though
+the editor instance may not yet have had its <code>init</code> event called).  The
+resolve call will be passed the new TinyMCE editor instance.</p>
+<p>The <code>options</code> object can have any subset of the following fields:</p>
+<ul>
+<li><code>options.menuData</code> will be used to override default menus.  The format
+is the same as it is for <a href="https://www.tiny.cloud/docs/tinymce/latest/menus-configuration-options/#menu">TinyMCE menu specifications</a>.</li>
+<li><code>options.toolbarData</code> will be used to override default toolbars.  The
+format is the same as it is for <a href="https://www.tiny.cloud/docs/tinymce/latest/toolbar-configuration-options/#toolbar">TinyMCE toolbar specifications</a>.</li>
+<li><code>options.editor</code> will be used to override anything passed to TinyMCE's
+<code>init()</code> call.  This is inherently stronger than the previous two
+combined, because menu and toolbar data is part of what is passed to
+the <code>init()</code> call, but it can be cumbersome to override the entire
+menu or toolbar setup, and thus the previous two options are available
+for overriding just pieces of them.  E.g., you can provide <code>menuData</code>
+as <code>{ 'file' : { ... } }</code> and it will affect only the file menu,
+because it is incorporated into the defaults using <code>Object.assign()</code>.</li>
+</ul>
 </div>
 
 
@@ -287,7 +203,7 @@ false.</p>
 
         <li>
             
-                <span class="param-name">data</span>
+                <span class="param-name">element</span>
             
 
             
@@ -295,17 +211,61 @@ false.</p>
 
 
     <span class="param-type">
-        <code>any</code>
+        <code>HTMLElement</code>
     </span>
     
 
             
 
             
+                <span class="param-attributes">
+                
+
+                
+
+                
+                </span>
+            
 
             
 
-            <div class="param-description"><p>the data to convert to boolean</p></div>
+            <div class="param-description"><p>the element into which to install the app</p></div>
+            
+        </li>
+
+    
+
+        <li>
+            
+                <span class="param-name">options</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Object</code>
+    </span>
+    
+
+            
+
+            
+                <span class="param-attributes">
+                
+
+                
+                    &lt;nullable&gt;<br>
+                
+
+                
+                </span>
+            
+
+            
+
+            <div class="param-description"><p>the options to use for the new app</p></div>
             
         </li>
 
@@ -355,10 +315,10 @@ false.</p>
     
         <li class="method-returns">
             
-                <code>bool</code>
+                <code>Promise</code>
             
             
-                <p>the same data, now as a boolean</p>
+                <p>a promise that resolves as documented above</p>
             
         </li>
     
@@ -382,7 +342,305 @@ false.</p>
     <h4 class="method-heading">Source</h4>
     <ul>
         <li class="method-source">
-            <a href="settings-metadata.js.html">settings-metadata.js</a><a href="settings-metadata.js.html#source.108">, line 108</a>
+            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.78">, line 78</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".setAppDefaults">setAppDefaults<span class="signature">(object)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>If you want to override the default settings for the application, call
+this method with a set of key-value pairs.  Note that this may not affect
+the experience of a user who has already customized their own application
+settings, because this changes only the defaults.  The user's chosen
+settings naturally override the defaults.</p>
+<p>To see which keys are available and what the corresponding sensible
+values are, view the file <code>settings-install.js</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">object</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Object</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>a set of key-value pairs to use as application
+setting defaults</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Lurch.html#.setDocumentDefaults">setDocumentDefaults()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.238">, line 238</a>
+        </li>
+    </ul>
+
+
+
+    </article>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".setDocumentDefaults">setDocumentDefaults<span class="signature">(object)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>If you want to override the default settings for Lurch documents, call
+this method with a set of key-value pairs.  Note that this may not affect
+the experience of a user who loads a document that has some settings
+specified within it, because this changes only the defaults.  A
+document's explicitly specified settings naturally override the defaults.</p>
+<p>To see which keys are available and what the corresponding sensible
+values are, view the file <code>document-settings.js</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">object</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>Object</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>a set of key-value pairs to use as document
+setting defaults</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h4 class="method-heading">See</h4>
+        <ul>
+            
+                <li><a href="Lurch.html#.setAppDefaults">setAppDefaults()</a></li>
+            
+        </ul>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="editor.js.html">editor.js</a><a href="editor.js.html#source.264">, line 264</a>
         </li>
     </ul>
 
