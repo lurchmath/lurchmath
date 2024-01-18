@@ -44,6 +44,7 @@ const menuData = {
         'undo redo',
         'cut copy paste pastetext',
         'selectall',
+        'link unlink openlink',
         'searchreplace',
         'listprops',
         'preferences'
@@ -71,6 +72,7 @@ const menuData = {
 }
 let toolbarData = 'undo redo | '
                 + 'styles bold italic | '
+                + 'link unlink | '
                 + 'alignleft aligncenter alignright outdent indent | '
                 + 'numlist bullist'
 
@@ -100,7 +102,7 @@ loadScript( TinyMCEURL ).then( () => {
         menubar : 'file edit insert format document help',
         menu : menuData,
         contextmenu : 'atoms',
-        plugins : 'lists', // 'fullscreen', // enable full screen mode
+        plugins : 'lists link', // 'fullscreen', // enable full screen mode
         statusbar : false,
         setup : editor => {
             // As soon as the editor is ready, ensure it's not in front
