@@ -148,7 +148,7 @@ window.Lurch = {
         let toolbarData = options.toolbarData || (
             'undo redo | '
           + 'styles bold italic | '
-          + 'link unlink | '
+        //   + 'link unlink | ' // reduce toolbar clutter
           + 'alignleft aligncenter alignright outdent indent | '
           + 'numlist bullist'
         )
