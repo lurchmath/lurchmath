@@ -4,6 +4,12 @@
  * well) is in main-app-styles.css.
  */
 
+p, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Times New Roman', Times, serif;
+}
+p {
+  font-size: 12pt;
+}
 /* Expression atoms */
 .putdown-notation {
     font-size : 16pt;
@@ -14,7 +20,7 @@
     font-family : 'Courier New', Courier, monospace;
 }
 .ML__latex {
-    font-size : 1.2em;
+    font-size : 1.0rem;
 }
 /*
  * The following was an experiment in using background color for expression feedback.
@@ -60,81 +66,175 @@ span.feedback-marker-error::after {
     font-weight: bold;
 }
 
-/* shells */
-/* Boxed view shows a border all around, with content indented inside it. */
-body.shell-style-boxed div.lurch-atom[data-shell_title] {
-    position: relative;
-    border: 1px solid #bbb;
+/* Editing View */
+/* Shows a border around atoms which highlights when hovered. */
+body.shell-style-boxed {
+
+  /* Atoms (non-shells) */
+  .lurch-atom {
+    /* border: 1px solid #bbb; */
+    border: 1px solid #b4d7ff;
     border-radius: 6px;
-    padding: 0 1em;
-    margin: 2ex 0;
-}
-/* If the shell is a given, we make the border dashed. */
-body.shell-style-boxed div.lurch-atom[data-shell_title].lurch-given {
-    /* This class may no longer be supported
-       and may need some JS code added to support it again. */
-    border: 2px dashed #bbb;
-}
-/* Minimal view shows the border on top and bottom only, and thus the content
-   does not need to be intended to accommodate a left-side border. */
-body.shell-style-minimal div.lurch-atom[data-shell_title] {
+    padding: 1px 2px;
+  }
+  /* Override that for atoms that are shells */
+  div.lurch-atom[data-shell_title] {
     position: relative;
-    border-top: 1px solid #bbb;
-    border-bottom: 1px solid #bbb;
-    margin: 2ex 0;
-}
-body.shell-style-minimal div.lurch-atom[data-shell_title].lurch-given {
-    /* This class may no longer be supported
-       and may need some JS code added to support it again. */
-    border-top: 2px dashed #bbb;
-    border-bottom: 2px dashed #bbb;
-}
-/* Minimal view of subproofs (shells with no title) is to show no borders at all. */
-body.shell-style-minimal div.lurch-atom[data-shell_title=""] {
-    border: none;
-}
-div.lurch-atom[data-shell_title]::before {
+    border: 1px solid #b4d7ff;
+    border-radius: 6px;
+    padding: 0.8rem 2rem 0.6rem;
+    margin: 1.5rem 0 1rem;
+  }
+  
+  /* Make atom borders thick when hovered */
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
+    outline: 3px solid #b4d7ff
+  }
+  /* Reduce the padding and margins for subproofs */
+  div.lurch-atom[data-shell_title=""] {
+    padding: 0.5em 0.75em;
+    margin: 1ex 0;
+  }
+  /* If the shell is a given, we make the border dashed. */
+  div.lurch-atom[data-shell_title].lurch-given {
+      /* This class may no longer be supported
+         and may need some JS code added to support it again. */
+      border: 2px dashed #bbb;
+  }
+  div.lurch-atom[data-shell_title]::before {
     content: attr(data-shell_title);
-    color: #bbb;
+    /* color: #bbb; */
+    color: #aaa;
     background-color: white;
     font-weight: bold;
     position: absolute;
     top: -9pt;
     left: 6pt;
     padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
+      content: '✓';
+      color: #4CAF50;
+      background-color: white;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 6pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
+      content: '✗';
+      color: rgb(235,78,50);
+      background-color: white;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 6pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
+      content: '?';
+      color: rgb(216, 180, 0);
+      background-color: white;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 6pt;
+      padding: 0 6pt;
+  }
 }
-div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
-    content: '✓';
-    color: #4CAF50;
-    background-color: white;
-    font-family: 'Lucida Grande';
-    font-weight: bold;
-    position: absolute;
-    bottom: -7pt;
-    right: 6pt;
-    padding: 0 6pt;
+
+/* Minimal view shows no borders and uses whitespace to visually surround its
+   content. */
+body.shell-style-minimal {
+
+  div.lurch-atom[data-shell_title] {
+    position: relative;
+    border: none;
+    /* border-top: 1px solid #bbb; */
+    /* border-bottom: 1px solid #bbb; */
+    /* margin: 2ex 0; */
+    /* padding: 1em 0 1em 1em; */
+    padding: 0.8rem 2rem 0.6rem;
+    margin: 1.5rem 0 1rem;
+  }
+  /* Highlighting of nested shells on hover */
+  /* :not(:not(div.lurch-atom[data-shell_title]:hover),div.lurch-atom[data-shell_title]:has(div.lurch-atom[data-shell_title]:hover)) {
+    background-color: #e7f3fd;
+  } */
+
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
+    background-color: #e7f3fd;
+  }
+  
+  div.lurch-atom[data-shell_title].lurch-given {
+    /* This class may no longer be supported
+       and may need some JS code added to support it again. */
+    border-top: 2px dashed #bbb;
+    border-bottom: 2px dashed #bbb;
+  }
+  /* Minimal view of subproofs (shells with no title) is to be indented on the
+     left according to it's nesting level. */
+  div.lurch-atom[data-shell_title=""] {
+      border: none;
+      margin: 0;
+      padding: 0 0 0 1.5rem;
+  }
+  div.lurch-atom[data-shell_title]::before {
+      content: attr(data-shell_title);
+      color: #aaa;
+      background-color: white;
+      font-weight: bold;
+      position: absolute;
+      top: -9pt;
+      /* left: 6pt; */
+      left: 0pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
+      content: '✓';
+      color: #4CAF50;
+      background-color: white;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 0pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
+      content: '✗';
+      color: red;
+      background-color: white;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 0pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
+      content: '?';
+      color: rgb(216, 180, 0);
+      background-color: white;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 0pt;
+      padding: 0 6pt;
+  }
 }
-div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
-    content: '✗';
-    color: red;
-    background-color: white;
-    font-family: 'Lucida Grande';
-    font-weight: bold;
-    position: absolute;
-    bottom: -7pt;
-    right: 6pt;
-    padding: 0 6pt;
-}
-div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
-    content: '?';
-    color: rgb(216, 180, 0);
-    background-color: white;
-    font-family: 'Lucida Grande';
-    font-weight: bold;
-    position: absolute;
-    bottom: -7pt;
-    right: 6pt;
-    padding: 0 6pt;
+
+/* for both modes, minimal and boxed, remove margins and padding from paragraphs. */
+div.lurch-atom[data-shell_title] p,
+body.shell-style-minimal div.lurch-atom[data-shell_title] p
+ {
+  margin: 0;
+  padding: 0;
 }
 
 /* Dependency URL atoms  */
@@ -172,5 +272,5 @@ div.LC-meaning-preview {
 /* Make the body of the editor look completely different if we are editing the
    header of a document, so that users do not confuse headers with documents. */
 body.header-editor {
-    background-color: #eeeeee;
+    background-color: #ddd;
 }
