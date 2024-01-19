@@ -67,8 +67,11 @@ export const loadFromQueryString = editor => {
         // window.history.replaceState( null, null, appURL() )
     } else if ( isValidURL( source ) ) {
         loadFromURL( source )
-        .then( content => new LurchDocument( editor ).setDocument( content ) )
-        .catch( () => Dialog.notify( editor, 'error',
+        .then( content => {
+            const LD = new LurchDocument( editor )
+            LD.setDocument( content )
+            LD.setFileID( source )
+        } ).catch( () => Dialog.notify( editor, 'error',
             `Error importing document from ${source}.<br>
             (Not all servers permit downloads from other domains.)` ) )
         // window.history.replaceState( null, null, appURL() )

@@ -1,5 +1,5 @@
 
-import { appURL } from './utilities.js'
+import { appURL, isValidURL } from './utilities.js'
 
 /**
  * A Lurch document will have several parts, including at least the following.
@@ -103,8 +103,9 @@ export class LurchDocument {
      */
     setFileID ( id ) {
         this.editor.lastLurchFileID = id
-        this.getFilenameElement().textContent =
-            id.replace( /^file:\/\/\//, '' ).replace( /\.html$/, '' )
+        if ( isValidURL( id ) ) id = id.split( '/' ).pop()
+        id = id.replace( /\.html$/, '' )
+        this.getFilenameElement().textContent = id
     }
 
     /**
