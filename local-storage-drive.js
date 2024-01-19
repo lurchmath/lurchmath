@@ -168,7 +168,7 @@ export const install = editor => {
         text : 'New',
         icon : 'new-document',
         tooltip : 'New document',
-        shortcut : 'meta+N',
+        shortcut : 'alt+N',
         onAction : () => ensureWorkIsSaved( editor ).then( saved => {
             if ( saved ) new LurchDocument( editor ).newDocument()
         } )
@@ -176,7 +176,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'opendocument', {
         text : 'Open',
         tooltip : 'Open file',
-        shortcut : 'meta+O',
+        shortcut : 'alt+O',
         onAction : () => ensureWorkIsSaved( editor ).then( saved => {
             if ( saved ) Dialog.loadFile( editor, 'Open file' ).then( result => {
                 if ( result ) {
@@ -192,7 +192,7 @@ export const install = editor => {
         text : 'Save',
         icon : 'save',
         tooltip : 'Save or download file',
-        shortcut : 'meta+S',
+        shortcut : 'alt+S',
         onAction : () => {
             if ( new LurchDocument( editor ).getFileID() )
                 silentFileSave( editor )
@@ -208,7 +208,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'savedocumentas', {
         text : 'Save as...',
         tooltip : 'Save or download file',
-        shortcut : 'meta+shift+S',
+        shortcut : 'alt+shift+S',
         onAction : () => Dialog.saveFile( editor, 'Save file' ).then( saved => {
             if ( saved ) {
                 editor.setDirty( false )
