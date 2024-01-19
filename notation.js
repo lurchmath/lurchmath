@@ -41,8 +41,7 @@
  * @module Notation
  */
 
-import { LogicConcept, MathConcept }
-    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { LogicConcept, MathConcept } from './lde-cdn.js'
 import { getConverter } from './math-live.js'
 import { escapeHTML } from './utilities.js'
 

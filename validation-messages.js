@@ -2,7 +2,7 @@
 import { Atom, className as atomClassName } from './atoms.js'
 import { Shell } from './shells.js'
 import { getHeader } from './header-editor.js'
-import { Environment } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import { Environment } from './lde-cdn.js'
 import { isOnScreen } from './utilities.js'
 
 /**
