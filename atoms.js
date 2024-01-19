@@ -538,6 +538,7 @@ export class Atom {
      * @param {string?} reason - the reason for the validation result, as text to
      *   be displayed when the user hovers their mouse over the atom
      * @see {@link module:Shells.Shell#setValidationResult setValidationResult()}
+     * @see {@link module:Atoms.Atom#applyValidationMessage applyValidationMessage()}
      */
     setValidationResult ( result, reason ) {
         if ( !result ) {
@@ -548,6 +549,33 @@ export class Atom {
                 `<span class="feedback-marker-${result}">&nbsp;</span>` )
             this.setHoverText( reason )
         }
+    }
+
+    /**
+     * This function inspects the given {@link Message}, which the caller wants
+     * applied to this Atom.  It determines which of its feedback contents, if
+     * any, should be displayed to the user.  It then makes a call to
+     * {@link module:Atoms.Atom#setValidationResult setValidationResult()} to
+     * display that feedback.
+     * 
+     * The default implementation is to just extract the first piece of feedback
+     * from the message *other than a message about an undeclared variable* and
+     * use it, or if there is no such feedback in the message, erase the
+     * feedback shown on this Atom.  However, subclasses can override this
+     * default behavior if they have specific types of feedback that they want
+     * to prioritize, or they need to combine multiple types of feedback.
+     * 
+     * @param {Message} message - the message whose validation data should be
+     *   used to decorate this Atom
+     * @see {@link module:Atoms.Atom#setValidationResult setValidationResult()}
+     */
+    applyValidationMessage ( message ) {
+        const possibilities = message.getAllFeedback()
+        // Drop scoping errors about undeclared variables
+        const applicable = possibilities.filter(
+            item => item.code != 'undeclared variable' )
+        // Apply first remaining result
+        this.setValidationResult( applicable[0]?.result, applicable[0]?.reason )
     }
 
     /**

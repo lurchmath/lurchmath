@@ -101,11 +101,8 @@ export const install = editor => {
                 if ( message.element ) {
                     // console.log( message.element )
                     if ( Atom.isAtomElement( message.element ) ) {
-                        const result = message.getValidationResult()
-                        const reason = message.getValidationReason()
-                        if ( result !== undefined || reason !== undefined )
                         Atom.from( message.element, editor )
-                            .setValidationResult( result, reason )
+                            .applyValidationMessage( message )
                     } else {
                         console.log( 'Warning: feedback message received for unusable element' )
                         // console.log( JSON.stringify( message.content, null, 4 ) )

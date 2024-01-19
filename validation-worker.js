@@ -81,21 +81,21 @@ const getValidationResults = LC => {
         results.push( {
             type : 'scoping',
             result : 'invalid',
-            reason : `Trying to re-declare ${scopeErrors.redeclared.join(", ")}`
+            reason : `Trying to re-declare ${scopeErrors.redeclared.join(", ")}`,
+            redeclared : scopeErrors.redeclared
         } )
     if ( scopeErrors && scopeErrors.undeclared )
         results.push( {
             type : 'scoping',
             result : 'invalid',
-            reason : `Using ${scopeErrors.undeclared.join(", ")} undeclared`
+            reason : `Using ${scopeErrors.undeclared.join(", ")} undeclared`,
+            undeclared : scopeErrors.undeclared
         } )
     // Find any type of validation feedback that was produced before prop
     // validation, such as instantiation hint structure
-    const otherErrors = LC.getAttribute( 'validation results' )
-    const otherErrorTypes = Object.keys( otherErrors || { } )
-    for ( let type of otherErrorTypes )
-        if ( otherErrors[type].result == 'invalid' )
-            results.push( { type : 'misc', ...otherErrors[type] } )
+    const otherFeedback = LC.getAttribute( 'validation results' )
+    Object.keys( otherFeedback || { } ).forEach( type =>
+        results.push( { type, ...otherFeedback[type] } ) )
     // Final result is the prop validation result, if any
     const propResult = LDE.Validation.result( LC )
     if ( propResult )
