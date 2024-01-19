@@ -49,7 +49,6 @@ export const loadFromURL = url => new Promise( ( resolve, reject ) => {
  * Lurch document from that URL) or a filename in the browser's local storage
  * (and try to load a Lurch document from there).  Place the document in the
  * given editor on success, and report an error with a notification on failure.
- * Also, on success, erase the query string to make the URL cleaner.
  * 
  * @param {tinymce.Editor} editor - the TinyMCE editor instance into which to
  *   load the document specified in the query string, if there is one
@@ -65,14 +64,14 @@ export const loadFromQueryString = editor => {
         new LurchDocument( editor ).setDocument( readFile( source ) )
         if ( params.has( 'delete' ) && params.get( 'delete' ) == 'true' )
             deleteFile( source )
-        window.history.replaceState( null, null, appURL() )
+        // window.history.replaceState( null, null, appURL() )
     } else if ( isValidURL( source ) ) {
         loadFromURL( source )
         .then( content => new LurchDocument( editor ).setDocument( content ) )
         .catch( () => Dialog.notify( editor, 'error',
             `Error importing document from ${source}.<br>
             (Not all servers permit downloads from other domains.)` ) )
-        window.history.replaceState( null, null, appURL() )
+        // window.history.replaceState( null, null, appURL() )
     } else {
         Dialog.notify( editor, 'error', 'Not a valid file source: ' + source )
     }
