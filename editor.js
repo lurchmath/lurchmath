@@ -79,6 +79,12 @@ window.Lurch = {
      *    `[ 'To browser storage', 'To your computer' ]`.  Again, if you remove
      *    `'To browser storage'` from the list, you may also want to edit the
      *    file menu's contents so that it does not contain the "Delete" option.
+     *  - `options.helpPages` can be an array of objects of the form
+     *    `{ title : '...', url : '...' }`.  These will be displayed in the help
+     *    menu (which is omitted if no such pages are provided) in the order
+     *    they appear in this option.  Clicking any one of them just opens the
+     *    URL in a new window.  This allows each Lurch installation to have its
+     *    own custom set of help pages for students or other users.
      * 
      * The `options` object is stored as an `appOptions` member in the TinyMCE
      * editor instance once it is created, so that any part of the app can refer
@@ -139,11 +145,23 @@ window.Lurch = {
                 'dependency',
                 'clearvalidation validate',
                 'docsettings temptoggle'
-            ),
-            help : buildMenu( 'Help', 'help' )
+            )
         }, options.menuData || { } )
+
+        // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
             menuData.developer = buildMenu( 'Developer', 'viewdocumentcode' )
+
+        // Add any help pages from the options object to a new help menu.
+        // Further below, during editor initialization, we will install menu
+        // items with these names, associated with these help pages.
+        // (Each will be an object of the form {title,url}.)
+        ;( options.helpPages || [ ] ).forEach( ( _, index ) => {
+            if ( !menuData.help )
+                menuData.help = buildMenu( 'Help', `helpfile${index+1}` )
+            else
+                menuData.help.items += ' ' + `helpfile${index+1}`
+        } )
 
         // Define the data for the TinyMCE toolbars, using the defaults below,
         // unless they were overridden by the options object passed to us.
@@ -217,6 +235,13 @@ window.Lurch = {
                             editor.dom.doc.body.classList.add( 'header-editor' )
                         } )
                     }
+                    // Install any help pages specified in the options object
+                    ( options.helpPages || [ ] ).forEach( ( page, index ) => {
+                        editor.ui.registry.addMenuItem( `helpfile${index+1}`, {
+                            text : page.title,
+                            onAction : () => window.open( page.url, '_blank' )
+                        } )
+                    } )            
                     // Create keyboard shortcuts for all menu items
                     const menuItems = editor.ui.registry.getAll().menuItems
                     for ( let itemName in menuItems ) {
