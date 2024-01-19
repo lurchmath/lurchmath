@@ -54,7 +54,9 @@ import { isOnScreen } from './utilities.js'
 export const install = editor => {
 
     // Load the ValidationWorker module code so it can talk to us.
-    const worker = new Worker( 'validation-worker.js', { type : 'module' } )
+    const lurchPath = editor.appOptions.appRoot || '.'
+    const worker = new Worker( `${lurchPath}/validation-worker.js`,
+        { type : 'module' } )
 
     // Object for storing the progress notification we show during validation
     let progressNotification = null

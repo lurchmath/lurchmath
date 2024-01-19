@@ -85,6 +85,13 @@ window.Lurch = {
      *    they appear in this option.  Clicking any one of them just opens the
      *    URL in a new window.  This allows each Lurch installation to have its
      *    own custom set of help pages for students or other users.
+     *  - `options.appRoot` can be a relative path from the `index.html` file to
+     *    the root of the repository in which `editor.js` is located.  If you
+     *    are using the `index.html` provided in the Lurch repository, then you
+     *    do not need to provide this path, and it will default to `'.'`, which
+     *    is correct.  If your HTML page is in a different folder than this
+     *    repository, you will need to provide the path from the HTML page to
+     *    the repository.
      * 
      * The `options` object is stored as an `appOptions` member in the TinyMCE
      * editor instance once it is created, so that any part of the app can refer
@@ -191,9 +198,14 @@ window.Lurch = {
             // ...then set up the editor in the textarea from above,
             // again overriding any of our default options with those specified
             // in the options object passed to createApp(), if any.
+            const lurchPath = options.appRoot || '.'
             const tinymceSetupOptions = Object.assign( {
                 selector : '#editor',
-                content_css : [ 'document', 'editor-styles.css', MathLiveCSS ],
+                content_css : [
+                    'document',
+                    `${lurchPath}/editor-styles.css`,
+                    MathLiveCSS
+                ],
                 visual_table_class : 'lurch-borderless-table',
                 height : "100%",
                 promotion : false, // disable premium features advertisement
