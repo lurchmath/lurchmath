@@ -38,8 +38,7 @@ import { Atom, className as atomClassName } from './atoms.js'
 import { addAutocompleteFunction } from './auto-completer.js'
 import { Dialog, SelectBoxItem } from './dialog.js'
 import { Environment }
-    from '../lde/src/index.js'
-    // from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 import { lookup, store } from './document-settings.js'
 import { appSettings } from './settings-install.js'
 
