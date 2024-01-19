@@ -10,7 +10,8 @@
 import { Settings } from './settings.js'
 import {
     SettingsMetadata, SettingsCategoryMetadata, ShowWarningSettingMetadata,
-    CategorySettingMetadata, LongTextSettingMetadata, BoolSettingMetadata
+    CategorySettingMetadata, LongTextSettingMetadata, BoolSettingMetadata,
+    NoteMetadata
 } from './settings-metadata.js'
 
 /**
@@ -47,6 +48,15 @@ export const appSettings = new Settings(
                 'Width of application in browser window',
                 [ 'Fixed size', 'Full width' ],
                 'Full width'
+            ),
+            new BoolSettingMetadata(
+                'developer mode on',
+                'Enable developer menu (for debugging Lurch itself)',
+                false
+            ),
+            new NoteMetadata(
+                'If you toggle the developer menu on/off, you will need to reload '
+              + 'the application for the change to take effect.'
             )
         ),
         new SettingsCategoryMetadata(

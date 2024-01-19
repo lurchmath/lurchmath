@@ -155,6 +155,21 @@ export const install = editor => {
             Message.document( editor, 'putdown' ).send( worker )
         }
     } )
+
+    // Add developer menu item for debugging document meaning
+    editor.ui.registry.addMenuItem( 'viewdocumentcode', {
+        text : 'View document code',
+        icon : 'sourcecode',
+        tooltip : 'View the putdown code for the document in a new tab',
+        onAction : () => {
+            const code = Message.document( editor, 'putdown' ).content.code
+            const link = document.createElement( 'a' )
+            link.setAttribute( 'target', '_blank' )
+            const blob = new Blob( [ code ], { type: "text/plain" } )
+            link.href = URL.createObjectURL( blob )
+            link.click()
+        }
+    } )
 }
 
 export default { install }

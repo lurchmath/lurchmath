@@ -142,6 +142,8 @@ window.Lurch = {
             ),
             help : buildMenu( 'Help', 'help' )
         }, options.menuData || { } )
+        if ( appSettings.get( 'developer mode on' ) === true )
+            menuData.developer = buildMenu( 'Developer', 'viewdocumentcode' )
 
         // Define the data for the TinyMCE toolbars, using the defaults below,
         // unless they were overridden by the options object passed to us.
@@ -178,7 +180,7 @@ window.Lurch = {
                 height : "100%",
                 promotion : false, // disable premium features advertisement
                 toolbar : toolbarData,
-                menubar : 'file edit insert format document help',
+                menubar : 'file edit insert format document developer help',
                 menu : menuData,
                 contextmenu : 'atoms',
                 plugins : 'lists link', // 'fullscreen', // enable full screen mode
