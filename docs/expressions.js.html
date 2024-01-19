@@ -69,8 +69,9 @@ import {
 import { parse, represent } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
 import { appSettings } from './settings-install.js'
-import { Expression as LCExpression, Declaration as LCDeclaration }
-    from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
+import {
+    Expression as LCExpression, Declaration as LCDeclaration
+} from './lde-cdn.js'
 import { DeclarationType } from './declarations.js'
 
 let converter = null
