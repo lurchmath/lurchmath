@@ -18,7 +18,7 @@ import { lookup } from './document-settings.js'
 import {
     Dialog, TextInputItem, HTMLItem, CheckBoxItem, SelectBoxItem
 } from './dialog.js'
-import { parse, represent, syntaxTreeHTML } from './notation.js'
+import { parse, represent } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
 import { appSettings } from './settings-install.js'
 import { Expression as LCExpression, Declaration as LCDeclaration }
@@ -789,48 +789,10 @@ export class Expression extends Atom {
      *   menu
      */
     contextMenu () {
-        const heading = text =>
-            `<div style="background-color: #eeeeee; border: solid 1px #888888; padding: 0.5em;"
-             >${text}</div>`
-        const content = text =>
-            `<div style="border: solid 1px #888888; padding: 0.5em;"
-             >${text}</div>`
         return [
             {
                 text : 'View meaning',
-                onAction : () => {
-                    const previewDialog = new Dialog( 'Meaning', this.editor )
-                    previewDialog.removeButton( 'Cancel' )
-                    previewDialog.setTabs( 'Hierarchy', 'Code' )
-                    // Hierarchy tab
-                    const LCs = this.toLCs()
-                    let html = ''
-                    // Adding styles here may seem like a hack, but TinyMCE
-                    // actually has very restrictive CSS that will override
-                    // anything except the element's own styles, so we have no
-                    // choice but to be this direct about it.
-                    LCs.map( ( LC, index ) => {
-                        html += heading( `Logic Concept ${index+1} of ${LCs.length}:` )
-                        html += content( syntaxTreeHTML( LC ) )
-                    } )
-                    previewDialog.addItem(
-                        new HTMLItem( `<div class="LC-meaning-preview">${html}</div>` ),
-                        'Hierarchy' )
-                    // Code tab
-                    let putdown = ''
-                    LCs.map( ( LC, index ) => {
-                        putdown += `// Logic Concept ${index+1} of ${LCs.length}:\n`
-                        putdown += LC.toPutdown() + '\n\n'
-                    } )
-                    // Same comments as above apply here re: inline styles
-                    previewDialog.addItem(
-                        new HTMLItem( `<div class="LC-code-preview">
-                            <div style="font-family: monospace; white-space: pre;"
-                            >${putdown}</pre></div>` ),
-                        'Code' )
-                    previewDialog.show()
-                    previewDialog.showTab( appSettings.get( 'preferred meaning style' ) )
-                }
+                onAction : () => Dialog.meaningOfAtom( this )
             }
         ]
     }

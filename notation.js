@@ -229,32 +229,89 @@ addParser( 'smackdown', code => {
 addRepresentation( 'smackdown', code =>
     `<tt class='smackdown-notation'>${escapeHTML(code)}</tt>`  )
 
+// Internal use only - HTML-formatting functions used below
+const heading = text =>
+    `<div style="background-color: #eeeeee; border: solid 1px #888888; padding: 0.5em;"
+    >${text}</div>`
+const content = text =>
+    `<div style="border: solid 1px #888888; padding: 0.5em;"
+    >${text}</div>`
+const bulletize = list => list.length == 0 ? '' :
+    '<ul>' + list.map( x => `<li>${x}</li>` ).join( '\n' ) + '</ul>'
+const formatKeyValuePair = ( key, value ) => {
+    if ( key.startsWith( '_type_' ) && ( value === true ) ) {
+        return `Attribute: is a "${key.substring( 6 )}"`
+    } else {
+        return `Attribute: ${key} = ${escapeHTML( JSON.stringify( value ) )}`
+    }
+}
+
 /**
- * Create a universally understandable HTML representation for any given LC.
- * This will be used as a debugging tool for any power user who wants to see a
- * syntax-tree-like representation of any atom in their document.
+ * Create a universally understandable HTML representation for any LC or array
+ * of LCs.  This will be used as a debugging tool for any power user who wants
+ * to see a syntax-tree-like representation of any atom in their document.  This
+ * is the more user-friendly version of {@link module:Notation.putdownHTML
+ * putdownHTML()}.
  * 
- * @param {LogicConcept} LC - the LogicConcept to be represented
- * @returns {string} the HTML representation of the LogicConcept
+ * @param {LogicConcept | LogicConcept[]} LC - the LogicConcept to be
+ *   represented, or an array of LogicConcepts to be represented
+ * @returns {string} the HTML representation of the LogicConcept(s)
  * @function
+ * @see {@link module:Notation.putdownHTML putdownHTML()}
  */
 export const syntaxTreeHTML = LC => {
-    const bulletize = list => list.length == 0 ? '' :
-        '<ul>' + list.map( x => `<li>${x}</li>` ).join( '\n' ) + '</ul>'
-    const formatKeyValuePair = ( key, value ) => {
-        if ( key.startsWith( '_type_' ) && ( value === true ) ) {
-            return `Attribute: is a "${key.substring( 6 )}"`
-        } else {
-            return `Attribute: ${key} = ${escapeHTML( JSON.stringify( value ) )}`
-        }
+    // Base case: If it is one LC, build a hierarchical bulleted list.
+    if ( !( LC instanceof Array ) ) {
+        let attributes = LC =>
+            LC.getAttributeKeys().filter( key => key != 'symbol text' ).map(
+                key => formatKeyValuePair( key, LC.getAttribute( key ) ) )
+        if ( LC.constructor.className == 'Symbol' )
+            return escapeHTML( LC.text() ) + bulletize( attributes( LC ) )
+        else
+            return LC.constructor.className + '\n' + bulletize( [
+                ...attributes( LC ), ...LC.children().map( syntaxTreeHTML )
+            ] )
     }
-    let attributes = LC =>
-        LC.getAttributeKeys().filter( key => key != 'symbol text' ).map(
-            key => formatKeyValuePair( key, LC.getAttribute( key ) ) )
-    if ( LC.constructor.className == 'Symbol' )
-        return escapeHTML( LC.text() ) + bulletize( attributes( LC ) )
-    else
-        return LC.constructor.className + '\n' + bulletize( [
-            ...attributes( LC ), ...LC.children().map( syntaxTreeHTML )
-        ] )
+    // Inductive step: If it is an array of LCs, process them one at a time and
+    // put the results in a series of DIVs with headings.
+    // We manually add styles on each element because the output needs to be
+    // usable in TinyMCE dialogs, which are draconian about how they override
+    // your styles, unless you put them on the actual elements, thus overriding
+    // TinyMCE's stylesheet.
+    let html = ''
+    LC.map( ( oneLC, index ) => {
+        html += heading( `Logic Concept ${index+1} of ${LC.length}:` )
+        html += content( syntaxTreeHTML( oneLC ) )
+    } )
+    return `<div class="LC-meaning-preview">${html}</div>`
+}
+
+/**
+ * Create an HTML representation of the putdown notation for any LC or array
+ * of LCs.  This will be used as a debugging tool for any power user who wants
+ * to see the code for any atom in their document.  This is the more technical
+ * version of {@link module:Notation.syntaxTreeHTML syntaxTreeHTML()}.
+ * 
+ * @param {LogicConcept | LogicConcept[]} LC - the LogicConcept to be
+ *   represented, or an array of LogicConcepts to be represented
+ * @returns {string} the HTML representation of the LogicConcept(s)
+ * @function
+ * @see {@link module:Notation.syntaxTreeHTML syntaxTreeHTML()}
+ */
+export const putdownHTML = LC => {
+    // Base case: If it is one LC, just use putdown.
+    if ( !( LC instanceof Array ) ) return LC.toPutdown()
+    // Inductive step: If it is an array of LCs, process them one at a time.
+    // We manually add styles on each element because the output needs to be
+    // usable in TinyMCE dialogs, which are draconian about how they override
+    // your styles, unless you put them on the actual elements, thus overriding
+    // TinyMCE's stylesheet.
+    let putdown = ''
+    LC.map( ( oneLC, index ) => {
+        putdown += `// Logic Concept ${index+1} of ${LC.length}:\n`
+        putdown += oneLC.toPutdown() + '\n\n'
+    } )
+    return `<div class="LC-code-preview">
+        <div style="font-family: monospace; white-space: pre;"
+        >${putdown}</pre></div>`
 }

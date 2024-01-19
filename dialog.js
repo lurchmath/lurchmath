@@ -5,6 +5,7 @@ import { ImportFromURLItem, loadFromURL } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
 import { appURL, isValidURL } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
+import { syntaxTreeHTML, putdownHTML } from './notation.js'
 
 /**
  * This class makes it easier to create and use TinyMCE dialogs that have
@@ -627,6 +628,27 @@ export class Dialog {
             text : text,
             timeout : timeout
         } )
+    }
+
+    /**
+     * Show the meaning of any atom in the editor in a dialog, as long as the
+     * atom has a meaning as a LogicConcept.  This will use the representations
+     * defined in {@link module:Notation.syntaxTreeHTML syntaxTreeHTML()} and
+     * {@link module:Notation.putdownHTML putdownHTML()}, each in a separate tab
+     * of the dialog.
+     * 
+     * @param {Atom} atom - the Atom whose meaning should be shown
+     */
+    static meaningOfAtom ( atom ) {
+        const result = new Dialog( 'Meaning', atom.editor )
+        result.removeButton( 'Cancel' )
+        result.setTabs( 'Hierarchy', 'Code' )
+        const LCs = atom.toLCs()
+        result.addItem( new HTMLItem( syntaxTreeHTML( LCs ) ), 'Hierarchy' )
+        result.addItem( new HTMLItem( putdownHTML( LCs ) ), 'Code' )
+        result.show()
+        setTimeout( () =>
+            result.showTab( appSettings.get( 'preferred meaning style' ) ) )
     }
 
 }

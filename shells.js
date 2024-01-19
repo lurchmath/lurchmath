@@ -221,12 +221,17 @@ export class Shell extends Atom {
      */
     contextMenu () {
         const shellSubclassNames = Shell.subclassNames()
-        return shellSubclassNames.length == 0 ? [ ] : [
+        return ( shellSubclassNames.length == 0 ? [ ] : [
             {
                 text : 'Change environment type',
                 onAction : () => this.editShellType( shellSubclassNames )
             }
-        ]
+        ] )/*.concat( [
+            {
+                text : 'View meaning',
+                onAction : () => Dialog.meaningOfAtom( this )
+            }
+        ] )*/ // This will need to wait until toLCs() for shells gets an upgrade
     }
 
     /**
