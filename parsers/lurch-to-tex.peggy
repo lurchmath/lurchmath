@@ -161,8 +161,9 @@ LCs =  _ a:LC|..,__| _  { return a.join(' ') }
 LC "LC" = @( Meta / Contradiction / Given / Declaration / Environment / Expression)
 
 // givens
-Given "Given" = (':' / 'Assume'i __ ) 
-  a:(Environment / Expression) { return '\\text{Assume }'+a }
+Given "Given" = a:(':' / 'Assume'i __ / 'Given'i __ / 'Suppose'i __ / 'if'i __ ) 
+  b:(Environment / Expression) { 
+    return (a===':') ? `\\text{:}${b}` : `\\text{${a[0]} }${b}` }
 
 // environments
 Environment "Environment" = 
@@ -185,9 +186,9 @@ Shorthand = BIH / Ruleset / Rule / Thm / Proof
 
 BIHLabel = 'since'i / 'because'i / 'Recall'i
 BIH = BIHLabel { return '\\text{Recall }' }
-RulesetLabel = 'Rules'i / 'Axioms'i / 'Givens'i / 'Definitions'i
+RulesetLabel = 'Rules'i / 'Axioms'i / 'Definitions'i
 Ruleset = RulesetLabel ':'? { return '\\text{Rules:}' }
-RuleLabel = 'Rule'i / 'Axiom'i / 'Given'i / 'Definition'i
+RuleLabel = 'Rule'i / 'Axiom'i / 'Definition'i
 Rule = RuleLabel ':'? { return '\\text{Rule}' }
 ThmLabel = 'Theorem'i / 'Thm'i / 'Lemma'i / 'Corollary'i
 Thm = ThmLabel ':'? { return '\\text{Theorem}' }
