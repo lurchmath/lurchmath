@@ -3,21 +3,33 @@
  * Styling for the main app page (which contains the editor and other things as
  * well) is in main-app-styles.css.
  */
-
-p, h1, h2, h3, h4, h5, h6 {
-  font-family: 'Times New Roman', Times, serif;
+ 
+ @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+ /* for experimenting, this shold let us change most fonts */
+* {
+  font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
 }
+
+/* set css variable for \text mode in Math Live*/
+:root {
+  --_text-font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
+}
+/* p, h1, h2, h3, h4, h5, h6 {
+  font-family: 'TeX Gyre Pagella', Palatino, 'Palatino Linotype', 'Palatino LT STD', 'Book Antiqua', Georgia, serif; 
+} */
 p {
   font-size: 12pt;
 }
 /* Expression atoms */
 .putdown-notation {
     font-size : 16pt;
-    font-family : 'Courier New', Courier, monospace;
+    font-family : 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+    /* 'Courier New', Courier, monospace; */
 }
 .smackdown-notation {
     font-size : 16pt;
-    font-family : 'Courier New', Courier, monospace;
+    font-family : 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+    /* 'Courier New', Courier, monospace; */
 }
 .ML__latex {
     font-size : 1.0rem;
@@ -154,18 +166,11 @@ body.shell-style-minimal {
   div.lurch-atom[data-shell_title] {
     position: relative;
     border: none;
-    /* border-top: 1px solid #bbb; */
-    /* border-bottom: 1px solid #bbb; */
-    /* margin: 2ex 0; */
-    /* padding: 1em 0 1em 1em; */
     padding: 0.8rem 2rem 0.6rem;
     margin: 1.5rem 0 1rem;
   }
-  /* Highlighting of nested shells on hover */
-  /* :not(:not(div.lurch-atom[data-shell_title]:hover),div.lurch-atom[data-shell_title]:has(div.lurch-atom[data-shell_title]:hover)) {
-    background-color: #e7f3fd;
-  } */
 
+  /* Highlighting of nested shells on hover */
   :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
     background-color: #e7f3fd;
   }
@@ -261,7 +266,8 @@ body.shell-style-minimal div.lurch-atom[data-shell_title] p
 
 /* Other */
 span.URL {
-    font-family : 'Courier New', Courier, monospace;
+    font-family : 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+    /* 'Courier New', Courier, monospace; */
     font-size: small;
 }
 div.LC-meaning-preview {

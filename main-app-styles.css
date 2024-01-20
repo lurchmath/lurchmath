@@ -6,6 +6,7 @@
 
 /* import Lato font for Logo */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 /* Background color (not visible in full screen mode) */
 body {
@@ -44,4 +45,36 @@ textarea#editor {
 }
 #logo #check { 
     color:#4CAF50;
+}
+#logo a { 
+    color:#000;
+    text-decoration: none;
+}
+
+/* Document File Name */
+div:has(> #lurch-filename-display) {
+  position: relative;
+  padding-top: 0.3rem;
+}
+
+#lurch-filename-display {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+  color: darkgoldenrod;
+  font-weight: 500;
+}
+#lurch-filename-display::before {
+  content: '(';
+  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+  color: darkslategrey;
+  font-weight: 500;
+}
+#lurch-filename-display::after {
+  content: ')';
+  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+  color: darkslategrey;
+  font-weight: 500;
 }
