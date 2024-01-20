@@ -67,8 +67,6 @@ export class LurchDocument {
             filenameDisplay = document.createElement( 'div' )
             filenameDisplay.id = 'lurch-filename-display'
             filenameDisplay.classList.add( 'tox-mbtn' )
-            filenameDisplay.style.color = '#aaaaaa'
-            filenameDisplay.style.paddingLeft = '1rem'
             menubar.appendChild( filenameDisplay )
         }
         return filenameDisplay
