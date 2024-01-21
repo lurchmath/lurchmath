@@ -9,7 +9,13 @@
 * {
   font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
 }
-
+code {
+  background-color: rgb(230, 230, 230);
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+}
 /* set css variable for \text mode in Math Live*/
 :root {
   --_text-font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
