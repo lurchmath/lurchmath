@@ -470,7 +470,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'temptoggle', {
         text : 'Toggle environment style',
         tooltip : 'Toggle between minimal and boxed styles for environments',
-        shortcut : 'Meta+Shift+B',
+        shortcut : 'Meta+0',
         onAction : () => {
             const current = lookup( editor, 'shell style' )
             store( editor, 'shell style', current == 'boxed' ? 'minimal' : 'boxed' )
