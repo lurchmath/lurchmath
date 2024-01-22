@@ -571,6 +571,10 @@ export class Atom {
      */
     applyValidationMessage ( message ) {
         const possibilities = message.getAllFeedback()
+        // If it only has an undeclared variable error don't change the validation
+        // result as there might have been a prior message that sent it.
+        if (possibilities.length === 1 && 
+            possibilities[0].code === 'undeclared variable') return
         // Drop scoping errors about undeclared variables
         const applicable = possibilities.filter(
             item => item.code != 'undeclared variable' )
