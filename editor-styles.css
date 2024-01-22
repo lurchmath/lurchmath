@@ -9,13 +9,7 @@
 * {
   font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
 }
-code {
-  background-color: rgb(230, 230, 230);
-  font-size: 0.9em;
-  padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-}
+
 /* set css variable for \text mode in Math Live*/
 :root {
   --_text-font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
@@ -108,20 +102,22 @@ body.shell-style-boxed {
   :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
     outline: 3px solid #b4d7ff
   }
-  /* Reduce the padding and margins for subproofs */
+  /* Reduce the padding and margins for subproofs and premises */
   div.lurch-atom[data-shell_title=""] {
     padding: 0.5em 0.75em;
     margin: 1ex 0;
   }
+  
   /* If the shell is a given, we make the border dashed. */
   div.lurch-atom[data-shell_title].lurch-given {
       /* This class may no longer be supported
          and may need some JS code added to support it again. */
       border: 2px dashed #bbb;
   }
+  
+  /* Add a shell title */
   div.lurch-atom[data-shell_title]::before {
     content: attr(data-shell_title);
-    /* color: #bbb; */
     color: #aaa;
     background-color: white;
     font-weight: bold;
@@ -130,6 +126,11 @@ body.shell-style-boxed {
     left: 6pt;
     padding: 0 6pt;
   }
+  /* Add a shell title for premises for now (possibly temporary) */
+  div.lurch-atom[data-metadata_type='"premise"']::before {
+    content: 'Premise';
+  }
+
   div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
       content: '✓';
       color: #4CAF50;
@@ -163,6 +164,15 @@ body.shell-style-boxed {
       right: 6pt;
       padding: 0 6pt;
   }
+  /* Code blocks get a shaded background */
+  code {
+    background-color: rgb(230, 230, 230);
+    font-size: 0.9em;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+  }
+
 }
 
 /* Minimal view shows no borders and uses whitespace to visually surround its
@@ -173,7 +183,7 @@ body.shell-style-minimal {
     position: relative;
     border: none;
     padding: 0.8rem 2rem 0.6rem;
-    margin: 1.5rem 0 1rem;
+    margin: 1rem 0; 
   }
 
   /* Highlighting of nested shells on hover */
@@ -187,6 +197,7 @@ body.shell-style-minimal {
     border-top: 2px dashed #bbb;
     border-bottom: 2px dashed #bbb;
   }
+
   /* Minimal view of subproofs (shells with no title) is to be indented on the
      left according to it's nesting level. */
   div.lurch-atom[data-shell_title=""] {
@@ -194,6 +205,11 @@ body.shell-style-minimal {
       margin: 0;
       padding: 0 0 0 1.5rem;
   }
+
+  /* Now that we have editing/boxed view, this is no longer needed and we can
+     make much more M^2 documents without it. We can think of this as
+     hiding/showing an attribue of the shells, just like the boxed borders
+     shows their scopes.
   div.lurch-atom[data-shell_title]::before {
       content: attr(data-shell_title);
       color: #aaa;
@@ -201,10 +217,10 @@ body.shell-style-minimal {
       font-weight: bold;
       position: absolute;
       top: -9pt;
-      /* left: 6pt; */
       left: 0pt;
       padding: 0 6pt;
-  }
+  } 
+  */
   div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
       content: '✓';
       color: #4CAF50;
@@ -237,6 +253,14 @@ body.shell-style-minimal {
       bottom: -7pt;
       right: 0pt;
       padding: 0 6pt;
+  }
+  /* Code blocks use the same font, slightly larger, with a standard background
+     and less padding. */
+  code {
+    font-size: 0.95em;
+    padding: 0.2em;
+    border-radius: 4px;
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
   }
 }
 
