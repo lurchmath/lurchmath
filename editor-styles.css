@@ -182,8 +182,8 @@ body.shell-style-minimal {
   div.lurch-atom[data-shell_title] {
     position: relative;
     border: none;
-    padding: 0.8rem 2rem 0.6rem;
-    margin: 1rem 0; 
+    padding: 0.5rem 1rem 0.5rem;
+    margin: 0.5rem 0; 
   }
 
   /* Highlighting of nested shells on hover */
