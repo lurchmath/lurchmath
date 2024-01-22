@@ -72,14 +72,14 @@
       // otherwise the next term is not a reciprocal, so append and update latest  
       } else {
         ans += (ans.length>0 && /\d$/.test(ans) && /^\d/.test(latest)) 
-               ? `\\cdot{}${latest}` 
+               ? `\\cdot ${latest}` 
                : latest
         latest = next
       }
     }
     // no more factors, so just cat the latest
     ans += (ans.length>0 && /\d$/.test(ans) && /^\d/.test(latest)) 
-           ? `\\cdot{}${latest}` 
+           ? `\\cdot ${latest}` 
            : latest
     return ans
   }
@@ -255,7 +255,7 @@ Expression "Expression" = Quantified / Binding / Prop / EFA
 
 // quantified binding expressions
 Quantified = a:BindingSymbol b:Binding
-          { return `${a}${b}` }
+          { return `${a} ${b}` }
 
 // binding expressions
 Binding = a:Symbol (period / '↦') b:(Expression / Binding) 
@@ -271,7 +271,7 @@ Implies       = a:Or|1..,'⇒'/' implies '|     { return texJoin('\\Rightarrow',
 Or            = a:And|1..,' or '/'∨'|         { return texJoin('\\text{ or }',a) }
 And           = a:Not|1..,' and '/'∧'|        { return texJoin('\\text{ and }',a) }
 Not           = a:('¬'/'not ')? _ b:Stuff     { return (a==='not ' || a==='¬')
-                                                        ? texUnary('\\neg{}',b)
+                                                        ? texUnary('\\neg ',b)
                                                         : b
                                               }
 
@@ -362,9 +362,9 @@ Natural = $( [1-9][0-9]* / '0' )
 
 // Symbols can't start with a digit, contain reserved constants, or keywords
 SymbolSeq = a:(BindingSymbol/Symbol/Number)|1..,comma| { return a.join(',') }
-BindingSymbol = ('∃!'/'exists unique ') { return '\\exists!' } /
-                ('∀'/'forall '/'for all ') { return '\\forall' } /
-                ('∃'/'exists ') { return '\\exists' } 
+BindingSymbol = ('∃!'/'exists unique ') { return '\\exists! ' } /
+                ('∀'/'forall '/'for all ') { return '\\forall ' } /
+                ('∃'/'exists ') { return '\\exists ' } 
 Symbol "Symbol" = a:( '≡' / '→←' / '~' / '"' [^"]* '"' /
                      !([0-9]/ReservedWord)
                      [^-\][()⟨⟩ \t\n✦{},.:+⋅/^=<≤¬→←⇒⇔|∀∃∩∪×∈⊆∖⁻°∘∧∨≡↦~≈！*]+ )

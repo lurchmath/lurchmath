@@ -55,14 +55,14 @@
       // otherwise the next term is not a reciprocal, so append and update latest  
       } else {
         ans += (ans.length>0 && /\d$/.test(ans) && /^\d/.test(latest)) 
-               ? `\\cdot{}${latest}` 
+               ? `\\cdot ${latest}` 
                : latest
         latest = next
       }
     }
     // no more factors, so just cat the latest
     ans += (ans.length>0 && /\d$/.test(ans) && /^\d/.test(latest)) 
-           ? `\\cdot{}${latest}` 
+           ? `\\cdot ${latest}` 
            : latest
     return ans
   }
@@ -573,7 +573,7 @@ function peg$parse(input, options) {
   var peg$f10 = function(body, a) { return `${body}\\text{ for some }${a}` };
   var peg$f11 = function(a, b) { return `\\text{Let }${a}\\text{ be such that }${b}` };
   var peg$f12 = function(a) { return `\\text{Let }${a}` };
-  var peg$f13 = function(a, b) { return `${a}${b}` };
+  var peg$f13 = function(a, b) { return `${a} ${b}` };
   var peg$f14 = function(a, b) { return `${a},${b}` };
   var peg$f15 = function(a) { return '\\rightarrow\\leftarrow' };
   var peg$f16 = function(a) { return texJoin('\\Leftrightarrow',a) };
@@ -581,7 +581,7 @@ function peg$parse(input, options) {
   var peg$f18 = function(a) { return texJoin('\\text{ or }',a) };
   var peg$f19 = function(a) { return texJoin('\\text{ and }',a) };
   var peg$f20 = function(a, b) { return (a==='not ' || a==='¬')
-                                                        ? texUnary('\\neg{}',b)
+                                                        ? texUnary('\\neg ',b)
                                                         : b
                                               };
   var peg$f21 = function(a, b, c) { return `${a}\\colon ${b}\\to ${c}` };
@@ -627,9 +627,9 @@ function peg$parse(input, options) {
   var peg$f51 = function(b) { return `\\langle{${b}}\\rangle` };
   var peg$f52 = function(a) { return `\\left(${a}\\right)` };
   var peg$f53 = function(a) { return a.join(',') };
-  var peg$f54 = function() { return '\\exists!' };
-  var peg$f55 = function() { return '\\forall' };
-  var peg$f56 = function() { return '\\exists' };
+  var peg$f54 = function() { return '\\exists! ' };
+  var peg$f55 = function() { return '\\forall ' };
+  var peg$f56 = function() { return '\\exists ' };
   var peg$f57 = function(a) { let b =  Array.isArray(a) ? a[1].join('') : a
     return (b.length>1) ? `\\text{${b}}` : b };
   var peg$currPos = 0;
