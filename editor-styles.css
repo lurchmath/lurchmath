@@ -32,7 +32,7 @@ p {
     /* 'Courier New', Courier, monospace; */
 }
 .ML__latex {
-    font-size : 1.0rem;
+    font-size : 1.2rem;
 }
 /*
  * The following was an experiment in using background color for expression feedback.
@@ -82,6 +82,9 @@ span.feedback-marker-error::after {
 /* Shows a border around atoms which highlights when hovered. */
 body.shell-style-boxed {
 
+  p {
+    margin: 0.2rem 0;
+  }
   /* Atoms (non-shells) */
   .lurch-atom {
     /* border: 1px solid #bbb; */
@@ -89,12 +92,16 @@ body.shell-style-boxed {
     border-radius: 6px;
     padding: 1px 2px;
   }
+  span.lurch-atom {
+    display: inline-block;
+    margin-top: 0.2rem;
+  }
   /* Override that for atoms that are shells */
   div.lurch-atom[data-shell_title] {
     position: relative;
     border: 1px solid #b4d7ff;
     border-radius: 6px;
-    padding: 0.8rem 2rem 0.6rem;
+    padding: 0.8rem 1rem 0.6rem;
     margin: 1.5rem 0 1rem;
   }
   
@@ -262,14 +269,10 @@ body.shell-style-minimal {
     border-radius: 4px;
     font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
   }
-}
-
-/* for both modes, minimal and boxed, remove margins and padding from paragraphs. */
-div.lurch-atom[data-shell_title] p,
-body.shell-style-minimal div.lurch-atom[data-shell_title] p
- {
-  margin: 0;
-  padding: 0;
+  p {
+    margin: 0;
+    padding: 0;
+  }
 }
 
 /* Dependency URL atoms  */
