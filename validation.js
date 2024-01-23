@@ -113,7 +113,7 @@ export const install = editor => {
                     // feedback about whole document; ignore for now
                 } else {
                     console.log( 'Warning: feedback message received with no target element' )
-                    // console.log( JSON.stringify( message.content, null, 4 ) )
+                    console.log( JSON.stringify( message.content, null, 4 ) )
                 }
             } else if ( message.is( 'progress' ) ) {
                 progressNotification.progressBar.value( message.get( 'complete' ) )
