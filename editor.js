@@ -157,7 +157,9 @@ window.Lurch = {
 
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
-            menuData.developer = buildMenu( 'Developer', 'viewdocumentcode' )
+            menuData.developer = buildMenu( 'Developer',
+                'viewdocumentcode redpen'
+            )
 
         // Add any help pages from the options object to a new help menu.
         // Further below, during editor initialization, we will install menu
@@ -254,6 +256,16 @@ window.Lurch = {
                             onAction : () => window.open( page.url, '_blank' )
                         } )
                     } )            
+                    // Add red pen menu item
+                    editor.ui.registry.addMenuItem( 'redpen', {
+                        text : 'Grading pen',
+                        tooltip : 'Enable grading pen style',
+                        shortcut : 'meta+shift+G',
+                        onAction : () => {
+                            editor.execCommand( 'Bold' )
+                            editor.execCommand( 'ForeColor', false, 'red' )
+                        }
+                    } )
                     // Create keyboard shortcuts for all menu items
                     const menuItems = editor.ui.registry.getAll().menuItems
                     for ( let itemName in menuItems ) {
