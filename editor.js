@@ -154,7 +154,8 @@ window.Lurch = {
                 'dependency',
                 'clearvalidation validate',
                 'docsettings temptoggle'
-            )
+            ),
+            help : buildMenu( 'Help', 'aboutlurch' )
         }, options.menuData || { } )
 
         // If developer mode is enabled in settings, create the Developer menu
@@ -268,6 +269,13 @@ window.Lurch = {
                             editor.execCommand( 'Bold' )
                             editor.execCommand( 'ForeColor', false, 'red' )
                         }
+                    } )
+                    // Add About Lurch menu item
+                    editor.ui.registry.addMenuItem( 'aboutlurch', {
+                        text : 'About Lurch',
+                        tooltip : 'About Lurch',
+                        onAction : () => window.open(
+                            'https://lurchmath.github.io/site/about/', '_blank' )
                     } )
                     // Create keyboard shortcuts for all menu items
                     const menuItems = editor.ui.registry.getAll().menuItems
