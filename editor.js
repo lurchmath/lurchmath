@@ -124,6 +124,7 @@ window.Lurch = {
         const menuData = Object.assign( {
             file : buildMenu( 'File',
                 'newlurchdocument opendocument savedocument savedocumentas deletesaved',
+                'embeddocument',
                 'print'
             ),
             edit : buildMenu( 'Edit',

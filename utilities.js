@@ -337,3 +337,26 @@ export const isValidURL = text => {
         return false
     }
 }
+
+/**
+ * This function inspects a string and finds the largest prefix of whitespace on
+ * each line, then removes that prefix from each line, unindenting the text
+ * maximally.  Blank lines are ignored.  The resulting string is returned.
+ * 
+ * @param {string} text - the text to un-indent as described above
+ * @returns {string} the unindented text
+ */
+export const fullUnindent = text => {
+    let shortestIndent = Infinity
+    const lines = text.split( '\n' )
+    for ( let i = 0 ; i < lines.length ; i++ ) {
+        if ( lines[i].trim() != '' ) {
+            const indentSize = /^\s*/.exec( lines[i] )[0].length
+            shortestIndent = Math.min( shortestIndent, indentSize )
+        }
+    }
+    for ( let i = 0 ; i < lines.length ; i++ )
+        if ( lines[i].trim() != '' )
+            lines[i] = lines[i].slice( shortestIndent )
+    return lines.join( '\n' )
+}

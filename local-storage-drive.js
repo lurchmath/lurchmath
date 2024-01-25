@@ -17,8 +17,8 @@
  */
 
 import { LurchDocument } from './lurch-document.js'
-import { Dialog, AlertItem } from './dialog.js'
-import { isValidURL } from './utilities.js'
+import { Dialog, AlertItem, LongTextInputItem } from './dialog.js'
+import { isValidURL, appURL } from './utilities.js'
 import { downloadFile } from './upload-download.js'
 
 // Internal use only
@@ -215,6 +215,32 @@ export const install = editor => {
                 removeAutosave()
             }
         } )
+    } )
+    editor.ui.registry.addMenuItem( 'embeddocument', {
+        text : 'Embed...',
+        tooltip : 'Embed document in a web page',
+        onAction : () => {
+            const html = new LurchDocument( editor ).getDocument()
+            const iframe = document.createElement( 'iframe' )
+            iframe.src = `${appURL()}?data=${encodeURIComponent( btoa( html ) )}`
+            iframe.style.width = '800px'
+            iframe.style.height = '400px'
+            const dialog = new Dialog( 'Embedding code', editor )
+            dialog.json.size = 'medium'
+            // We must put the styles in the element itself, to override
+            // TinyMCE's very aggressive CSS within dialogs:
+            dialog.addItem( new LongTextInputItem( 'code',
+                'Copy the following code into your web page' ) )
+            dialog.setInitialData( { code : iframe.outerHTML } )
+            dialog.removeButton( 'Cancel' )
+            dialog.setDefaultFocus( 'code' )
+            dialog.show()
+            const textarea = dialog.querySelector( 'textarea' )
+            textarea.select()
+            textarea.setAttribute( 'readonly', 'true' )
+            textarea.setAttribute( 'rows', 15 )
+            textarea.scrollTo( 0, 0 )
+        }
     } )
     editor.ui.registry.addMenuItem( 'deletesaved', {
         text : 'Delete a saved document',

@@ -186,17 +186,42 @@ export class LurchDocument {
     /**
      * Return the document being edited by the editor that was given at
      * construction time.  This includes its visible content as well as its
-     * metdata, which includes document settings and dependencies.
+     * metdata, which includes document settings and dependencies.  It may also
+     * include a link at the top of the document, which allows the reader to
+     * open the document in the live app from which it was saved.  That link can
+     * be customized using the parameter.
      * 
+     * @param {string|Function} openLink - the HTML content to use at the top of
+     *   the document, to provide a link for opening the document in the live
+     *   Lurch app.  If not provided, a sensible default is used, which is a DIV
+     *   containing just one link, whose URL is supplied by a small script that
+     *   runs at page load time and reads the document URL.  You can remove this
+     *   link entirely by setting this value to the empty string.  If this is a
+     *   function instead of a string, it will be called on the document content
+     *   *without* the open link, and should return an open link to be used as a
+     *   prefix.
      * @returns {string} the document in string form, ready to be stored in a
      *   filesystem
      * @see {@link LurchDocument#setDocument setDocument()}
      */
-    getDocument () {
+    getDocument ( openLink = LurchDocument.openLinkUsingURL ) {
         // Get the metadata and document as HTML strings
         const metadataHTML = this.editor.lurchMetadata.outerHTML
         const documentHTML = this.editor.getContent()
         // Use those to build the result
+        const body = `
+            ${metadataHTML}
+            <div id="document">${documentHTML}</div>
+        `
+        // Prefix the open link and return the result
+        return typeof( openLink ) == 'function' ? openLink( body ) + body :
+               typeof( openLink ) == 'string' ? openLink + body : body
+    }
+
+    // Internal use only.  Default parameter value for getDocument().
+    // Creates an open link that assumes the file is stored online somewhere,
+    // and uses its current URL to construct the link.
+    static openLinkUsingURL () {
         return `
             <div id="loadlink">
                 <p><a>Open this file in the Lurch web app</a></p>
@@ -206,8 +231,22 @@ export class LurchDocument {
                     link?.setAttribute( 'href', '${appURL()}?load=' + thisURL )
                 </script>
             </div>
-            ${metadataHTML}
-            <div id="document">${documentHTML}</div>
+        `
+    }
+
+    // Internal use only.  Creates an open link that assumes the file is small
+    // enough to be base-64 encoded into the URL query string.
+    static openLinkUsingBase64 ( body ) {
+        const data = encodeURIComponent( btoa( body ) )
+        return `
+            <div id="loadlink">
+                <p><a>Open this file in the Lurch web app</a></p>
+                <script language="javascript">
+                    const link = document.querySelector( '#loadlink > p > a' )
+                    const thisURL = encodeURIComponent( window.location.href )
+                    link?.setAttribute( 'href', '${appURL()}?data=${data}' )
+                </script>
+            </div>
         `
     }
 
