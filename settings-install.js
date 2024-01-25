@@ -89,15 +89,21 @@ export const appSettings = new Settings(
                 'Beginner'
             ),
             new CategorySettingMetadata(
+                'expository math editor type',
+                'Type of expository math editor to use',
+                [ 'Normal', 'Advanced' ],
+                'Normal'
+            ),
+            new BoolSettingMetadata(
+                'dollar sign shortcut',
+                'Use $ as a shortcut for entering expository math',
+                false
+            ),
+            new CategorySettingMetadata(
                 'preferred meaning style',
                 'Preferred style to use when viewing content\'s meaning',
                 [ 'Hierarchy', 'Code' ],
                 'Hierarchy'
-            ),
-            new BoolSettingMetadata(
-                'dollar sign shortcut',
-                'Use $ as a shortcut for entering expressions',
-                false
             ),
             new LongTextSettingMetadata(
                 'declaration type templates',

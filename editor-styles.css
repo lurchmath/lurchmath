@@ -82,8 +82,8 @@ span.feedback-marker-error::after {
 /* Shows a border around atoms which highlights when hovered. */
 body.shell-style-boxed {
 
-  /* Atoms (non-shells) */
-  .lurch-atom {
+  /* Atoms get borders (except not expository math atoms) */
+  .lurch-atom:not([data-metadata_type='"expositorymath"']) {
     /* border: 1px solid #bbb; */
     border: 1px solid #b4d7ff;
     border-radius: 6px;

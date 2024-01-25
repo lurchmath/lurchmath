@@ -12,6 +12,7 @@ import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
 import Expressions from './expressions.js'
+import ExpositoryMath from './expository-math.js'
 import Dependencies from './dependencies.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
@@ -231,6 +232,7 @@ window.Lurch = {
                     Settings.install( editor )
                     Atoms.install( editor )
                     Expressions.install( editor )
+                    ExpositoryMath.install( editor )
                     Shells.install( editor )
                     Dependencies.install( editor )
                     Validation.install( editor )
