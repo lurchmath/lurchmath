@@ -246,9 +246,9 @@ DeclareSeq = 'Declare 'i a:([^\n]|1..,__|) {
 ForSome = body:Expression __ 'for'i __ 'some'i __ a:SymbolSeq 
           { return `${body}\\text{ for some }${a}` }
 // the 'given' colon is optional since these are always 'given'.          
-Let =  'Let'i __ a:SymbolSeq __ ('be'i __)? 'such'i __ 'that'i __ b:Expression 
-       { return `\\text{Let }${a}\\text{ be such that }${b}` } /
-       'Let'i __ a:SymbolSeq { return `\\text{Let }${a}` }
+Let =  a:('Let'i) __ b:SymbolSeq __ c:('be'i __)? 'such'i __ 'that'i __ d:Expression 
+       { return `\\text{${a} }${b}\\text{${(c)?' '+c[0]:''} such that }${d}` } /
+       a:('Let'i) __ b:SymbolSeq { return `\\text{${a} }${b}` }
 
 // expressions - get's Stuff from Not
 Expression "Expression" = Quantified / Binding / Prop / EFA  

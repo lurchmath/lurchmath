@@ -571,8 +571,8 @@ function peg$parse(input, options) {
   // console.log(`Found Declare ${a}`)
   return `\\text{Declare ${a.join(',')}}` };
   var peg$f10 = function(body, a) { return `${body}\\text{ for some }${a}` };
-  var peg$f11 = function(a, b) { return `\\text{Let }${a}\\text{ be such that }${b}` };
-  var peg$f12 = function(a) { return `\\text{Let }${a}` };
+  var peg$f11 = function(a, b, c, d) { return `\\text{${a} }${b}\\text{${(c)?' '+c[0]:''} such that }${d}` };
+  var peg$f12 = function(a, b) { return `\\text{${a} }${b}` };
   var peg$f13 = function(a, b) { return `${a} ${b}` };
   var peg$f14 = function(a, b) { return `${a},${b}` };
   var peg$f15 = function(a) { return '\\rightarrow\\leftarrow' };
@@ -2015,7 +2015,7 @@ function peg$parse(input, options) {
                     s10 = peg$parseExpression();
                     if (s10 !== peg$FAILED) {
                       peg$savedPos = s0;
-                      s0 = peg$f11(s3, s10);
+                      s0 = peg$f11(s1, s3, s5, s10);
                     } else {
                       peg$currPos = s0;
                       s0 = peg$FAILED;
@@ -2067,7 +2067,7 @@ function peg$parse(input, options) {
           s3 = peg$parseSymbolSeq();
           if (s3 !== peg$FAILED) {
             peg$savedPos = s0;
-            s0 = peg$f12(s3);
+            s0 = peg$f12(s1, s3);
           } else {
             peg$currPos = s0;
             s0 = peg$FAILED;
