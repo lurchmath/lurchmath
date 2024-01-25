@@ -16,7 +16,7 @@
 import { Atom } from './atoms.js'
 import { lookup } from './document-settings.js'
 import {
-    Dialog, TextInputItem, HTMLItem, CheckBoxItem, SelectBoxItem
+    Dialog, TextInputItem, CheckBoxItem, SelectBoxItem
 } from './dialog.js'
 import { parse, represent } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
