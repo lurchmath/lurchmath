@@ -65,7 +65,6 @@ export const loadFromURL = url => new Promise( ( resolve, reject ) => {
  */
 export const loadFromQueryString = editor => {
     const params = new URL( window.location ).searchParams
-    console.log( params )
     // Handle the load=... case:
     if ( params.has( 'load' ) ) {
         const source = params.get( 'load' )
