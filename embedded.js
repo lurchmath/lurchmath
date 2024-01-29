@@ -43,8 +43,8 @@ const defaultAppURL = window.defaultAppURL
 // List of all iframes we've processed
 const iframes = [ ]
 // Add data to the list
-const saveIframeData = ( iframe, appURL, htmlContent ) =>
-    iframes.push( { iframe, origin : new URL( appURL ).origin, htmlContent } )
+const saveIframeData = ( iframe, htmlContent ) =>
+    iframes.push( { iframe, htmlContent } )
 // Look up data for an iframe
 const dataForIframe = iframe =>
     iframes.find( entry => entry.iframe === iframe )
@@ -54,17 +54,17 @@ const dataForWindow = window =>
 
 // Convert a given div into an embedded instance of the Lurch app
 const convertToEmbeddedLurch = div => {
-    // Figure out which URL we are using for the embedded app in this case
-    const appURL = div.getAttribute( 'appURL' ) || defaultAppURL
     // Create a new iframe with all the div's attributes
+    // (except appURL, which is used only below instead)
     const iframe = document.createElement( 'iframe' )
     Array.from( div.attributes ).forEach( pair => {
         if ( pair.name != 'appURL' )
             iframe.setAttribute( pair.name, pair.value )
     } )
     // Record this iframe so later events can find it
-    saveIframeData( iframe, appURL, div.outerHTML )
+    saveIframeData( iframe, div.outerHTML )
     // Put the app in the iframe and the iframe in the document
+    const appURL = div.getAttribute( 'appURL' ) || defaultAppURL
     iframe.setAttribute( 'src', appURL )
     div.replaceWith( iframe )
 }
@@ -73,7 +73,7 @@ const convertToEmbeddedLurch = div => {
 window.addEventListener( 'message', event => {
     if ( event.data == 'ready-for-embed' ) {
         const data = dataForWindow( event.source )
-        event.source.postMessage( { 'lurch-embed' : data.htmlContent }, data.origin )
+        event.source.postMessage( { 'lurch-embed' : data.htmlContent }, '*' )
     }
 }, false )
 
