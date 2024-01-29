@@ -143,8 +143,7 @@ export const install = editor => {
     const insertExpositoryMath = () => {
         const atom = Atom.newInline( editor, '', {
             type : 'expositorymath',
-            latex : '',
-            given : false
+            latex : ''
         } )
         atom.update()
         atom.editThenInsert()
