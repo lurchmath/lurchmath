@@ -15,24 +15,42 @@
 const defaultAppURL = window.defaultAppURL
     || 'http://lurchmath.github.io/lurchmath/index.html'
 
+// List of all iframes we've processed
+const iframes = [ ]
+// Add data to the list
+const saveIframeData = ( iframe, appURL, htmlContent ) =>
+    iframes.push( { iframe, origin : new URL( appURL ).origin, htmlContent } )
+// Look up data for an iframe
+const dataForIframe = iframe =>
+    iframes.find( entry => entry.iframe === iframe )
+// Find data based on its contentWindow
+const dataForWindow = window =>
+    iframes.find( entry => entry.iframe.contentWindow === window )
+
 // Convert a given div into an embedded instance of the Lurch app
 const convertToEmbeddedLurch = div => {
     // Figure out which URL we are using for the embedded app in this case
     const appURL = div.getAttribute( 'appURL' ) || defaultAppURL
-    // Create a new iframe containing the Lurch app, with all the div's attributes
+    // Create a new iframe with all the div's attributes
     const iframe = document.createElement( 'iframe' )
-    iframe.setAttribute( 'src', appURL )
     Array.from( div.attributes ).forEach( pair => {
         if ( pair.name != 'appURL' )
             iframe.setAttribute( pair.name, pair.value )
     } )
-    // When that iframe finished loading the app, send the div's contents to it
-    iframe.addEventListener( 'load',
-        () => iframe.contentWindow.postMessage(
-            { 'lurch-embed' : div.outerHTML }, new URL( appURL ).origin ) )
-    // Put the iframe in the document in place of the div
+    // Record this iframe so later events can find it
+    saveIframeData( iframe, appURL, div.outerHTML )
+    // Put the app in the iframe and the iframe in the document
+    iframe.setAttribute( 'src', appURL )
     div.replaceWith( iframe )
 }
+
+// When any iframe hears from the app, send its div's contents to it
+window.addEventListener( 'message', event => {
+    if ( event.data == 'ready-for-embed' ) {
+        const data = dataForWindow( event.source )
+        event.source.postMessage( { 'lurch-embed' : data.htmlContent }, data.origin )
+    }
+}, false )
 
 // Run the above function on all relevant divs in the document
 window.addEventListener( 'load', () => {
