@@ -1,5 +1,12 @@
 
 /**
+ * This script is separate from the Lurch app and is not imported anywhere in
+ * the Lurch app's code.  It is intended to be used in pages that want to embed
+ * within themselves small copies of the Lurch app, for example, to show small
+ * proofs or other small documents, such as in Lurch's documentation or in
+ * mathematical lessons on proofs.
+ * [Its source can be found here.](./embedded.js.html)
+ * 
  * The intent of this script is that any page on the web can import this script
  * and it will find all elements in the page of the form
  * `<div class='lurch-embed'>...</div>` and will transform each into an iframe
@@ -7,6 +14,24 @@
  * string using `postMessage()`.  The app is then free to load the content of
  * the div, as a document, and respect any attributes the user has attached to
  * that div, as part of that process.
+ * 
+ * That DIV may have any of the following attributes.
+ * 
+ *  - `appURL` - the URL of the Lurch app to use.  If not provided, this
+ *    defaults to the copy of the app hosted on the Lurch website,
+ *    `lurchmath.github.io/lurchmath`.
+ *  - `validate` - if set to true, the embedded copy of the Lurch app will not
+ *    only load the document defined inside the DIV tag, but will then also
+ *    run validation on it
+ *  - Any other attributes specified will be copied to the iframe that replaces
+ *    the DIV and is used to load the Lurch app.  For example, you may want to
+ *    specify height, width, border style, etc.
+ * 
+ * To see how you can format the contents of the DIV so that they will be
+ * understood by the embedded app, see {@link module:EmbedListener the
+ * EmbedListener module}.
+ * 
+ * @module EmbedScript
  */
 
 // Where the main app is stored, but this can be overridden by setting the
