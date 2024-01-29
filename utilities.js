@@ -360,3 +360,12 @@ export const fullUnindent = text => {
             lines[i] = lines[i].slice( shortestIndent )
     return lines.join( '\n' )
 }
+
+/**
+ * Determine whether the application is in an iframe inside another window.
+ * It does this by checking to see if the window containing the application is
+ * the top-level window in the browser or not.
+ * 
+ * @returns {boolean} true iff the application is not the top-level window
+ */
+export const isEmbedded = () => window.top !== window
