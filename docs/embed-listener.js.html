@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: Message</title>
+    <title>Lurch Web User Interface: embed-listener.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,1801 +34,230 @@
 </header>
 
 
-<main class="layout-main ">
+<main class="layout-main  layout-content--source">
   <div class="container">
-    <p class="page-kind">Class</p>
-    <h1 class="page-title">Message</h1>
+    <p class="page-kind">source</p>
+    <h1 class="page-title">embed-listener.js</h1>
     
 
 
 
+    
 
 <section>
+    <article>
+        <pre id="source" class="source-page line-numbers"><code class="language-js">
+/**
+ * This module provides an `install()` function for use in the editor's setup
+ * routine.  It takes action if and only if we detect that this instance of the
+ * Lurch application is embedded in an iframe, and is thus not a top-level app
+ * intended for users to edit, but an app that is being used in some other
+ * context (e.g., documentation, blog, online book, etc.) where the author of
+ * that site will be providing the application's document content, probably as
+ * an example for the reader to view (and optionally edit).  See the
+ * documentation below for the {@link module:EmbedListener.install install()}
+ * function to learn more about its behavior.
+ * 
+ * To make it easy for users to embed Lurch documents in an external page, we
+ * provide some handy notation, so that they do not need to write the intricate
+ * HTML content that is the actual representation of atoms and shells in the
+ * TinyMCE editor when Lurch is running.  (That would be far too complex for a
+ * human author.)  Instead, they can use one of the following two notations.
+ * 
+ * **HTML Notation:**
+ * 
+ * Ordinary HTML, plus the following extra tags:
+ * 
+ *  - `&lt;lurch>...&lt;/lurch>`, which should contain a single piece of text in Lurch
+ *    notation, and will be replaced with an {@link Expression} atom that
+ *    contains that notation (in advanced mode).
+ *  - `&lt;latex>...&lt;/latex>`, which should contain a single piece of LaTeX code,
+ *    and will be replaced with an {@link ExpositoryMath} atom containing the
+ *    same LaTeX code.
+ *  - `&lt;theorem>...&lt;/theorem>`, `&lt;proof>...&lt;/proof>`, and so on, one for every
+ *    type of {@link Shell} subclass that has been registered with the app, and
+ *    which will be converted into a shell of that subclass, containing whatever
+ *    is placed inside of the opening and closing tags.
+ * 
+ * **Markdown Notation:**
+ * 
+ * Ordinary Markdown, plus the following extra features:
+ * 
+ *  - Any text containing `$...$` will be replaced with a `&lt;latex>...&lt;/latex>`
+ *    tag containing the same content, and then processed as in HTML mode, as
+ *    defined above.
+ *  - Any inline code block encosed in backticks will be replaced with a
+ *    `&lt;lurch>...&lt;/lurch>` tag containing the same code, which should therefore
+ *    be in Lurch notation, and will then be processed as in HTML mode, as
+ *    defined above.
+ *  - Any blockquote section (each line beginning with `>`) will be replaced
+ *    by a `&lt;proof>...&lt;/proof>` tag containing the contents of the blockquote,
+ *    or a `&lt;subproof>...&lt;/subproof>` tag instead if it is an inner blockquote
+ *    (that is, one with a blockquote ancestor).
+ * 
+ * To make it easy for the outer page to define where copies of the Lurch app
+ * should appear, and what they should contain, we provide a script you can
+ * import into that outer page, which will do the job automatically.  See
+ * {@link module:EmbedScript the embedded.js script} for details.
+ * 
+ * @module EmbedListener
+ */
 
+import { Atom } from './atoms.js'
+import { loadScript, unescapeHTML, isEmbedded } from './utilities.js'
+import { LurchDocument } from './lurch-document.js'
 
-<header class="class">
+// Internal use only.
+// Replace an HTML element &lt;foo>...&lt;/foo> with &lt;newTag>...&lt;/newTag>, but the
+// same children.  Attributes are not currently copied over.  If that feature
+// becomes important later, it could be added to this function.
+const changeTag = ( element, newTag ) => {
+    const newElement = document.createElement( newTag )
+    while ( element.firstChild ) newElement.appendChild( element.firstChild )
+    element.replaceWith( newElement )
+}
 
+// Internal use only.
+// Does the given element have an ancestor whose tagName is the given one?
+const hasTagAncestor = ( element, tag ) => {
+    while ( element ) {
+        if ( element.tagName == tag ) return true
+        element = element.parentElement
+    }
+    return false
+}
 
-    
-        
-        <!-- <h2>Message</h2> -->
-
-        
-
-        
-
-        
-            
-            <div class="class-description"><p>This class simplifies communication between the main thread and worker
-threads by encapsulating their communication protocol into a single class
-that can be used on both ends of the channel.</p>
-<p>To send a message to a worker, create an instance of this class and then call
-<code>message.send( worker )</code>.  To send a message from a worker, create an
-instance and call <code>message.send()</code> (which therefore just goes &quot;out&quot;).  In the
-message event handler on either end, you can construct a new <code>Message</code>
-instance from the event itself, and its data will be extracted appropriately.
-For example, the <a href="module-ValidationWorker.html">validation worker</a> has code
-something like this:</p>
-<pre class="prettyprint source lang-js"><code>addEventListener( 'message', event => {
-    const message = new Message( event )
-    if ( message.is( 'putdown' ) ) { // check type
-        const putdown = message.get( 'putdown' ) // read message content
-        // validate document sent in putdown format
-    } else {
-        // send error message because we expected putdown
+// Internal use only.
+// Return a promise that resolves to a function that can convert the Markdown
+// format documented at the top of this file to the HTML format documented there
+// as well.  Thus to support the Markdown format, we just run this function,
+// then do what we would do for the HTML format.
+const markdownConverter = () => loadScript(
+    'https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js'
+).then( () => {
+    const converter = new showdown.Converter()
+    return markdown => {
+        const wrapper = document.createElement( 'div' )
+        // replace $...$ with &lt;latex>...&lt;/latex> to support $latex$
+        markdown = markdown.replace( /\$([^$]+)\$/g, '&lt;latex>$1&lt;/latex>' )
+        wrapper.innerHTML = converter.makeHtml( markdown )
+        // replace &lt;code>...&lt;/code> with &lt;lurch>...&lt;/lurch> to support `lurchNotation`
+        Array.from( wrapper.querySelectorAll( 'code' ) ).forEach( codeElt =>
+            changeTag( codeElt, 'lurch' ) )
+        // replace &lt;blockquote>...&lt;/blockquote> with &lt;subproof>...&lt;/subproof> to support `lurchNotation`
+        Array.from( wrapper.querySelectorAll( 'blockquote' ) ).forEach( quoteElt =>
+            changeTag( quoteElt,
+                hasTagAncestor( quoteElt, 'blockquote' ) ? 'subproof' : 'proof' ) )
+        return wrapper.innerHTML
     }
 } )
+
+// Internal use only.
+// To make it easy for users to enter content with extra spaces and newlines,
+// which they typically don't want in the document shown in the embedded editor
+// (e.g., no blank paragraph between a theorem and its proof), we make this
+// function that deletes spaces that the user probably doesn't want in there.
+const clearSpaces = tree => {
+    if ( tree.firstChild?.nodeType == 3 &amp;&amp; tree.firstChild.textContent.trim() == '' )
+        tree.removeChild( tree.firstChild )
+    if ( tree.lastChild?.nodeType == 3 &amp;&amp; tree.lastChild.textContent.trim() == '' )
+        tree.removeChild( tree.lastChild )
+    tree.childNodes.forEach( child => clearSpaces( child ) )
+}
+
+// Internal use only
+// Given HTML to show in the TinyMCE editor, convert it into a form that can be
+// handed to a LurchDocument() instance and placed into the editor.
+const makeLurchDocumentHTML = html => `
+    &lt;div id='metadata'>&lt;/div>
+    &lt;div id='document'>${html}&lt;/div>
+`
+
+/**
+ * This function should be called on the TinyMCE's editor during its setup
+ * phase.  It takes the following actions, to ensure support for a containing
+ * page to be able to send a document to this editor for it to load.
+ * 
+ *  - Send a message to the top-level window saying that it's ready to receive
+ *    data from the containing page, to populate the editor with.
+ *  - Install an event handler for messages from the top-level window that
+ *    expects the document to be shown in the editor.  When that document comes,
+ *    it will be decoded from HTML or Markdown form, which includes interpreting
+ *    any of the handy codes inside that HTML or Markdown into their correct
+ *    form for inclusion in the app, as documented below.
+ *  - If the user requests that the document be validated after it is shown, we
+ *    queue up a validation action as well.
+ * 
+ * @param {tinymce.editor} editor - the editor in which to embed any document
+ *   passed to us by our containing page
+ * @function
+ */
+const install = editor => {
+    // if this is not an embedded version of the app, do nothing, because this
+    // whole script is designed for embedded copies, not the top-level app
+    if ( !isEmbedded() ) return
+    // when the editor finishes setting up, tell the top window that we're ready
+    // to receive whatever document we should be displaying
+    editor.on( 'init', () => window.top.postMessage( 'ready-for-embed', '*' ) )
+    // if we get a message of what document to show in this embedded copy of the
+    // app, handle it here:
+    window.addEventListener( 'message', event => {
+        if ( !event.data.hasOwnProperty( 'lurch-embed' ) ) return
+        // deserialize the div from the HTML that was sent to us
+        const wrapper = document.createElement( 'div' )
+        wrapper.innerHTML = event.data['lurch-embed']
+        const div = wrapper.firstElementChild
+        // ensure it's the right format
+        const format = div.getAttribute( 'format' ) || 'html'
+        if ( format == 'html' ) {
+            // convert Lurch-specific elements, fill editor, and maybe validate
+            Atom.unsimplifyDOM( div, editor )
+            clearSpaces( div )
+            // We do the following rather than a simple editor.setContent(),
+            // because this triggers update events for all the newly added
+            // atoms, which is crucial to do now, before validation, so that
+            // those updates don't erase any validation results we might add.
+            new LurchDocument( editor ).setDocument(
+                makeLurchDocumentHTML( div.innerHTML ) )
+            Array.from(
+                editor.dom.doc.body.querySelectorAll( 'p > [data-mce-bogus="1"]' )
+            ).forEach( bogus => bogus.parentNode.remove() )
+            // If validation has been requested, we must queue it up to happen
+            // after a nonzero delay, so that all newly inserted atoms have been
+            // updated before then, otherwise their validation results will be
+            // erased during that update.
+            if ( div.hasAttribute( 'validate' ) )
+                setTimeout( () => {
+                    editor.ui.registry.getAll().menuItems.validate.onAction()
+                }, 100 )
+        } else if ( format == 'markdown' ) {
+            markdownConverter().then( converter => {
+                div.innerHTML = converter( unescapeHTML( div.innerHTML ) )
+                Atom.unsimplifyDOM( div, editor )
+                clearSpaces( div )
+                // Same comment as above applies to the following statement:
+                new LurchDocument( editor ).setDocument(
+                    makeLurchDocumentHTML( div.innerHTML ) )
+                Array.from(
+                    editor.dom.doc.body.querySelectorAll( 'p > [data-mce-bogus="1"]' )
+                ).forEach( bogus => bogus.parentNode.remove() )
+                // Same comments as above apply to why we delay validation a bit:
+                if ( div.hasAttribute( 'validate' ) )
+                    setTimeout( () => {
+                        editor.ui.registry.getAll().menuItems.validate.onAction()
+                    }, 100 )
+            } )
+        } else {
+            // unsupported format
+            editor.setContent( `Unsupported format: ${format}` )
+            return
+        }
+    }, false )
+}
+
+export default { install }
 </code></pre>
-<p>Having one class that's imported into both the main thread and the worker
-means not dividing the communication protocol code over multiple files, and
-thus improving consistency and reducing chances of logic errors.</p>
-<p>There are also some static members that make certain message-sending
-operations more concise and readable; see below.</p></div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-
-
-
-    
-        
-
-
-
-
-
-    
-
-
-    
-    <h3 class="subtitle">Constructor</h3>
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="Message">new Message<span class="signature">(content)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Construct a new message instance with the given content.  The <code>content</code>
-may be any of the following:</p>
-<ul>
-<li>An <code>Event</code> instance, as shown in the example at the top of this class
-documentation.  In that case, the <code>data</code> attribute of the event will
-be stored as the <code>content</code> attribute of the new <code>Message</code> instance,
-because <code>event.data</code> is where user-specific information is stored for
-message events.</li>
-<li>A string, which will be interpreted as the text of the message, and
-thus the newly created instance will have as its <code>content</code> field an
-object with just a <code>text</code> field, this string.</li>
-<li>An object, which will be used directly as the newly created instance's
-<code>content</code> field.</li>
-</ul>
-<p>Any other kind of <code>content</code> throws an error.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">content</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Object</code>
-    </span>
-    |
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the content of the message, as described
-above</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.40">, line 40</a>
-        </li>
-    </ul>
-
-
-
-    
-    </div>
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="Message.html">Message</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-
-    
-
-    
-        <h3 class="subtitle">Methods</h3>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="get">get<span class="signature">(key)</span><span class="return-type-signature"> &rarr; {*}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Because a message's <code>content</code> field is an object, it can be used like a
-dictionary of key-value pairs.  This function looks up the given key in
-the <code>content</code> member.  It is just a more readable/convenient version of
-<code>message.content[&quot;key&quot;]</code>.</p>
-<p>There is no corresponding setter function because messages are intended
-to be lightweight, short-lived objects.  You provide their content when
-instantiating them, then you send them somewhere or react to them, and
-then let them be garbage collected.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">key</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the key whose value should be looked up</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>*</code>
-            
-            
-                <p>the corresponding value (or undefined if the key is absent)</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.110">, line 110</a>
-        </li>
-    </ul>
-
-
-
     </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="getAllFeedback">getAllFeedback<span class="signature">()</span><span class="return-type-signature"> &rarr; {Array.&lt;Object>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>A message may contain two types of feedback that need to be displayed to
-the user: either explicit feedback generated by the deductive engine or
-an error message indicating that something went wrong internally, which
-will explain to the user why they didn't get any other feedback.  This
-function returns all the feedback messages in this object, if any,
-including treating an error as a single feedback message.</p>
-<p>Each entry in the resulting array is created by passing primitive
-feedback that the LDE generated through the function
-<a href="Message.html#.makeFeedbackPresentable">makeFeedbackPresentable()</a>.  See
-the documentation for that function to see what the format will be.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h4 class="method-heading">See</h4>
-        <ul>
-            
-                <li><a href="Message.html#.makeFeedbackPresentable">makeFeedbackPresentable()</a></li>
-            
-        </ul>
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Array.&lt;Object></code>
-            
-            
-                <p>array of data for validation feedback, as defined
-above</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.151">, line 151</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="is">is<span class="signature">(type)</span><span class="return-type-signature"> &rarr; {boolean}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>The content of a message, given at construction time, may include a
-<code>type</code> field, which should be a string, if present.  It can indicate
-whether the message is a piece of feedback, an error, or some other type
-of message.  Any string is permitted; there is no official list.  A
-message is not required to have a <code>type</code> field.</p>
-<p>This function tests whether this instance has the given type.  It simply
-compares the parameter passed to the <code>type</code> field in the instance's
-<code>content</code> field (which is undefined if absent).</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">type</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the type to test this instance against</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>boolean</code>
-            
-            
-                <p>whether this instance is of that type</p>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.94">, line 94</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    
-    </div>
-
-    <h4 class="method-name" id="send">send<span class="signature">(target<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Send this message to a worker or to the main thread.  If you provide a
-target, we will attempt to send the message there, so if you are using a
-Message in the main thread and want to send it to a worker, call
-<code>message.send( worker )</code>.  If you do not provide a target, we will
-attempt to send the message to the main thread.  So workers can just call
-<code>message.send()</code>.</p>
-<p>Note that there are also static members of this class for sending common
-types of messages that let you write slightly more compact and readable
-code than constructing and sending a message in one line of code.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">target</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Worker</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-                    &lt;nullable&gt;<br>
-                
-
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>the worker to which to send the message, if any</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.126">, line 126</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".document">document<span class="signature">(editor, encoding)</span><span class="return-type-signature"> &rarr; {<a href="Message.html">Message</a>}</span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Convert the document inside the given editor into a serialized form and
-encapsulate it into a single Message instance, for transmitting to the
-<a href="module-ValidationWorker.html">validation worker</a>.  Such a message, when
-received by the worker, is viewed as a command to begin validating the
-document, and sending feedback messages for all of its parts that are
-amenable to validation.</p>
-<p>The primary client of this function is the run() function in the <a href="module-Validation.html">validation module</a>.  You
-probably do not need to call this function if you are using that one.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">editor</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>tinymce.editor</code>
-    </span>
-    
-
-            
-
-            
-
-            
-                
-            
-
-            <div class="param-description"><p>the editor containing the document to be
-converted</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">encoding</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
-            
-
-            
-                
-                    <span class="param-default">
-                        json
-                    </span>
-                
-            
-
-            <div class="param-description"><p>the name of the encoding to use (currently
-supporting only &quot;putdown&quot; and &quot;json&quot; options)</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-    <h4 class="method-heading">Returns</h4>
-    <ul>
-    
-        <li class="method-returns">
-            
-                <code>Message</code>
-            
-            
-                <ul>
-<li>the message that can be sent to the <a href="module-ValidationWorker.html">validation worker</a> to transmit the entire
-document, in serialized form</li>
-</ul>
-            
-        </li>
-    
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.250">, line 250</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".done">done<span class="signature">()</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function is intended for use in workers, to communicate back to the
-main thread.  It constructs a message instance, gives it the type
-<code>&quot;done&quot;</code>, and sends that message back to the main thread.</p>
-<p>This can be done in one line of code without this convenience function,
-but using this method makes the code more concise and readable.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.203">, line 203</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".error">error<span class="signature">(text, more<span class="signature-attributes">nullable</span>)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function is intended for use in workers, to communicate back to the
-main thread.  It constructs a message instance, gives it the type
-<code>&quot;error&quot;</code>, sets its text field to the parameter given, and sends that
-message back to the main thread.  If the second parameter is provided,
-all of its fields are also included in the message's content.</p>
-<p>This can be done in one line of code without this convenience function,
-but using this method makes the code more concise and readable.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">text</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>string</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>the contents of the error message</p></div>
-            
-        </li>
-
-    
-
-        <li>
-            
-                <span class="param-name">more</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Object</code>
-    </span>
-    
-
-            
-
-            
-                <span class="param-attributes">
-                
-
-                
-                    &lt;nullable&gt;<br>
-                
-
-                
-                </span>
-            
-
-            
-
-            <div class="param-description"><p>any other key-value pairs to be included in the
-message's content (optional)</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.221">, line 221</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".feedback">feedback<span class="signature">(data)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function is intended for use in workers, to communicate back to the
-main thread.  It constructs a message instance, gives it the type
-<code>&quot;feedback&quot;</code>, also includes all of the fields in the parameter provided,
-and sends that message back to the main thread.</p>
-<p>This can be done in one line of code without this convenience function,
-but using this method makes the code more concise and readable.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">data</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Object</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>any type of data to include in the feedback
-message</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.175">, line 175</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".makeFeedbackPresentable">makeFeedbackPresentable<span class="signature">(data)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>Feedback data from the Lurch Deductive Engine does not always come in
-human-readable form.  This is partly because we want to keep the data
-small, and partly because we're still developing the LDE and thus its
-messages are not well-organized yet.  This function converts any feedback
-object in JSON form from the LDE into something presentable, for use in
-the UI, as feedback to a human user.</p>
-<p>The result is guaranteed to have these three fields, and possibly more:</p>
-<ul>
-<li><code>type</code> - a human-readable string categorizing the feedback into one of
-these possible types:
-<ul>
-<li><code>'inference'</code>, meaning the logical inferences from earlier
-expressions and environments to this expression</li>
-<li><code>'scoping'</code>, meaning the scopes of variables, including
-declarations and the lack thereof</li>
-<li><code>'instantiation'</code>, or what the LDE calls &quot;basic instantiation
-hints&quot; (BIHs)</li>
-<li><code>'error'</code>, meaning an internal error took place in the LDE or the
-communication with the LDE</li>
-</ul>
-</li>
-<li><code>result</code> - a human-readable string that is one of three possible
-values: <code>'valid'</code>, <code>'invalid'</code>, or <code>'indeterminate'</code>, meaning,
-respectively, correct work, incorrect work, and work that may or may
-not be correct, but the LDE doesn't have enough information; these
-correspond to the types of icons shown in the UI, respectively, green,
-red, and yellow</li>
-<li><code>reason</code> - a human-readable string that is short enough to show in a
-pop-up message when hovering over the validation icon in the UI.  In
-fact, this string is not only human-readable, but written in a simple
-and informal style that we aim to be natural and simple for students
-to read.</li>
-<li><code>code</code> - a brief, English summary of the feedback, from which most of
-the rest of the data could be deduced.  Examples include:
-<ul>
-<li><code>'undeclared variable'</code> (or more than one undeclared variables)</li>
-<li><code>'redeclared variable'</code> (or more than one redeclared variables)</li>
-<li><code>'valid inference'</code></li>
-<li><code>'indeterminate inference'</code></li>
-<li><code>'invalid inference'</code></li>
-<li><code>'valid instantiation'</code></li>
-<li><code>'invalid instantiation'</code> (for now, there are no indeterminate
-instantiations)</li>
-<li><code>'error'</code> (for now, all errors are lumped into one category)</li>
-</ul>
-</li>
-</ul>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">data</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>Object</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the feedback data from the deductive engine, in
-JSON form</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.394">, line 394</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-            
-
-
-    <article class="method">
-
-
-
-
-    
-
-
-    
-
-    <div class="method-type">
-    <span class="method-type-signature is-static">static</span>
-    </div>
-
-    <h4 class="method-name" id=".progress">progress<span class="signature">(complete)</span><span class="return-type-signature"></span>
-    </h4>
-
-
-
-
-
-<div class="method-description">
-    
-    <p>This function is intended for use in workers, to communicate back to the
-main thread.  It constructs a message instance, gives it the type
-<code>&quot;progress&quot;</code>, and says what percentage of the total progress of
-validation has been accomplished, as an integer in the set
-${0,1,...,99,100}$.</p>
-<p>This can be done in one line of code without this convenience function,
-but using this method makes the code more concise and readable.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Parameters</h4>
-    
-
-<ul class="method-params">
-    
-
-        <li>
-            
-                <span class="param-name">complete</span>
-            
-
-            
-                
-
-
-    <span class="param-type">
-        <code>integer</code>
-    </span>
-    
-
-            
-
-            
-
-            
-
-            <div class="param-description"><p>the progress value, from 0 to 100 inclusive</p></div>
-            
-        </li>
-
-    
-</ul>
-
-
-
-
-
-<div class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h4 class="method-heading">Source</h4>
-    <ul>
-        <li class="method-source">
-            <a href="validation-messages.js.html">validation-messages.js</a><a href="validation-messages.js.html#source.191">, line 191</a>
-        </li>
-    </ul>
-
-
-
-    </article>
-
-        
-    
-
-    
-
-    
-</article>
-
 </section>
 
 
