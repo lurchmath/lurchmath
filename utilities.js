@@ -152,6 +152,7 @@ export const appURL = () => {
  * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
  *   `"'"`, and `'"'` replaced with character references instead
  * @function
+ * @see {@link module:Utilities.unescapeHTML unescapeHTML()}
  */
 export const escapeHTML = ( text = '' ) =>
     text.replaceAll( '&', '&amp;' )
@@ -159,6 +160,22 @@ export const escapeHTML = ( text = '' ) =>
         .replaceAll( '>', '&gt;' )
         .replaceAll( '"', '&quot;' )
         .replaceAll( "'", '&#039;' )
+
+/**
+ * Unescape a string so that was escaped by the `escapeHTML` function.
+ * 
+ * @param {string} text - text to unescape
+ * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
+ *   `"'"`, and `'"'` recreated from their character references
+ * @function
+ * @see {@link module:Utilities.escapeHTML escapeHTML()}
+ */
+export const unescapeHTML = ( text = '' ) =>
+    text.replaceAll( '&#039;', "'" )
+        .replaceAll( '&quot;', '"' )
+        .replaceAll( '&gt;', '>' )
+        .replaceAll( '&lt;', '<' )
+        .replaceAll( '&amp;', '&' )
 
 /**
  * The following function takes as input an string containing HTML code and
