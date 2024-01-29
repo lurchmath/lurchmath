@@ -5,8 +5,10 @@
  */
 
 import { loadScript } from './utilities.js'
+import { loadFromQueryString } from './load-from-url.js'
+import { appSettings } from './settings-install.js'
+import { documentSettingsMetadata } from './document-settings.js'
 import Settings from './settings-install.js'
-// import GoogleDrive from './google-drive-ui.js'
 import LocalStorageDrive from './local-storage-drive.js'
 import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
@@ -16,10 +18,9 @@ import ExpositoryMath from './expository-math.js'
 import Dependencies from './dependencies.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
-import { loadFromQueryString } from './load-from-url.js'
 import AutoCompleter from './auto-completer.js'
-import { appSettings } from './settings-install.js'
-import { documentSettingsMetadata } from './document-settings.js'
+import Embedding from './embed-listener.js'
+// import GoogleDrive from './google-drive-ui.js'
 
 import { stylesheet as MathLiveCSS } from './math-live.js'
 
@@ -245,6 +246,7 @@ window.Lurch = {
                         LocalStorageDrive.install( editor )
                         Headers.install( editor )
                         DocSettings.install( editor )
+                        Embedding.install( editor )
                         editor.on( 'init', () => loadFromQueryString( editor ) )
                     } else {
                         // Install tools we need only if we are the secondary app window:

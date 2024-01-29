@@ -786,6 +786,38 @@ export class Expression extends Atom {
         ]
     }
 
+    /**
+     * When embedding a copy of the Lurch app in a larger page, users will want
+     * to write simple HTML describing a Lurch document, then have a script
+     * create a copy of the Lurch app and put that document into it.  We allow
+     * for representing expressions using `<lurch>...</lurch>` elements, which
+     * contain Lurch notation.  This function can convert any expression atom
+     * into the corresponding `lurch` element, as a string.
+     * 
+     * @returns {string} the representation of the atom as a `lurch` element
+     */
+    toEmbed () {
+        const wrap = lurchNotation => `<lurch>${lurchNotation}</lurch>`
+        if ( this.isInBeginnerMode() ) {
+            const { latex, given } = this.loadBeginnerModeData()
+            if ( latex.trim() == '' ) return ''
+            const lurchNotation = converter( latex, 'latex', 'lurch' )
+            const prefix = given ? ':' : ''
+            return wrap( prefix + lurchNotation )
+        }
+        if ( this.isInIntermediateMode() ) {
+            const { contentType, symbol, lurchNotation } = this.loadIntermediateModeData()
+            if ( contentType == 'Statement' ) return wrap( lurchNotation )
+            if ( contentType == 'Assumption' ) return wrap( ':' + lurchNotation )
+            const declType = DeclarationType.fromTemplate( contentType )
+            return wrap( declType.lurchNotationForm( symbol, lurchNotation ) )
+        }
+        if ( this.isInAdvancedMode() ) {
+            const { lurchNotation } = this.loadAdvancedModeData()
+            return wrap( lurchNotation )
+        }
+    }
+
 }
 
 export default { install }

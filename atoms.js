@@ -34,7 +34,7 @@
  * @see {@link module:Shells the Shells module}
  */
 
-import { removeScriptTags, isOnScreen } from './utilities.js'
+import { removeScriptTags, isOnScreen, editorForNode } from './utilities.js'
 import { getConverter } from './math-live.js'
 
 /**
@@ -788,6 +788,101 @@ export class Atom {
      * stored in its metadata.  The default implementation does nothing.
      */
     update () { }
+
+    /**
+     * When embedding a copy of the Lurch app in a larger page, users will want
+     * to write simple HTML describing a Lurch document, then have a script
+     * create a copy of the Lurch app and put that document into it.  This
+     * function can convert any HTML, including HTML that has atom elements in
+     * it, into that simplified HTML that is more human-readable, yet still
+     * describes a Lurch document.
+     * 
+     * @returns {string} the representation of the atom as a `lurch` element
+     */
+    static simplifiedHTML ( node ) {
+        const editor = editorForNode( node )
+        if ( Atom.isAtomElement( node ) ) {
+            const atom = Atom.from( node, editor )
+            return atom.toEmbed()
+        }
+        if ( !node.outerHTML ) return node.textContent
+        if ( node.childNodes.length == 0 ) return node.outerHTML
+        const copy = node.cloneNode( true )
+        copy.innerHTML = ''
+        const bothTags = copy.outerHTML
+        const startOfClose = bothTags.indexOf( '><' ) + 1
+        const openTag = bothTags.substring( 0, startOfClose )
+        const closeTag = bothTags.substring( startOfClose )
+        return openTag
+            + Array.from( node.childNodes ).map(
+                child => Atom.simplifiedHTML( child ) ).join( '' )
+            + closeTag
+    }
+
+    /**
+     * Traverse a DOM tree and convert any simplified HTML elements in it into
+     * HTML elements that represent atoms (or shells).  For example, an HTML
+     * element of the form `<latex>...</latex>` will be replaced with the full
+     * HTML code for a {@link ExpositorMath} atom as it sits in a Lurch
+     * application's document.
+     * 
+     * @param {Node} node - the DOM node to use as the root of the traversal;
+     *   it is modified in-place
+     * @param {tinymce.Editor} editor - the editor in which the modified DOM
+     *   will eventually be placed or copied
+     */
+    static unsimplifyDOM ( node, editor ) {
+        // base case 1: no tag to handle, no children to recur on
+        if ( node.childNodes.length == 0 || !node.tagName ) return
+        // base case 2: expository math atom
+        if ( node.tagName == 'LATEX' ) {
+            const atom = Atom.newInline( editor, '', {
+                type : 'expositorymath',
+                latex : node.textContent
+            } )
+            atom.update()
+            node.replaceWith( atom.element )
+        }
+        // base case 3: expression math atom
+        if ( node.tagName == 'LURCH' ) {
+            const atom = Atom.newInline( editor, '', {
+                type : 'expression',
+                lurchNotation : node.textContent
+            } )
+            atom.update()
+            node.replaceWith( atom.element )
+        }
+        // recursive case 1: tag indicates a proper subclass of Shell
+        const tag = node.tagName.toLowerCase()
+        if ( Atom.subclasses.has( tag ) ) {
+            const subclass = Atom.subclasses.get( tag )
+            const shellClass = Atom.subclasses.get( 'shell' )
+            if ( subclass != shellClass
+              && ( subclass.prototype instanceof shellClass ) ) {
+                const shell = Atom.from( shellClass.createElement( editor, tag ) )
+                // if the content we'll add is block-type, then delete all
+                // existing content (including the default <p> element) and add it
+                if ( Array.from( node.childNodes ).some( child =>
+                  tinymce.html.Schema().getBlockElements()[child.tagName] ) ) {
+                    shell.element.innerHTML = ''
+                    while ( node.firstChild )
+                        shell.element.appendChild( node.firstChild )
+                // if we're adding another kind of content, just put it inside
+                // the pre-existing <p> element inside the shell
+                } else if ( node.firstChild ) {
+                    shell.element.firstChild.innerHTML = ''
+                    while ( node.firstChild )
+                        shell.element.firstChild.appendChild( node.firstChild )
+                } // Otherwise, leave the default <p> element alone
+                Array.from( shell.element.childNodes ).forEach(
+                    child => Atom.unsimplifyDOM( child, editor ) )
+                node.replaceWith( shell.element )
+            }
+        }
+        // recursive case 2: no special tag; just recur on children
+        Array.from( node.childNodes ).forEach(
+            child => Atom.unsimplifyDOM( child, editor ) )
+    }
 
 }
 

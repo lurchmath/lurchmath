@@ -121,6 +121,20 @@ export class ExpositoryMath extends Atom {
         this.fillChild( 'body', `${represent( latex, 'latex' )}` )
     }
 
+    /**
+     * When embedding a copy of the Lurch app in a larger page, users will want
+     * to write simple HTML describing a Lurch document, then have a script
+     * create a copy of the Lurch app and put that document into it.  We allow
+     * for representing expository math using `<latex>...</latex>` elements,
+     * which contain LaTeX notation.  This function can convert any expository
+     * math atom into the corresponding `latex` element, as a string.
+     * 
+     * @returns {string} the representation of the atom as a `lurch` element
+     */
+    toEmbed () {
+        return `<latex>${this.getMetadata( 'latex' )}</latex>`
+    }
+
 }
 
 /**

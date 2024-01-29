@@ -18,7 +18,7 @@
 
 import { LurchDocument } from './lurch-document.js'
 import { Dialog, AlertItem, LongTextInputItem } from './dialog.js'
-import { isValidURL, appURL } from './utilities.js'
+import { isValidURL, appURL, isEmbedded } from './utilities.js'
 import { downloadFile } from './upload-download.js'
 
 // Internal use only
@@ -261,37 +261,40 @@ export const install = editor => {
             } )
         }
     } )
-    // When the editor is fully initialized, handle autosaving:
-    editor.on( 'init', () => {
-        // First, if there's an autosave, offer to load it:
-        if ( autosaveExists() ) {
-            const dialog = new Dialog( 'Unsaved work exists', editor )
-            dialog.addItem( new AlertItem(
-                'warn',
-                'There is an unsaved document stored in your browser.  '
-              + 'This could be from another copy of Lurch running in another tab, '
-              + 'or from a previous session in which you did not save your work.'
-            ) )
-            dialog.setButtons(
-                { text : 'Load it', type : 'submit', buttonType : 'primary' },
-                { text : 'Delete it', type : 'cancel' }
-            )
-            dialog.show().then( choseToLoad => {
-                if ( choseToLoad )
-                    new LurchDocument( editor ).setDocument( getAutosave() )
-                else
-                    new LurchDocument( editor )
-                removeAutosave()
-            } )
-        } else {
-            new LurchDocument( editor )
-        }
-        // Next, set up the recurring timer for autosaving:
-        setInterval( () => {
-            if ( editor.isDirty() )
-                autosave( new LurchDocument( editor ).getDocument() )
-        }, autosaveFrequencyInSeconds * 1000 )
-    } )
+    // When the editor is fully initialized, handle autosaving, but only if this
+    // is an actual copy of the app, not an embedded copy:
+    if ( !isEmbedded() ) {
+        editor.on( 'init', () => {
+            // First, if there's an autosave, offer to load it:
+            if ( autosaveExists() ) {
+                const dialog = new Dialog( 'Unsaved work exists', editor )
+                dialog.addItem( new AlertItem(
+                    'warn',
+                    'There is an unsaved document stored in your browser.  '
+                  + 'This could be from another copy of Lurch running in another tab, '
+                  + 'or from a previous session in which you did not save your work.'
+                ) )
+                dialog.setButtons(
+                    { text : 'Load it', type : 'submit', buttonType : 'primary' },
+                    { text : 'Delete it', type : 'cancel' }
+                )
+                dialog.show().then( choseToLoad => {
+                    if ( choseToLoad )
+                        new LurchDocument( editor ).setDocument( getAutosave() )
+                    else
+                        new LurchDocument( editor )
+                    removeAutosave()
+                } )
+            } else {
+                new LurchDocument( editor )
+            }
+            // Next, set up the recurring timer for autosaving:
+            setInterval( () => {
+                if ( editor.isDirty() )
+                    autosave( new LurchDocument( editor ).getDocument() )
+            }, autosaveFrequencyInSeconds * 1000 )
+        } )
+    }
 }
 
 /**
