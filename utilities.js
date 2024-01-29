@@ -311,7 +311,8 @@ export const editorForNode = node => {
 
 /**
  * Call a function on each element in an array, just like `array.forEach()`
- * would do, except use a zero-second timeout between each call.
+ * would do, except use a zero-second timeout between each call.  Returns a
+ * Promise object that resolves when all calls have completed.
  * 
  * @param {Function} func - the function to call for each element
  * @param {any[]} array - the array to iterate over
@@ -319,10 +320,16 @@ export const editorForNode = node => {
  * @function
  */
 Array.prototype.forEachWithTimeout = function( func, timeout = 0 ) {
-    if ( this.length == 0 ) return
-    func( this[0] )
-    setTimeout( () =>
-        this.slice(1).forEachWithTimeout( func, timeout ), timeout )
+    return new Promise( ( resolve, _ ) => {
+        const recur = array => {
+            if ( array.length == 0 ) resolve()
+            else {
+                func( array[0] )
+                setTimeout( () => recur( array.slice( 1 ) ), timeout )
+            }
+        }
+        recur( this )
+    } )
 }
 
 /**
