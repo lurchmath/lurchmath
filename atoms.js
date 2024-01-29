@@ -838,6 +838,15 @@ export const install = editor => {
         // do that unless MathLive has been loaded, so first ensure that:
         getConverter().then( () => {
             const thisAtomElementList = Atom.allElementsIn( editor )
+            const atomsThatChanged = [ ]
+            // Deleted atoms count as ones that changed
+            lastAtomElementList.filter(
+                element => !thisAtomElementList.includes( element )
+            ).forEach(
+                element => atomsThatChanged.push( Atom.from( element, editor ) )
+            )
+            // Newly arrived atoms emit their dataChanged() signal, which will
+            // clear validation results:
             thisAtomElementList.filter(
                 element => !lastAtomElementList.includes( element )
             ).forEachWithTimeout(
@@ -845,19 +854,17 @@ export const install = editor => {
                     try {
                         const atom = Atom.from( element, editor )
                         atom.update()
-                        atom.dataChanged()
+                        atomsThatChanged.push( atom )
                     } catch ( e ) {
                         console.log( 'Error when updating atom', element )
                         console.log( e )
                     }
                 }
-            )
-            // Deleted ones trigger validation clearing:
-            lastAtomElementList.filter(
-                element => !thisAtomElementList.includes( element )
-            ).forEach(
-                element => Atom.from( element, editor ).dataChanged()
-            )
+            ).then( () => {
+                // Now we can notify people which atoms changed, so that
+                // validation data gets cleared once now, not multiple times
+                atomsThatChanged.forEach( atom => atom.dataChanged() )
+            } )
             lastAtomElementList = thisAtomElementList
         } )
     } )
