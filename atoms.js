@@ -970,6 +970,25 @@ export const install = editor => {
             return atom ? atom?.contextMenu() : [ ]
         }
     } )
+    // TinyMCE does not show cursor selection well on atoms.
+    // The following code tries to rectify that by putting a special class on
+    // atoms that are within the current cursor selection, so that they can be
+    // styled in a way that makes it clear that they are selected.
+    editor.on( 'SelectionChange', () => {
+        const range = editor.selection.getRng()
+        const nodeIsSelected = node => {
+            const nodeRange = document.createRange()
+            nodeRange.selectNode( node )
+            return range.compareBoundaryPoints( Range.START_TO_START, nodeRange ) < 1
+                && range.compareBoundaryPoints( Range.END_TO_END, nodeRange ) > -1
+        }
+        Atom.allElementsIn( editor ).forEach( element => {
+            if ( nodeIsSelected( element ) )
+                element.classList.add( 'atom-is-selected' )
+            else
+                element.classList.remove( 'atom-is-selected' )
+        } )
+    } )
 }
 
 export default { className, Atom, install }

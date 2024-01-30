@@ -78,6 +78,10 @@ span.feedback-marker-error::after {
     font-weight: bold;
 }
 
+.atom-is-selected {
+  background-color: #B4D7FF;
+}
+
 /* Editing View */
 /* Shows a border around atoms which highlights when hovered. */
 body.shell-style-boxed {
