@@ -52,6 +52,9 @@ textarea#editor {
 }
 
 /* Document File Name */
+/*
+ * Ken added this earlier, then decided he didn't like it, and told me I had to fix it.
+ *
 div:has(> #lurch-filename-display) {
   position: relative;
   padding-top: 0.3rem;
@@ -78,3 +81,5 @@ div:has(> #lurch-filename-display) {
   color: darkslategrey;
   font-weight: 500;
 }
+ *
+ */
