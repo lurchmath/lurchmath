@@ -536,7 +536,7 @@ export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
     static beginnerFriendly = true
     finalize ( shellLC ) {
-        shellLC.makeIntoA( 'theorem' )
+        shellLC.makeIntoA( 'Theorem' )
     }
 }
 
@@ -566,6 +566,9 @@ export class Corollary extends Theorem {
 export class Proof extends Shell {
     static subclassName = Atom.registerSubclass( 'proof', Proof )
     static beginnerFriendly = true
+    finalize ( shellLC ) {
+        shellLC.makeIntoA( 'Proof' )
+    }
 }
 
 /**
