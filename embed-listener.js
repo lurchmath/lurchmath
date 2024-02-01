@@ -160,7 +160,7 @@ const install = editor => {
         wrapper.innerHTML = event.data['lurch-embed']
         const div = wrapper.firstElementChild
         // ensure it's the right format
-        const format = div.getAttribute( 'format' ) || 'html'
+        const format = div.getAttribute( 'format' ) || 'markdown'
         if ( format == 'html' ) {
             // convert Lurch-specific elements, fill editor, and maybe validate
             Atom.unsimplifyDOM( div, editor )
