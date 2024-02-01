@@ -124,9 +124,21 @@ export class Atom {
      * rather than importing the validation module and calling its "clear"
      * function ourselves, because it prevents a circular dependency.
      * 
-     * @see {@link Shell#dataChanged dataChanged() for Shells}
+     * @see {@link Atom#wasDeleted wasDeleted()}
      */
     dataChanged () { }
+
+    /**
+     * This function is a handler for whenever an atom has just been deleted
+     * from the document.  Its default implementation is to do nothing, but
+     * having it here allows {@link module:Validation the validation module} to
+     * replace this handler with one that clears all validation feedback.  We do
+     * it this way, rather than importing the validation module and calling its
+     * "clear" function ourselves, because it prevents a circular dependency.
+     * 
+     * @see {@link Atom#dataChanged dataChanged()}
+     */
+    wasDeleted () { }
 
     /**
      * Get the HTML representation of this atom, as it currently sits in the
@@ -933,32 +945,32 @@ export const install = editor => {
         // do that unless MathLive has been loaded, so first ensure that:
         getConverter().then( () => {
             const thisAtomElementList = Atom.allElementsIn( editor )
-            const atomsThatChanged = [ ]
-            // Deleted atoms count as ones that changed
-            lastAtomElementList.filter(
+            // Record which atoms were deleted and which changed but stayed
+            const atomsThatWereDeleted = lastAtomElementList.filter(
                 element => !thisAtomElementList.includes( element )
-            ).forEach(
-                element => atomsThatChanged.push( Atom.from( element, editor ) )
-            )
-            // Newly arrived atoms emit their dataChanged() signal, which will
-            // clear validation results:
-            thisAtomElementList.filter(
+            ).map( element => Atom.from( element, editor ) )
+            const atomsThatChanged = thisAtomElementList.filter(
                 element => !lastAtomElementList.includes( element )
-            ).forEachWithTimeout(
-                element => {
+            ).map( element => Atom.from( element, editor ) )
+            // Those that stayed should be updated, and then only after that
+            // full (asynchronous) task has completed do we emit the various
+            // signals for changed/deleted atoms that the validation module
+            // might be listening for, to clear validation feedback
+            atomsThatChanged.forEachWithTimeout(
+                atom => {
                     try {
-                        const atom = Atom.from( element, editor )
                         atom.update()
-                        atomsThatChanged.push( atom )
                     } catch ( e ) {
-                        console.log( 'Error when updating atom', element )
+                        console.log( 'Error when updating atom', atom )
                         console.log( e )
                     }
                 }
             ).then( () => {
-                // Now we can notify people which atoms changed, so that
-                // validation data gets cleared once now, not multiple times
+                // Now we can notify people which atoms changed, or were deleted.
+                // We do this here, not at any earlier point, so that the message
+                // is sent once, not multiple times.
                 atomsThatChanged.forEach( atom => atom.dataChanged() )
+                atomsThatWereDeleted.forEach( atom => atom.wasDeleted() )
             } )
             lastAtomElementList = thisAtomElementList
         } )

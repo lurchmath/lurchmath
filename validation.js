@@ -91,6 +91,12 @@ export const install = editor => {
             queueClearAll()
     }
 
+    // Same as above, but now for the removal of an atom or shell.
+    // In this case, don't bother checking if it's on screen.
+    Atom.prototype.wasDeleted = function () {
+        if ( this.editor == editor ) queueClearAll()
+    }
+
     // Install event handler so that we can decorate the document correctly upon
     // receiving validation feedback.  We install it on both the worker and this
     // window, becauase when parsing errors happen, we send feedback about them
