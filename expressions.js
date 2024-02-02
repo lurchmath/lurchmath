@@ -591,16 +591,17 @@ export class Expression extends Atom {
         } )
         dialog.dialog.setEnabled( 'OK', !!convertToLatex() )
         // prevent enter to confirm if the input is invalid
-        dialog.querySelector( 'input[type="text"]' )?.addEventListener(
-            'keydown',
-            event => {
+        const lurchInputElement = dialog.querySelector( 'input[type="text"]' )
+        if ( lurchInputElement ) {
+            lurchInputElement.addEventListener( 'keydown', event => {
                 if ( event.key == 'Enter' && !convertToLatex() ) {
                     event.preventDefault()
                     event.stopPropagation()
                     return false
                 }
-            }
-        )
+            } )
+            lurchInputElement.addEventListener( 'blur', () => dialog.close() )
+        }
         return result
     }
 
