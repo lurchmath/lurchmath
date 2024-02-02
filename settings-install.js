@@ -91,8 +91,8 @@ export const appSettings = new Settings(
             new CategorySettingMetadata(
                 'expository math editor type',
                 'Type of expository math editor to use',
-                [ 'Normal', 'Advanced' ],
-                'Normal'
+                [ 'Beginner', 'Intermediate', 'Advanced' ],
+                'Beginner'
             ),
             new BoolSettingMetadata(
                 'dollar sign shortcut',

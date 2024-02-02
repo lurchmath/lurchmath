@@ -37,37 +37,39 @@ export class ExpositoryMath extends Atom {
 
     /**
      * Shows a dialog for editing an expository math atom, but it may style the
-     * dialog differently, depending on whether the user has chosen normal or
-     * advanced mode for the expository math editor.
+     * dialog differently, depending on whether the user has chosen beginner,
+     * intermediate, or advanced mode for the expository math editor.
      * 
-     * In normal mode, the dialog has two portions, a text input that accepts
+     * In beginner mode, the dialog contains only a MathLive editor, which the
+     * user uses to create their expository math content.
+     * 
+     * In any other mode, the dialog has two portions, a text input that accepts
      * LaTeX input and a MathLive editor that allows editing of WYSIWYG math
      * content.  These two stay in sync, in that if the user edits either one,
      * the other is updated automatically.
      * 
-     * In advanced mode, the dialog behaves the same way, except with two
-     * changes.  First, the header, footer, and labels in the dialog are
-     * removed to style it like the advanced mode editor for {@link Expression}
-     * atoms.  Second, the MathLive editor is read-only, also to imitate the
-     * advanced mode behavior of the dialog for {@link Expression} atoms.
+     * Advanced mode differs from intermediate mode in two ways.  First, the
+     * header, footer, and labels in the dialog are removed to style it like
+     * the advanced mode editor for {@link Expression} atoms.  Second, the
+     * MathLive editor is read-only, also to imitate the advanced mode behavior
+     * of the dialog for {@link Expression} atoms.
      * 
      * @returns {Promise} same convention as specified in
      *   {@link module:Atoms.Atom#edit edit() for Atoms}
      */
     edit () {
-        const advanced =
-            appSettings.get( 'expository math editor type' ) == 'Advanced'
+        const mode = appSettings.get( 'expository math editor type' )
         const latex = this.getMetadata( 'latex' )
         // set up dialog contents
         const dialog = new Dialog( 'Edit expository math', this.editor )
-        dialog.hideHeader = dialog.hideFooter = advanced
+        dialog.hideHeader = dialog.hideFooter = mode == 'Advanced'
         const latexInput = new TextInputItem( 'latex',
-            advanced ? '' : 'LaTeX notation', '' )
+            mode == 'Advanced' ? '' : 'LaTeX notation', '' )
         dialog.addItem( latexInput )
         const mathLivePreview = new MathItem( 'preview',
-            advanced ? '' : 'Math editor' )
+            mode == 'Advanced' ? '' : 'Math editor' )
         mathLivePreview.finishSetup = () => {
-            if ( advanced ) {
+            if ( mode == 'Advanced' ) {
                 mathLivePreview.mathLiveEditor.readOnly = true
                 mathLivePreview.mathLiveEditor.style.border = 0
                 mathLivePreview.mathLiveEditor.style.padding = '0.5rem 0 0 0.5rem'
@@ -97,17 +99,17 @@ export class ExpositoryMath extends Atom {
             return true
         } )
         dialog.dialog.setEnabled( 'OK', !empty() )
-        // prevent enter to confirm if the input is nonempty
-        dialog.querySelector( 'input[type="text"]' )?.addEventListener(
-            'keydown',
-            event => {
-                if ( event.key == 'Enter' && empty() ) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    return false
-                }
+        // prevent enter to confirm if the input is empty
+        const latexInputElement = dialog.querySelector( 'input[type="text"]' )
+        latexInputElement.addEventListener( 'keydown', event => {
+            if ( event.key == 'Enter' && empty() ) {
+                event.preventDefault()
+                event.stopPropagation()
+                return false
             }
-        )
+        } )
+        // hide latex input for beginner mode
+        latexInputElement.parentNode.style.display = mode == 'Beginner' ? 'none' : ''
         return result
     }
 
