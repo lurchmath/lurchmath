@@ -140,7 +140,7 @@ window.Lurch = {
             insert : buildMenu( 'Insert',
                 'link emoticons hr',
                 'insertdatetime',
-                'expression',
+                'expression expositorymath',
                 'environment paragraphabove paragraphbelow'
             ),
             format : buildMenu( 'Format',
