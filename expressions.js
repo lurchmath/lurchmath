@@ -600,7 +600,8 @@ export class Expression extends Atom {
                     return false
                 }
             } )
-            lurchInputElement.addEventListener( 'blur', () => dialog.close() )
+            lurchInputElement.addEventListener( 'blur', () =>
+                setTimeout( () => dialog.close() ) )
         }
         return result
     }
