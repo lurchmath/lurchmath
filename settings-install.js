@@ -156,11 +156,11 @@ const applySettings = changes => {
     // Now, for any change that must result in some code being run now to alter
     // the app's behavior, run that code.
     if ( !changes || changes.includes( 'application width in window' ) ) {
-        // If max width desired, just let CSS come through, because it has a
-        // max width built in.  Otherwise, block it with 'none'.
-        const appElement = document.querySelector( '#editor-container' )
-        const setting = appSettings.get( 'application width in window' )
-        appElement.style.maxWidth = setting == 'Fixed size' ? null : 'none'
+        // Mark the body as to whether we're full screen or not, so CSS responds
+        if ( appSettings.get( 'application width in window' ) == 'Fixed size' )
+            document.body.classList.remove( 'fullscreen' )
+        else
+            document.body.classList.add( 'fullscreen' )
     }
 }
 
@@ -183,7 +183,8 @@ export const install = editor => {
         icon : 'preferences',
         onAction : () => {
             appSettings.load()
-            appSettings.userEdit( editor ).then( applySettings )
+            appSettings.userEdit( editor ).then( changes =>
+                applySettings( changes ) )
         }
     } )
     editor.on( 'init', () => {
