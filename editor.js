@@ -259,6 +259,7 @@ window.Lurch = {
                     ( options.helpPages || [ ] ).forEach( ( page, index ) => {
                         editor.ui.registry.addMenuItem( `helpfile${index+1}`, {
                             text : page.title,
+                            icon : 'help',
                             onAction : () => window.open( page.url, '_blank' )
                         } )
                     } )            
@@ -275,6 +276,7 @@ window.Lurch = {
                     // Add About Lurch menu item
                     editor.ui.registry.addMenuItem( 'aboutlurch', {
                         text : 'About Lurch',
+                        icon : 'help',
                         tooltip : 'About Lurch',
                         onAction : () => window.open(
                             'https://lurchmath.github.io/site/about/', '_blank' )
