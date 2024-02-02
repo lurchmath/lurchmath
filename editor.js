@@ -153,7 +153,7 @@ window.Lurch = {
             document : buildMenu( 'Document',
                 'editheader extractheader embedheader',
                 'dependency',
-                'clearvalidation validate',
+                'validate clearvalidation',
                 'docsettings temptoggle'
             ),
             help : buildMenu( 'Help', 'aboutlurch' )

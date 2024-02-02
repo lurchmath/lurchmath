@@ -136,20 +136,12 @@ export const install = editor => {
         } )
     )
 
-    // Add menu item for clearing validation results
-    editor.ui.registry.addMenuItem( 'clearvalidation', {
-        text : 'Clear validation',
-        tooltip : 'Remove all validation markers from the document',
-        shortcut : 'Meta+Shift+C',
-        onAction : () => clearAll()
-    } )
-    
     // Add menu item for running validation
     editor.ui.registry.addMenuItem( 'validate', {
-        text : 'Validate',
+        text : 'Check my reasoning',
         icon : 'checkmark',
-        tooltip : 'Run validation on the document',
-        shortcut : 'Meta+Shift+V',
+        tooltip : 'Run Lurch\'s checking algorithm on the document',
+        shortcut : 'Meta+Shift+C',
         onAction : () => {
             // Clear old results
             clearAll()
@@ -164,6 +156,14 @@ export const install = editor => {
         }
     } )
 
+    // Add menu item for clearing validation results
+    editor.ui.registry.addMenuItem( 'clearvalidation', {
+        text : 'Clear feedback',
+        tooltip : 'Remove all feedback marks from the document',
+        shortcut : 'Meta+Shift+X',
+        onAction : () => clearAll()
+    } )
+    
     // Add developer menu item for debugging document meaning
     editor.ui.registry.addMenuItem( 'viewdocumentcode', {
         text : 'View document code',
