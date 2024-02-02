@@ -66,6 +66,7 @@ const convertToEmbeddedLurch = div => {
     // Put the app in the iframe and the iframe in the document
     const appURL = div.getAttribute( 'appURL' ) || defaultAppURL
     iframe.setAttribute( 'src', appURL )
+    iframe.style.border = 'none'
     div.replaceWith( iframe )
 }
 
