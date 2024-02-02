@@ -29,52 +29,6 @@ export const appSettings = new Settings(
     'Application settings',
     new SettingsMetadata(
         new SettingsCategoryMetadata(
-            'Application warnings',
-            new ShowWarningSettingMetadata(
-                'warn before extract header',
-                'Show warning before moving the header into the document',
-                'Moving the header into the document is an action that cannot be undone.'
-            ),
-            new ShowWarningSettingMetadata(
-                'warn before embed header',
-                'Show warning before moving document content into header',
-                'Moving content into the header is an action that cannot be undone.'
-            )
-        ),
-        new SettingsCategoryMetadata(
-            'Editor appearance',
-            new CategorySettingMetadata(
-                'application width in window',
-                'Width of application in browser window',
-                [ 'Fixed size', 'Full width' ],
-                'Full width'
-            ),
-            new BoolSettingMetadata(
-                'developer mode on',
-                'Enable developer menu (for debugging Lurch itself)',
-                false
-            ),
-            new NoteMetadata(
-                'If you toggle the developer menu on/off, you will need to reload '
-              + 'the application for the change to take effect.'
-            )
-        ),
-        new SettingsCategoryMetadata(
-            'File load/save',
-            new CategorySettingMetadata(
-                'default open dialog tab',
-                'Default source for loading files',
-                [ 'From browser storage', 'From your computer', 'From the web' ],
-                'From browser storage'
-            ),
-            new CategorySettingMetadata(
-                'default save dialog tab',
-                'Default destination for saving files',
-                [ 'To browser storage', 'To your computer' ],
-                'To browser storage'
-            )
-        ),
-        new SettingsCategoryMetadata(
             'Math content',
             new CategorySettingMetadata(
                 'notation',
@@ -141,6 +95,52 @@ export const appSettings = new Settings(
                     } )
                     return errors
                 }
+            )
+        ),
+        new SettingsCategoryMetadata(
+            'Editor appearance',
+            new CategorySettingMetadata(
+                'application width in window',
+                'Width of application in browser window',
+                [ 'Fixed size', 'Full width' ],
+                'Full width'
+            ),
+            new BoolSettingMetadata(
+                'developer mode on',
+                'Enable developer menu (for debugging Lurch itself)',
+                false
+            ),
+            new NoteMetadata(
+                'If you toggle the developer menu on/off, you will need to reload '
+              + 'the application for the change to take effect.'
+            )
+        ),
+        new SettingsCategoryMetadata(
+            'File load/save',
+            new CategorySettingMetadata(
+                'default open dialog tab',
+                'Default source for loading files',
+                [ 'From browser storage', 'From your computer', 'From the web' ],
+                'From browser storage'
+            ),
+            new CategorySettingMetadata(
+                'default save dialog tab',
+                'Default destination for saving files',
+                [ 'To browser storage', 'To your computer' ],
+                'To browser storage'
+            )
+        ),
+        new SettingsCategoryMetadata(
+            'Application warnings',
+            new ShowWarningSettingMetadata(
+                'warn before extract header',
+                'Show warning before moving the header into the document',
+                'Moving the header into the document is an action that cannot be undone.'
+            ),
+            new ShowWarningSettingMetadata(
+                'warn before embed header',
+                'Show warning before moving document content into header',
+                'Moving content into the header is an action that cannot be undone.'
             )
         )
     )
