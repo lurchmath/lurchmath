@@ -94,6 +94,22 @@ window.Lurch = {
      *    is correct.  If your HTML page is in a different folder than this
      *    repository, you will need to provide the path from the HTML page to
      *    the repository.
+     *  - `options.appDefaults` can be a dictionary that overrides the default
+     *    application settings.  Doing so may not affect the experience of a
+     *    user who has already customized their own application settings,
+     *    because this set of key-value pairs supplies only the *default*
+     *    settings.  The user's chosen settings naturally override the defaults.
+     *    To see which keys and values are available, see
+     *    {@link SettingsInstaller the settings installer module}, and view the
+     *    source code for the `appSettings` object.
+     *  - `options.documentDefaults` can be a dictionary that overrides the
+     *    default document settings.  Doing so may not affect the experience of
+     *    a user who loads a document that includes its own settings, because
+     *    this set of key-value pairs supplies only the *default* settings.  The
+     *    current document's settings naturally override the defaults.
+     *    To see which keys and values are available, see
+     *    {@link DocumentSettings the document settings module}, and view the
+     *    source code for the `documentSettingsMetadata` object.
      * 
      * The `options` object is stored as an `appOptions` member in the TinyMCE
      * editor instance once it is created, so that any part of the app can refer
@@ -106,6 +122,23 @@ window.Lurch = {
      * @memberof Lurch
      */
     createApp : ( element, options = { } ) => {
+
+        // If the options object specifies default app settings, apply them:
+        Object.keys( options.appDefaults || { } ).forEach( key => {
+            const settingMetadata = appSettings.metadata.metadataFor( key )
+            if ( !settingMetadata )
+                console.log( 'No such setting:', key )
+            else
+                settingMetadata.defaultValue = object[key]
+        } )
+        // Do the same for default document settings:
+        Object.keys( options.documentDefaults || { } ).forEach( key => {
+            const settingMetadata = documentSettingsMetadata.metadataFor( key )
+            if ( !settingMetadata )
+                console.log( 'No such setting:', key )
+            else
+                settingMetadata.defaultValue = object[key]
+        } )
 
         // Ensure the element is/has a textarea, so we can install TinyMCE there
         if ( element.tagName !== 'TEXTAREA' ) {
@@ -301,58 +334,6 @@ window.Lurch = {
             }, options.editor || { } )
             tinymce.init( tinymceSetupOptions )
         } ) )
-    },
-
-    /**
-     * If you want to override the default settings for the application, call
-     * this method with a set of key-value pairs.  Note that this may not affect
-     * the experience of a user who has already customized their own application
-     * settings, because this changes only the defaults.  The user's chosen
-     * settings naturally override the defaults.
-     * 
-     * To see which keys are available and what the corresponding sensible
-     * values are, view the file `settings-install.js`.
-     * 
-     * @param {Object} object - a set of key-value pairs to use as application
-     *   setting defaults
-     * @see {@link Lurch.setDocumentDefaults setDocumentDefaults()}
-     * @function
-     * @memberof Lurch
-     */
-    setAppDefaults : object => {
-        Object.keys( object ).forEach( key => {
-            const settingMetadata = appSettings.metadata.metadataFor( key )
-            if ( !settingMetadata )
-                console.log( 'No such setting:', key )
-            else
-                settingMetadata.defaultValue = object[key]
-        } )
-    },
-
-    /**
-     * If you want to override the default settings for Lurch documents, call
-     * this method with a set of key-value pairs.  Note that this may not affect
-     * the experience of a user who loads a document that has some settings
-     * specified within it, because this changes only the defaults.  A
-     * document's explicitly specified settings naturally override the defaults.
-     * 
-     * To see which keys are available and what the corresponding sensible
-     * values are, view the file `document-settings.js`.
-     * 
-     * @param {Object} object - a set of key-value pairs to use as document
-     *   setting defaults
-     * @see {@link Lurch.setAppDefaults setAppDefaults()}
-     * @function
-     * @memberof Lurch
-     */
-    setDocumentDefaults : object => {
-        Object.keys( object ).forEach( key => {
-            const settingMetadata = documentSettingsMetadata.metadataFor( key )
-            if ( !settingMetadata )
-                console.log( 'No such setting:', key )
-            else
-                settingMetadata.defaultValue = object[key]
-        } )
     }
 
 }    
