@@ -15,13 +15,9 @@ import {
 } from './settings-metadata.js'
 
 /**
- * This is a silly example of app setting metadata for now, because we have not
- * yet defined what the actual settings for this app will be.  However, this
- * collection of settings includes one from each type of setting, and two
- * different categories, so that we can test settings dialogs now, even before
- * we have the full collection of settings we will actually show to users in the
- * Lurch app.  Later, we can replace this with the actual definition of the
- * metadata for the app's settings.
+ * This is the global settings object that stores the user's settings in their
+ * browser's LocalStorage.  It includes metadata for all the settings of the app
+ * and gets loaded when the editor is initialized.
  * 
  * @see {@link Settings}
  */
