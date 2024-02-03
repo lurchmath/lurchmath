@@ -12,5 +12,5 @@ export {
     Environment, Declaration, Expression, LurchSymbol
 } from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@master/src/index.js'
 
-import branchLDE from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@85e7368b912116420a2dc7475c616a721ec38ba1/src/experimental/global-validation.js'
+import branchLDE from 'https://cdn.jsdelivr.net/gh/lurchmath/lde@a584652687e37356dad01cd7eeea84cecad56b52/src/experimental/global-validation.js'
 export const LDE = branchLDE
