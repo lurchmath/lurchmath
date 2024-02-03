@@ -34,6 +34,23 @@
  * @module EmbedScript
  */
 
+// Split text of the form '<json data>\n\n<anything else>' into a pair [A,B],
+// where A is the parsed JSON and B is the rest of the text.  If the text is
+// not of that form, just return [null,text].
+const splitJSONHeader = text => {
+    const splitPoint = text.indexOf( '\n\n' )
+    if ( splitPoint == -1 )
+        return [ null, text ]
+    try {
+        return [
+            JSON.parse( text.substring( 0, splitPoint ) ),
+            text.substring( splitPoint + 2 )
+        ]
+    } catch ( _ ) {
+        return [ null, text ]
+    }
+}
+
 // Where the main app is stored, but this can be overridden by setting the
 // corresponding value in the window object, or on a case-by-case basis in each
 // div, using the appURL attribute.
@@ -45,9 +62,6 @@ const iframes = [ ]
 // Add data to the list
 const saveIframeData = ( iframe, htmlContent ) =>
     iframes.push( { iframe, htmlContent } )
-// Look up data for an iframe
-const dataForIframe = iframe =>
-    iframes.find( entry => entry.iframe === iframe )
 // Find data based on its contentWindow
 const dataForWindow = window =>
     iframes.find( entry => entry.iframe.contentWindow === window )
@@ -61,11 +75,25 @@ const convertToEmbeddedLurch = div => {
         if ( pair.name != 'appURL' )
             iframe.setAttribute( pair.name, pair.value )
     } )
+    // See if the div has a JSON header
+    const [ header, remainder ] = splitJSONHeader( div.innerHTML )
+    if ( header != null ) div.innerHTML = remainder
     // Record this iframe so later events can find it
     saveIframeData( iframe, div.outerHTML )
     // Put the app in the iframe and the iframe in the document
     const appURL = div.getAttribute( 'appURL' ) || defaultAppURL
-    iframe.setAttribute( 'src', appURL )
+    if ( header == null ) {
+        // If there's no JSON header, the default createApp() call is fine.
+        iframe.setAttribute( 'src', appURL )
+    } else {
+        // If there is a JSON header, then tell the page not to call createApp()
+        // until it hears from us, then send a message with the header, to be
+        // used as part of the createApp() call.
+        iframe.addEventListener( 'load', () => {
+            iframe.contentWindow.postMessage( { 'lurch-app-create' : header }, '*' )
+        } )
+        iframe.setAttribute( 'src', appURL + '?delayLoad=true' )
+    }
     iframe.style.border = 'none'
     div.replaceWith( iframe )
 }

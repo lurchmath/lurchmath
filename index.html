@@ -13,11 +13,29 @@
             <div id="logo">Lurch<span id="check">&#x2713</span></div>
         </div>
         <script>
-            window.addEventListener( 'load', () => {
-                Lurch.createApp( document.getElementById( 'editor-container' ), {
-                    // options go here
+            // The default behavior is to set up the app as soon as the page
+            // loads, but this can be canceled with the ?delayLoad=true query
+            // parameter.
+            const params = new URLSearchParams( window.location.search )
+            if ( params.get( 'delayLoad' ) != 'true' ) {
+                // Default behavior:
+                window.addEventListener( 'load', () => {
+                    Lurch.createApp( document.getElementById( 'editor-container' ), {
+                        // options go here
+                    } )
                 } )
-            } )
+            } else {
+                // Same as above, but not upon page load, rather upon hearing a
+                // message from the outer page containing our setup options.
+                window.addEventListener( 'message', event => {
+                    if ( event.data.hasOwnProperty( 'lurch-app-create' ) ) {
+                        Lurch.createApp(
+                            document.getElementById( 'editor-container' ),
+                            event.data['lurch-app-create']
+                        )
+                    }
+                } )
+            }
         </script>
     </body>
 </html>
