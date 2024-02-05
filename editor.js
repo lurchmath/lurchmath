@@ -264,6 +264,7 @@ window.Lurch = {
                         // editor.execCommand( 'mceFullScreen' )
                         document.querySelector( '.tox-tinymce' ).style.zIndex = 500
                     } )
+
                     // Install all tools the editor always needs:
                     Settings.install( editor )
                     Atoms.install( editor )
@@ -288,6 +289,7 @@ window.Lurch = {
                             editor.dom.doc.body.classList.add( 'header-editor' )
                         } )
                     }
+
                     // Install any help pages specified in the options object
                     ( options.helpPages || [ ] ).forEach( ( page, index ) => {
                         editor.ui.registry.addMenuItem( `helpfile${index+1}`, {
@@ -296,6 +298,15 @@ window.Lurch = {
                             onAction : () => window.open( page.url, '_blank' )
                         } )
                     } )            
+                    // Add About Lurch menu item
+                    editor.ui.registry.addMenuItem( 'aboutlurch', {
+                        text : 'About Lurch',
+                        icon : 'help',
+                        tooltip : 'About Lurch',
+                        onAction : () => window.open(
+                            'https://lurchmath.github.io/site/about/', '_blank' )
+                    } )
+
                     // Add red pen menu item
                     editor.ui.registry.addMenuItem( 'redpen', {
                         text : 'Grading pen',
@@ -306,14 +317,7 @@ window.Lurch = {
                             editor.execCommand( 'ForeColor', false, 'red' )
                         }
                     } )
-                    // Add About Lurch menu item
-                    editor.ui.registry.addMenuItem( 'aboutlurch', {
-                        text : 'About Lurch',
-                        icon : 'help',
-                        tooltip : 'About Lurch',
-                        onAction : () => window.open(
-                            'https://lurchmath.github.io/site/about/', '_blank' )
-                    } )
+
                     // Create keyboard shortcuts for all menu items
                     const menuItems = editor.ui.registry.getAll().menuItems
                     for ( let itemName in menuItems ) {
@@ -326,6 +330,20 @@ window.Lurch = {
                                 () => item.onAction() )
                         }
                     }
+
+                    // Handle tab key in a way more like what users will expect
+                    editor.on( 'keydown', event => {
+                        if ( event.keyCode == 9 ) {
+                            if ( event.shiftKey ) {
+                                editor.execCommand( 'outdent' )
+                            } else {
+                                editor.execCommand( 'indent' )
+                            }
+                            event.preventDefault()
+                            event.stopPropagation()
+                            return false
+                        }
+                    } )
 
                     // resolve the outer promise, to say that we finished
                     // TinyMCE setup
