@@ -251,6 +251,7 @@ window.Lurch = {
                 toolbar : toolbarData,
                 menubar : 'file edit insert format document developer help',
                 menu : menuData,
+                browser_spellcheck: true,
                 contextmenu : 'atoms',
                 plugins : 'lists link', // 'fullscreen', // enable full screen mode
                 statusbar : false,
