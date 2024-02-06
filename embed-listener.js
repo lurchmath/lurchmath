@@ -56,6 +56,7 @@
  */
 
 import { Atom } from './atoms.js'
+import { Shell } from './shells.js'
 import { loadScript, unescapeHTML, isEmbedded } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
 
@@ -90,6 +91,14 @@ const markdownConverter = () => loadScript(
     const converter = new showdown.Converter()
     return markdown => {
         const wrapper = document.createElement( 'div' )
+        // convert all shell tags into divs, so they don't get broken into
+        // smaller paragraphs; mark each as needing markdown parsing inside it
+        const shellClasses = Shell.subclassNames()
+        shellClasses.forEach( className => {
+            markdown = markdown.replaceAll(
+                `<${className}`, `<div class="${className}" markdown="1"` )
+            markdown = markdown.replaceAll( `</${className}>`, `</div>` )
+        } )
         // replace $...$ with <latex>...</latex> to support $latex$
         markdown = markdown.replace( /\$([^$]+)\$/g, '<latex>$1</latex>' )
         wrapper.innerHTML = converter.makeHtml( markdown )
@@ -100,7 +109,14 @@ const markdownConverter = () => loadScript(
         Array.from( wrapper.querySelectorAll( 'blockquote' ) ).forEach( quoteElt =>
             changeTag( quoteElt,
                 hasTagAncestor( quoteElt, 'blockquote' ) ? 'subproof' : 'proof' ) )
-        return wrapper.innerHTML
+        // reverse the process we did at the start
+        let result = wrapper.innerHTML
+        shellClasses.forEach( className => {
+            result = result.replaceAll(
+                `<div class="${className}" markdown="1"`, `<${className}` )
+            result = result.replaceAll( `</div>`, `</${className}>` )
+        } )
+        return result
     }
 } )
 
