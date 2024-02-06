@@ -13,7 +13,15 @@
 	"forwardPorts": [ 5500 ],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install"
+	"postCreateCommand": "npm install",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ritwickdey.LiveServer",
+				"Codeium.codeium"
+			]
+		}
+	}
 
 	// Configure tool-specific properties.
 	// "customizations": {},
