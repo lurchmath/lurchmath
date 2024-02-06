@@ -181,7 +181,7 @@ const install = editor => {
             if ( div.hasAttribute( 'validate' ) )
                 setTimeout( () => {
                     editor.ui.registry.getAll().menuItems.validate.onAction()
-                }, 100 )
+                }, 500 )
         } else if ( format == 'markdown' ) {
             markdownConverter().then( converter => {
                 div.innerHTML = converter( unescapeHTML( div.innerHTML ) )
@@ -197,7 +197,7 @@ const install = editor => {
                 if ( div.hasAttribute( 'validate' ) )
                     setTimeout( () => {
                         editor.ui.registry.getAll().menuItems.validate.onAction()
-                    }, 100 )
+                    }, 500 )
             } )
         } else {
             // unsupported format
