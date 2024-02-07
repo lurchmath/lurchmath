@@ -112,17 +112,10 @@ body.shell-style-boxed {
     margin: 1ex 0;
   }
   
-  /* If the shell is a given, we make the border dashed. */
-  div.lurch-atom[data-shell_title].lurch-given {
-      /* This class may no longer be supported
-         and may need some JS code added to support it again. */
-      border: 2px dashed #bbb;
-  }
-  
   /* Add a shell title */
   div.lurch-atom[data-shell_title]::before {
     content: attr(data-shell_title);
-    color: #aaa;
+    color: #B4D7FF;
     background-color: white;
     font-weight: bold;
     position: absolute;
