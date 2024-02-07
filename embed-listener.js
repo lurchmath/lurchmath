@@ -59,6 +59,7 @@ import { Atom } from './atoms.js'
 import { Shell } from './shells.js'
 import { loadScript, unescapeHTML, isEmbedded } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
+import { setHeader } from './header-editor.js'
 
 // Internal use only.
 // Replace an HTML element <foo>...</foo> with <newTag>...</newTag>, but the
@@ -80,6 +81,49 @@ const hasTagAncestor = ( element, tag ) => {
     return false
 }
 
+// Internal use only
+// Change every <foo>...</foo> into <div class='foo'>...</div>
+const convertShellsToDivs = markdown => {
+    const shellClasses = Shell.subclassNames()
+    shellClasses.forEach( className => {
+        markdown = markdown.replaceAll(
+            `<${className}`, `<div class="${className}"` )
+        markdown = markdown.replaceAll( `</${className}>`, `</div>` )
+    } )
+    return markdown
+}
+// Inverse of previous function; must be careful to track matching tags!
+const convertDivsToShells = markdown => {
+    const stack = [ ]
+    const shellClasses = Shell.subclassNames()
+    let result = ''
+    while ( markdown.length ) {
+        const match = /<(\/?)(\w+)( class="\w+")?/.exec( markdown )
+        if ( !match ) {
+            result += markdown
+            break
+        }
+        result += markdown.substring( 0, match.index )
+        markdown = markdown.substring( match.index + match[0].length )
+        const isOpen = match[1] == ''
+        const tagName = match[2]
+        const className = match[3] && match[3].substring( 8, match[3].length - 1 )
+        if ( isOpen ) {
+            stack.push( tagName )
+            if ( shellClasses.includes( className ) ) {
+                result += `<${className}`
+            } else if ( className ) {
+                result += `<div class="${className}"`
+            } else {
+                result += `<${tagName}`
+            }
+        } else {
+            result += `</${stack.pop()}`
+        }
+    }
+    return result
+}
+
 // Internal use only.
 // Return a promise that resolves to a function that can convert the Markdown
 // format documented at the top of this file to the HTML format documented there
@@ -93,12 +137,8 @@ const markdownConverter = () => loadScript(
         const wrapper = document.createElement( 'div' )
         // convert all shell tags into divs, so they don't get broken into
         // smaller paragraphs; mark each as needing markdown parsing inside it
-        const shellClasses = Shell.subclassNames()
-        shellClasses.forEach( className => {
-            markdown = markdown.replaceAll(
-                `<${className}`, `<div class="${className}" markdown="1"` )
-            markdown = markdown.replaceAll( `</${className}>`, `</div>` )
-        } )
+        markdown = convertShellsToDivs( markdown )
+        markdown = markdown.replaceAll( '<div ', '<div markdown="1" ' )
         // replace $...$ with <latex>...</latex> to support $latex$
         markdown = markdown.replace( /\$([^$]+)\$/g, '<latex>$1</latex>' )
         wrapper.innerHTML = converter.makeHtml( markdown )
@@ -111,11 +151,8 @@ const markdownConverter = () => loadScript(
                 hasTagAncestor( quoteElt, 'blockquote' ) ? 'subproof' : 'proof' ) )
         // reverse the process we did at the start
         let result = wrapper.innerHTML
-        shellClasses.forEach( className => {
-            result = result.replaceAll(
-                `<div class="${className}" markdown="1"`, `<${className}` )
-            result = result.replaceAll( `</div>`, `</${className}>` )
-        } )
+        result = result.replaceAll( '<div markdown="1" ', '<div ' )
+        result = convertDivsToShells( result )
         return result
     }
 } )
@@ -134,12 +171,39 @@ const clearSpaces = tree => {
 }
 
 // Internal use only
-// Given HTML to show in the TinyMCE editor, convert it into a form that can be
-// handed to a LurchDocument() instance and placed into the editor.
-const makeLurchDocumentHTML = html => `
-    <div id='metadata'></div>
-    <div id='document'>${html}</div>
-`
+// See comments in the routine below explaining its behavior
+const putElementContentsIntoEditor = ( element, editor ) => {
+    // Convert any Lurch-specific sub-elements into their correct representation
+    Atom.unsimplifyDOM( element, editor )
+    // Delete any spaces that seem to have been implied by any markdown content
+    // or blanks between HTML elements but that make a document look bad
+    clearSpaces( element )
+    // If there is a sub-div representing the document header, save it for later
+    const headerElement = element.querySelector( '.header' )
+    let headerHTML = null
+    if ( headerElement ) {
+        headerHTML = headerElement.innerHTML
+        headerElement.remove()
+    }
+    // Place the content in using LurchDocument.setDocument(), because that will
+    // trigger update events for all new atoms, which is appropriate.
+    new LurchDocument( editor ).setDocument( `
+        <div id='metadata'></div>
+        <div id='document'>${element.innerHTML}</div>
+    ` )
+    // Now that the content is in the document, put the saved header in as well
+    if ( headerHTML != null )
+        setHeader( editor, headerHTML )
+    // Delete any empty paragraphs, which are almost certainly unintentional
+    Array.from(
+        editor.dom.doc.body.querySelectorAll( 'p > [data-mce-bogus="1"]' )
+    ).forEach( bogus => bogus.parentNode.remove() )
+    // If validation was requested, trigger it after we hope atom updates finish
+    if ( element.hasAttribute( 'validate' ) )
+        setTimeout( () => {
+            editor.ui.registry.getAll().menuItems.validate.onAction()
+        }, 500 )
+}
 
 /**
  * This function should be called on the TinyMCE's editor during its setup
@@ -179,41 +243,11 @@ const install = editor => {
         const format = div.getAttribute( 'format' ) || 'markdown'
         if ( format == 'html' ) {
             // convert Lurch-specific elements, fill editor, and maybe validate
-            Atom.unsimplifyDOM( div, editor )
-            clearSpaces( div )
-            // We do the following rather than a simple editor.setContent(),
-            // because this triggers update events for all the newly added
-            // atoms, which is crucial to do now, before validation, so that
-            // those updates don't erase any validation results we might add.
-            new LurchDocument( editor ).setDocument(
-                makeLurchDocumentHTML( div.innerHTML ) )
-            Array.from(
-                editor.dom.doc.body.querySelectorAll( 'p > [data-mce-bogus="1"]' )
-            ).forEach( bogus => bogus.parentNode.remove() )
-            // If validation has been requested, we must queue it up to happen
-            // after a nonzero delay, so that all newly inserted atoms have been
-            // updated before then, otherwise their validation results will be
-            // erased during that update.
-            if ( div.hasAttribute( 'validate' ) )
-                setTimeout( () => {
-                    editor.ui.registry.getAll().menuItems.validate.onAction()
-                }, 500 )
+            putElementContentsIntoEditor( div, editor )
         } else if ( format == 'markdown' ) {
             markdownConverter().then( converter => {
                 div.innerHTML = converter( unescapeHTML( div.innerHTML ) )
-                Atom.unsimplifyDOM( div, editor )
-                clearSpaces( div )
-                // Same comment as above applies to the following statement:
-                new LurchDocument( editor ).setDocument(
-                    makeLurchDocumentHTML( div.innerHTML ) )
-                Array.from(
-                    editor.dom.doc.body.querySelectorAll( 'p > [data-mce-bogus="1"]' )
-                ).forEach( bogus => bogus.parentNode.remove() )
-                // Same comments as above apply to why we delay validation a bit:
-                if ( div.hasAttribute( 'validate' ) )
-                    setTimeout( () => {
-                        editor.ui.registry.getAll().menuItems.validate.onAction()
-                    }, 500 )
+                putElementContentsIntoEditor( div, editor )
             } )
         } else {
             // unsupported format

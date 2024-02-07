@@ -48,7 +48,7 @@ const getHeaderHTML = editor => {
 }
 // For internal use only:  Save the given HTML text into the document metadata
 // as the document's header
-const setHeader = ( editor, header ) =>
+export const setHeader = ( editor, header ) =>
     new LurchDocument( editor ).setMetadata( 'main', 'header', 'html', header )
 
 // Internal constant used in URL query strings to tell a copy of the app that it
