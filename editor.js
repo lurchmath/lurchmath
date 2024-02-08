@@ -285,8 +285,8 @@ window.Lurch = {
                         editor.on( 'init', () => loadFromQueryString( editor ) )
                     } else {
                         // Install tools we need only if we are the secondary app window:
-                        Headers.listen( editor )
                         editor.on( 'init', () => {
+                            Headers.listen( editor )
                             editor.dom.doc.body.classList.add( 'header-editor' )
                         } )
                     }
