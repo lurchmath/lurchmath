@@ -109,13 +109,15 @@ const convertDivsToShells = markdown => {
         const tagName = match[2]
         const className = match[3] && match[3].substring( 8, match[3].length - 1 )
         if ( isOpen ) {
-            stack.push( tagName )
             if ( shellClasses.includes( className ) ) {
                 result += `<${className}`
+                stack.push( className )
             } else if ( className ) {
                 result += `<div class="${className}"`
+                stack.push( 'div' )
             } else {
                 result += `<${tagName}`
+                stack.push( tagName )
             }
         } else {
             result += `</${stack.pop()}`
