@@ -138,7 +138,8 @@ export const copyWithoutPrototype = object => {
 export const appURL = () => {
     const result = window.location.protocol + '//'
                  + window.location.host + window.location.pathname
-    return result.endsWith( '/' ) ? result : result + '/'
+    return result.endsWith( '/' ) || result.endsWith( '.html' ) ?
+        result : result + '/'
 }
 
 /**
