@@ -267,5 +267,5 @@ div.LC-meaning-preview {
 /* Make the body of the editor look completely different if we are editing the
    header of a document, so that users do not confuse headers with documents. */
 body.header-editor {
-    background-color: #ddd;
+    border: 5px dashed #B4D7FF;
 }
