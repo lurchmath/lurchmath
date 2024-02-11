@@ -583,10 +583,10 @@ export class Atom {
      */
     applyValidationMessage ( message ) {
         const possibilities = message.getAllFeedback()
-        // If it only has an undeclared variable error don't change the validation
-        // result as there might have been a prior message that sent it.
-        if (possibilities.length === 1 && 
-            possibilities[0].code === 'undeclared variable') return
+        // If it has only an undeclared variable error don't change the validation
+        // result as there might have been a prior result that we need to keep.
+        if ( possibilities.length == 1 && 
+             possibilities[0].code == 'undeclared variable' ) return
         // Drop scoping errors about undeclared variables
         const applicable = possibilities.filter(
             item => item.code != 'undeclared variable' )
@@ -924,6 +924,9 @@ export class Atom {
  * @function
  */
 export const install = editor => {
+    // Expose this class publicly through the editor, for use in debugging at
+    // the console, and for use in the CLI through Puppeteer.
+    editor.Atom = Atom
     // Install click handler to edit the atom that was clicked
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
@@ -971,6 +974,8 @@ export const install = editor => {
                 // is sent once, not multiple times.
                 atomsThatChanged.forEach( atom => atom.dataChanged() )
                 atomsThatWereDeleted.forEach( atom => atom.wasDeleted() )
+                // We then also indicate that atom updating has finished.
+                editor.dispatch( 'atomUpdateFinished' )
             } )
             lastAtomElementList = thisAtomElementList
         } )

@@ -8,6 +8,7 @@ import { loadScript } from './utilities.js'
 import { loadFromQueryString } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
 import { documentSettingsMetadata } from './document-settings.js'
+import { LurchDocument } from './lurch-document.js'
 import Settings from './settings-install.js'
 import LocalStorageDrive from './local-storage-drive.js'
 import Headers from './header-editor.js'
@@ -253,17 +254,18 @@ window.Lurch = {
                 menu : menuData,
                 browser_spellcheck: true,
                 contextmenu : 'atoms',
-                plugins : 'lists link', // 'fullscreen', // enable full screen mode
+                plugins : 'lists link',
                 statusbar : false,
                 setup : editor => {
                     // Save the options object for any part of the app to reference:
                     editor.appOptions = options
 
-                    // As soon as the editor is ready, ensure it's not in front
-                    // of any future Google Drive dialogs
+                    // As soon as the editor is ready...
                     editor.on( 'init', () => {
-                        // editor.execCommand( 'mceFullScreen' )
+                        // Ensure it's not in front of any later Google Drive dialogs:
                         document.querySelector( '.tox-tinymce' ).style.zIndex = 500
+                        // And ensure it has a lurchDocument property:
+                        new LurchDocument( editor )
                     } )
 
                     // Install all tools the editor always needs:

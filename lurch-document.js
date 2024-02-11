@@ -36,7 +36,9 @@ export class LurchDocument {
 
     /**
      * Construct a new instance for reading and/or writing data and metadata
-     * to and/or from the given editor.
+     * to and/or from the given editor.  Also, if the editor does not already
+     * have a LurchDocument instance stored in its `lurchDocument` property,
+     * place this new instance there.
      * 
      * @param {tinymce.editor} editor the editor with which this object will
      *   interface
@@ -44,6 +46,7 @@ export class LurchDocument {
     constructor ( editor ) {
         this.editor = editor
         if ( !this.editor.lurchMetadata ) this.clearMetadata()
+        if ( !this.editor.lurchDocument ) this.editor.lurchDocument = this
     }
 
     // Internal use only.  Clears out the editor's content.
@@ -147,6 +150,7 @@ export class LurchDocument {
      *   filesystem, ready to be loaded into this editor
      * @returns {Object} an object with `"metadata"` and `"document"` fields, as
      *   documented above
+     * @see {@link LurchDocument#isDocumentHTML isDocumentHTML()}
      */
     static documentParts ( document ) {
         const temp = window.document.createElement( 'div' )
@@ -156,6 +160,21 @@ export class LurchDocument {
             metadata : toSearch.find( child => child.matches?.( '#metadata' ) ),
             document : toSearch.find( child => child.matches?.( '#document' ) )
         }
+    }
+
+    /**
+     * Is the given text a valid Lurch document?  This is checked by applying
+     * the {@link LurchDocument#documentParts documentParts()} function to it,
+     * and ensuring that it has at least a `document` member, even if it does
+     * not also have a `metadata` member.
+     * 
+     * @param {string} document - the document in HTML form
+     * @returns {boolean} true if the document is a valid Lurch document, false
+     *   otherwise
+     * @see {@link LurchDocument#documentParts documentParts()}
+     */
+    static isDocumentHTML ( document ) {
+        return LurchDocument.documentParts( document ).hasOwnProperty( 'document' )
     }
 
     /**

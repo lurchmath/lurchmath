@@ -391,6 +391,12 @@ export const fullUnindent = text => {
  * It does this by checking to see if the window containing the application is
  * the top-level window in the browser or not.
  * 
- * @returns {boolean} true iff the application is not the top-level window
+ * One can also force the app to behave like an embedded version by passing
+ * `actAsEmbed=true` in the query string.  This function respects that as well,
+ * and classifies an app with that in its query string as embedded.
+ * 
+ * @returns {boolean} true iff the application is not the top-level window and
+ *   `actAsEmbed` was not set to true in the query string
  */
-export const isEmbedded = () => window.top !== window
+export const isEmbedded = () =>
+    window.top !== window || window.location.search.includes( 'actAsEmbed=true' )

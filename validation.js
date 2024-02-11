@@ -127,6 +127,7 @@ export const install = editor => {
                 progressNotification.close()
                 Dialog.notify( editor, 'success', 'Validation complete', 2000 )
                 progressNotification = null
+                editor.dispatch( 'validationFinished' )
             } else if ( message.content?.type?.startsWith( 'mathlive#' ) ) {
                 // Ignore messages MathLive is sending to itself
             } else if ( event.data['lurch-embed'] ) {
