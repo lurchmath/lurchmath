@@ -64,7 +64,6 @@ body.shell-style-boxed {
 
     /* Atoms get borders (except not expository math atoms) */
     .lurch-atom:not([data-metadata_type='"expositorymath"']) {
-        /* border: 1px solid #bbb; */
         border: 1px solid #b4d7ff;
         border-radius: 6px;
         padding: 1px 2px;
@@ -164,15 +163,8 @@ body.shell-style-minimal {
         background-color: #e7f3fd;
     }
     
-    div.lurch-atom[data-shell_title].lurch-given {
-        /* This class may no longer be supported
-           and may need some JS code added to support it again. */
-        border-top: 2px dashed #bbb;
-        border-bottom: 2px dashed #bbb;
-    }
-
     /* Minimal view of subproofs (shells with no title) is to be indented on the
-       left according to it's nesting level. */
+       left according to its nesting level. */
     div.lurch-atom[data-shell_title=""] {
         border: none;
         margin: 0;
