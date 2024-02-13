@@ -6,6 +6,10 @@ import {
     TextSettingMetadata, LongTextSettingMetadata
 } from './settings-metadata.js'
 
+// Load the app settings if we're in the browser, where we can do that, so that
+// when we later try to use it, it actually contains the user's preferences.
+if ( typeof localStorage !== 'undefined' ) appSettings.load()
+
 /**
  * A Lurch document will have several parts, including at least the following.
  * 
@@ -470,7 +474,7 @@ export class LurchDocument {
                 'shell style',
                 'Style for displaying environments',
                 [ 'boxed', 'minimal' ],
-                'boxed'
+                appSettings.get( 'default shell style' )
             )
         )
     )

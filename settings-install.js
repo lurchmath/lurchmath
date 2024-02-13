@@ -50,47 +50,14 @@ export const appSettings = new Settings(
                 false
             ),
             new CategorySettingMetadata(
-                'preferred meaning style',
-                'Preferred style to use when viewing content\'s meaning',
-                [ 'Hierarchy', 'Code' ],
-                'Hierarchy'
+                'default shell style',
+                'Default style for environments in new documents',
+                [ 'boxed', 'minimal' ],
+                'boxed'
             ),
-            new LongTextSettingMetadata(
-                'declaration type templates',
-                'Phrases for variable and constant declarations',
-                [
-                    'Let [variable] be arbitrary',
-                    'Let [variable] be such that [statement]',
-                    '[statement], where [variable] is arbitrary',
-                    'Reserve a new symbol [constant]',
-                    'For some [constant], [statement]',
-                    '[statement], for some [constant]'
-                ].join( '\n' ),
-                text => {
-                    const errors = [ ]
-                    text.split( '\n' ).forEach( ( line, index ) => {
-                        const numV = line.split( '[variable]' ).length - 1
-                        if ( numV > 1 )
-                            errors.push( `Phrase ${index + 1}: too many [variable]s` )
-                        const numC = line.split( '[constant]' ).length - 1
-                        if ( numC > 1 )
-                            errors.push( `Phrase ${index + 1}: too many [constant]s` )
-                        const numS = line.split( '[statement]' ).length - 1
-                        if ( numS > 1 )
-                            errors.push( `Phrase ${index + 1}: too many [statement]s` )
-                        if ( numV == 0 && numC == 0 )
-                            errors.push( `Phrase ${index + 1}: neither [variable] nor [constant]` )
-                        if ( numS > 0 && !line.startsWith( '[statement]' )
-                                      && !line.endsWith( '[statement]' ) )
-                            errors.push( `Phrase ${index + 1}: [statement] is not at the start or end` )
-                        if ( /\[variable\]\s*\[statement\]/.test( line )
-                          || /\[constant\]\s*\[statement\]/.test( line )
-                          || /\[statement\]\s*\[variable\]/.test( line )
-                          || /\[statement\]\s*\[constant\]/.test( line ) )
-                            errors.push( `Phrase ${index + 1}: no text between placeholders` )
-                    } )
-                    return errors
-                }
+            new NoteMetadata(
+                'If you change the default environment style, you will need to '
+              + 'reload the application for the change to take effect.'
             )
         ),
         new SettingsCategoryMetadata(
@@ -137,6 +104,52 @@ export const appSettings = new Settings(
                 'warn before embed header',
                 'Show warning before moving document content into header',
                 'Moving content into the header is an action that cannot be undone.'
+            )
+        ),
+        new SettingsCategoryMetadata(
+            'Advanced',
+            new CategorySettingMetadata(
+                'preferred meaning style',
+                'Preferred style to use when viewing content\'s meaning',
+                [ 'Hierarchy', 'Code' ],
+                'Hierarchy'
+            ),
+            new LongTextSettingMetadata(
+                'declaration type templates',
+                'Phrases for variable and constant declarations',
+                [
+                    'Let [variable] be arbitrary',
+                    'Let [variable] be such that [statement]',
+                    '[statement], where [variable] is arbitrary',
+                    'Reserve a new symbol [constant]',
+                    'For some [constant], [statement]',
+                    '[statement], for some [constant]'
+                ].join( '\n' ),
+                text => {
+                    const errors = [ ]
+                    text.split( '\n' ).forEach( ( line, index ) => {
+                        const numV = line.split( '[variable]' ).length - 1
+                        if ( numV > 1 )
+                            errors.push( `Phrase ${index + 1}: too many [variable]s` )
+                        const numC = line.split( '[constant]' ).length - 1
+                        if ( numC > 1 )
+                            errors.push( `Phrase ${index + 1}: too many [constant]s` )
+                        const numS = line.split( '[statement]' ).length - 1
+                        if ( numS > 1 )
+                            errors.push( `Phrase ${index + 1}: too many [statement]s` )
+                        if ( numV == 0 && numC == 0 )
+                            errors.push( `Phrase ${index + 1}: neither [variable] nor [constant]` )
+                        if ( numS > 0 && !line.startsWith( '[statement]' )
+                                      && !line.endsWith( '[statement]' ) )
+                            errors.push( `Phrase ${index + 1}: [statement] is not at the start or end` )
+                        if ( /\[variable\]\s*\[statement\]/.test( line )
+                          || /\[constant\]\s*\[statement\]/.test( line )
+                          || /\[statement\]\s*\[variable\]/.test( line )
+                          || /\[statement\]\s*\[constant\]/.test( line ) )
+                            errors.push( `Phrase ${index + 1}: no text between placeholders` )
+                    } )
+                    return errors
+                }
             )
         )
     )
