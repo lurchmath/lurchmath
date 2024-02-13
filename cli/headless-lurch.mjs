@@ -7,11 +7,14 @@
  * CLI, or this module's documentation for what it provides.
  * 
  * The main purpose here is to launch two invisible background services that the
- * CLI can leverage:  First, a web server that serves the Lurch app from this
- * repository, so that any browser running on the local machine can access it,
- * and second, a headless Chromium browser that runs the Lurch app from that
- * server.  This module provides many functions for interacting with the copy of
- * the Lurch app in the headless Chromium browser, for putting content in, and
+ * CLI can leverage:
+ * 
+ *  1. a web server that serves the Lurch app from this repository, so that any
+ *     browser running on the local machine can access it, and
+ *  2. a headless Chromium browser that runs the Lurch app from that server.
+ * 
+ * This module provides many functions for interacting with the copy of the
+ * Lurch app in the headless Chromium browser, for putting content in, and
  * getting responses back, including the document in various forms, and the
  * results of validation run in the app.
  * 
@@ -23,6 +26,7 @@
  *    {@link module:HeadlessLurch.openDocument openDocument()}.
  *  * Validate the document and return the validation results with
  *    {@link module:HeadlessLurch.validationResults validationResults()}.
+ *  * Possibly repeat the above two steps or some subset of them many times.
  *  * Optionally get the document in PDF form with
  *    {@link module:HeadlessLurch.documentAsPDF documentAsPDF()}.
  *  * Optionally close the app with
@@ -51,6 +55,8 @@ let page = null
  * wait until the app is fully loaded.  A few meessages will be printed to the
  * console while that happens, so that users of the CLI will know what's going
  * on during the noticeable delay it takes to launch the app.
+ * 
+ * @function
  */
 export const openApp = async () => {
     browser = await puppeteer.launch( {
@@ -81,6 +87,8 @@ export const openApp = async () => {
  * {@link module:HeadlessLurch.openApp openApp()},
  * the CLI does not actually use it, because it just closes the entire CLI when
  * it's complete, which implicitly shuts down this resource.
+ * 
+ * @function
  */
 export const closeApp = async () => {
     await browser.close()
@@ -107,13 +115,15 @@ const validateAndWait = async () => {
  * HTML necessary to represent its typeset form on screen (which can be complex).
  * 
  * There is also a more compact way to represent Lurch documents using HTML tags,
- * as documented in {@link EmbedListener the embed-listener.js module}.  This
- * function takes a string of HTML as input and detects whether it is an HTML
- * file that was saved from the Lurch app (long form) or not (assumed therefore
- * to be short form).
+ * as documented in {@link module:EmbedListener the embed-listener.js module}.
+ * This function takes a string of HTML as input and detects whether it is an
+ * HTML file that was saved from the Lurch app (long form) or not (assumed
+ * therefore to be short form).
  * 
  * @param {string} html - the HTML to test to see whether it is in long form
  * @returns {Promise<boolean>} whether the given HTML is in long form
+ * 
+ * @function
  */
 export const isLongForm = async ( html ) => {
     return await page.evaluate( `
@@ -123,11 +133,6 @@ export const isLongForm = async ( html ) => {
     ` )
 }
 
-// Run validation using the above validateAndWait() function, then look through
-// the editor in the app and find all atoms in it.  For each one, extract its
-// key information (type, nesting depth, meaning, validation results, etc.) and
-// return an array of objects with that information, one object for each atom,
-// in the order the appear in the document.
 /**
  * Run validation on the document currently in the Lurch app, wait until that
  * validation completes, then find every atom (which includes shells) in the
@@ -153,6 +158,8 @@ export const isLongForm = async ( html ) => {
  *    using the intermediate form of the expression editor
  * 
  * @returns {Promise<Object[]>}
+ * 
+ * @function
  */
 export const validationResults = async () => {
     await validateAndWait()
@@ -213,7 +220,7 @@ const readDocumentWithImports = ( filename, topLevelCall = true ) => {
 /**
  * Read a document from the filesystem, recursively obeying any "import" tags
  * inside it (and throwing an error if any circular dependencies are detected),
- * then load the contents into the Lurch app in one of three ways:
+ * then load the resulting document into the Lurch app in one of three ways:
  *  * If the file is an HTML file, and it is detected to be in long form (the
  *    type saved by the Lurch app) using
  *    {@link module:HeadlessLurch.isLongForm isLongForm()},then
@@ -221,15 +228,17 @@ const readDocumentWithImports = ( filename, topLevelCall = true ) => {
  *  * If the file is an HTML file, but it is not detected to be in long form,
  *    then assume it contains simplified HTML, and provide it to the app as if
  *    the app were an embedded copy of the Lurch app, so that the HTML content
- *    will be processed by {@link EmbedListener the embed-listener.js module}.
+ *    will be processed by {@link module:EmbedListener the embed-listener.js module}.
  *    This will expand tags of the form `<lurch>...</lurch>`,
  *    `<theorem>...</theorem>`, and so on into their full internal
  *    representations.
  *  * If the file is a Markdown file, do the same as in the previous bullet
- *    point, because {@link EmbedListener the embed-listener.js module} supports
- *    Markdown as well.
+ *    point, because {@link module:EmbedListener the embed-listener.js module}
+ *    supports Markdown as well.
  *
  * @param {string} filename - the file to load from the filesystem
+ * 
+ * @function
  */
 export const openDocument = async ( filename ) => {
     await page.evaluate( () => {
@@ -275,6 +284,8 @@ export const openDocument = async ( filename ) => {
  * that would be saved if the user invoked Save from the app's File menu.
  * 
  * @returns {Promise<string>} the contents of the document (in long-form HTML)
+ * 
+ * @function
  */
 export const documentHTML = async () => {
     return await page.evaluate( () => {
@@ -288,6 +299,8 @@ export const documentHTML = async () => {
  * file, which can then be written to a `.pdf` file on disk.
  * 
  * @returns {Promise<Buffer>} a buffer containing the contents of a PDF file
+ * 
+ * @function
  */
 export const documentAsPDF = async () => {
     return await page.pdf()

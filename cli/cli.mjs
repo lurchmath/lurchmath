@@ -6,6 +6,12 @@
  * `node cli/cli.mjs`, passing arguments as documented below.  There are
  * several use cases for this command-line interface.
  * 
+ * **NOTE:** If you do not have Chromium installed so that the puppeteer module
+ * can find it, this CLI will not work.  If you are using the development
+ * container for this repository as defined in
+ * {@link https://github.com/lurchmath/lurchmath/blob/master/.devcontainer/Dockerfile
+ * its Dockerfile}, Chromium is already installed for you.
+ * 
  * ## Use case 1: Writing Lurch documents in Markdown
  * 
  * Some users prefer to write documents in Markdown, for (some subset of) the
@@ -18,9 +24,9 @@
  *    human-readable format
  * 
  * In addition, this command-line interface makes it easy to import one file
- * into another as a dependency, which is a feature that is (at the time this
- * tool was invented, February 2024) has only partial support in the full Lurch
- * web application.  (One can embed dependencies, but cannot recursively refresh
+ * into another as a dependency, which is a feature that (at the time this tool
+ * was invented, February 2024) has only partial support in the full Lurch web
+ * application.  (One can embed dependencies, but cannot recursively refresh
  * them when the dependencies change.)  For that reason, this tool has some
  * temporary benefits that the full Lurch app does not have.
  * 
@@ -34,7 +40,18 @@
  * invisible copy of the full Lurch web app running in a headless Chromium
  * browser, validate the document, and then print to the console the results of
  * that validation process, indented in a way that mimics the structure of
- * nested environments in your document.
+ * nested environments in your document.  Here is an example, without any of
+ * the colors that are used in the actual terminal output:
+ * 
+ * ```
+ *     rule:
+ *         expression: `Assume A and B`
+ *         expression: `A`
+ *         expression: `B`
+ *     expression: `Assume X and Y`
+ *     expression: `Y`                       ✓ valid 
+ *     expression: `Z`                       ? indeterminate 
+ * ```
  * 
  * ## Other output formats
  * 
@@ -94,7 +111,16 @@
  * In addition to the features document on that page, the CLI also supports
  * importing other documents into the one being processed by the CLI.  Use an
  * HTML tag of the form `<import src="relative path"/>` to do so.  Imports can
- * be recursive, and circular dependency chains generate errors.
+ * be recursive, and circular dependency chains generate errors.  It is common
+ * to place such "import" tags in the document header, as described above, in a
+ * form that looks like the following.
+ * 
+ * ```html
+ * <div class="header">
+ *     <import src="path/to/some-import.md"/>
+ *     <import src="path/to/another-import.md"/>
+ * </div>
+ * ```
  * 
  * ## Use case 2: Validating existing Lurch documents
  * 
@@ -115,8 +141,10 @@
  * 
  * If you run the command on a folder instead of a single file, the CLI will
  * validate all the files in that folder, and print the results to the console.
- * You can use whichever format you prefer (the default, or the `--html` version
- * or the `--html-only` version) exactly as described above.
+ * In this mode, you can use only the default output format (indented text, as
+ * shown above), which will be supplemented with a filename above each section
+ * of output.  (The HTML output forms are typically for redirecting to a file,
+ * and thus do not make sense in this context.)
  * 
  * `node cli/cli.mjs path/to/your-folder`
  * 
@@ -128,6 +156,11 @@
  * is added to the folder or when the contents of a file change; in each case,
  * it will read the new or changed file and process it in the default way
  * described above (printing validation results in text form, indented).
+ * 
+ * In this mode, the CLI does not exit until the user kills the process.  It
+ * remains running so that you can use it to get constant, up-to-the-moment
+ * feedback on your recently saved edits.  You can exit it with Ctrl+C, as with
+ * any CLI tool.
  * 
  * The `--watch` switch is not compatible with the `--html` or `--html-only`
  * switches because their output is not human-readable, and the goal of the
@@ -141,9 +174,9 @@
  * 
  * If you run the CLI on two folders, they are treated as a source and a
  * destination folder.  The CLI will convert all the files in the source folder
- * to HTML, and write the results to the destination folder.  Here the HTML form
- * is long-form HTML, meaning that it is ready to be opened in the main Lurch
- * app.
+ * to HTML, and write the results to the destination folder using the same
+ * filenames, but with each extension changed to `.html`.  The output form is
+ * long-form HTML, meaning that it is ready to be opened in the main Lurch app.
  * 
  * `node cli/cli.mjs path/to/your-source-folder path/to/your-destination-folder`
  * 
