@@ -42,7 +42,7 @@ export const install = editor => {
         onAction : () => {
             // Create settings instance and LurchDocument instance
             const settings = new Settings( 'Document settings',
-                documentSettingsMetadata )
+                LurchDocument.settingsMetadata )
             const LDoc = new LurchDocument( editor )
             // Load document settings into it
             const allowedKeys = settings.keys()
