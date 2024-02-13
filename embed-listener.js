@@ -16,7 +16,7 @@
  * TinyMCE editor when Lurch is running.  (That would be far too complex for a
  * human author.)  Instead, they can use one of the following two notations.
  * 
- * **HTML Notation:**
+ * ## HTML Notation
  * 
  * Ordinary HTML, plus the following extra tags:
  * 
@@ -31,7 +31,7 @@
  *    which will be converted into a shell of that subclass, containing whatever
  *    is placed inside of the opening and closing tags.
  * 
- * **Markdown Notation:**
+ * ## Markdown Notation
  * 
  * Ordinary Markdown, plus the following extra features:
  * 
@@ -51,6 +51,18 @@
  * should appear, and what they should contain, we provide a script you can
  * import into that outer page, which will do the job automatically.  See
  * {@link module:EmbedScript the embedded.js script} for details.
+ * 
+ * ## Document headers
+ * 
+ * As you write a Lurch document, you may want some content to be placed into
+ * its document header.  For example, you may want some axioms or rules of
+ * inference to be stored there so that they are usable in the document, without
+ * taking up space in that document.
+ * 
+ * In both Markdown and HTML formats, the user can create a DIV with the class
+ * "header" to mark a portion of the document as the header.  That is, write
+ * `<div class="header">`, followed by the contents of the header (over the
+ * course of as many paragraphs as needed), followed by the closing `</div>`.
  * 
  * @module EmbedListener
  */

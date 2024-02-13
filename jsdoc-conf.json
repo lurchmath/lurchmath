@@ -16,6 +16,7 @@
         "nav-width": "335px"
     },
     "source": {
+        "includePattern": ".+\\.js(doc|x)?$|.+\\.mjs$",
         "exclude": [
             "./google-api-key-secret.js"
         ]
