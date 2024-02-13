@@ -7,7 +7,6 @@
 import { loadScript } from './utilities.js'
 import { loadFromQueryString } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
-import { documentSettingsMetadata } from './document-settings.js'
 import { LurchDocument } from './lurch-document.js'
 import Settings from './settings-install.js'
 import LocalStorageDrive from './local-storage-drive.js'
@@ -109,8 +108,8 @@ window.Lurch = {
      *    this set of key-value pairs supplies only the *default* settings.  The
      *    current document's settings naturally override the defaults.
      *    To see which keys and values are available, see
-     *    {@link DocumentSettings the document settings module}, and view the
-     *    source code for the `documentSettingsMetadata` object.
+     *    {@link LurchDocument.settingsMetadata the document settings metadata}
+     *    in the {@link LurchDocument} class.
      * 
      * The `options` object is stored as an `appOptions` member in the TinyMCE
      * editor instance once it is created, so that any part of the app can refer
@@ -134,7 +133,7 @@ window.Lurch = {
         } )
         // Do the same for default document settings:
         Object.keys( options.documentDefaults || { } ).forEach( key => {
-            const settingMetadata = documentSettingsMetadata.metadataFor( key )
+            const settingMetadata = LurchDocument.settingsMetadata.metadataFor( key )
             if ( !settingMetadata )
                 console.log( 'No such setting:', key )
             else

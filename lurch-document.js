@@ -1,5 +1,10 @@
 
 import { appURL, isValidURL } from './utilities.js'
+import { appSettings } from './settings-install.js'
+import {
+    SettingsMetadata, SettingsCategoryMetadata, CategorySettingMetadata,
+    TextSettingMetadata, LongTextSettingMetadata
+} from './settings-metadata.js'
 
 /**
  * A Lurch document will have several parts, including at least the following.
@@ -58,7 +63,7 @@ export class LurchDocument {
         this.editor.lurchMetadata = this.editor.dom.doc.createElement( 'div' )
         this.editor.lurchMetadata.setAttribute( 'id', 'metadata' )
         this.editor.lurchMetadata.style.display = 'none'
-        this.setMetadata( 'settings', 'shell style', 'json', 'boxed' )
+        this.updateBodyClasses()
     }
     // Internal use only.  Ensure the editor has an element for showing a filename.
     getFilenameElement () {
@@ -283,16 +288,6 @@ export class LurchDocument {
          && element.dataset.key == key )
     }
 
-    // Internal use only.  Clear all shell style classes from editor.
-    clearShellStyles () {
-        const body = this.editor.dom.doc.body
-        const classes = Array.from( body.classList )
-        classes.forEach( className => {
-            if ( className.startsWith( 'shell-style-' ) )
-                body.classList.remove( className )
-        } )
-    }
-
     /**
      * Store a new piece of metadata in this object, or update an old one.
      * Pieces of metadata are indexed by a category-key pair, facilitating
@@ -335,10 +330,7 @@ export class LurchDocument {
             this.editor.lurchMetadata.appendChild( newElement )
         }
         // Tweak editor DOM if needed
-        if ( category == 'settings' && key == 'shell style' ) {
-            this.clearShellStyles()
-            this.editor.dom.doc.body.classList.add( 'shell-style-' + value )
-        }
+        this.updateBodyClasses()
     }
 
     /**
@@ -365,7 +357,10 @@ export class LurchDocument {
      */
     getMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
-        return !element ? undefined :
+        const defaultValue = category == 'settings' ?
+            LurchDocument.settingsMetadata.metadataFor( key )?.defaultValue :
+            undefined
+        return !element ? defaultValue :
                element.dataset.valueType == 'html' ? element.cloneNode( true ) :
                JSON.parse( element.innerHTML )
     }
@@ -438,8 +433,86 @@ export class LurchDocument {
         const element = this.findMetadataElement( category, key )
         if ( element ) element.remove()
         // Tweak editor DOM if needed
-        if ( category == 'settings' && key == 'shell style' )
-            this.clearShellStyles()
+        this.updateBodyClasses()
+    }
+
+    /**
+     * This metadata object can be used to create a {@link Settings} instance
+     * for any given document, which can then present a UI to the user for
+     * editing the document's settings (using
+     * {@link Settings#userEdit its userEdit() function}).  We use it for this
+     * purpose in the menu item we create in the
+     * {@link module:DocumentSettings.install install()} function, among other
+     * places.  Instances of this class also use it to return the appropriate
+     * defaults for settings the user may query about a document.
+     * 
+     * This metadata can be used to edit document-level settings, which are
+     * distinct from the application-level settings defined in
+     * {@link module:SettingsInstaller the Settings Installer module}.
+     */
+    static settingsMetadata = new SettingsMetadata(
+        new SettingsCategoryMetadata(
+            'Document metadata',
+            new TextSettingMetadata( 'title', 'Title', '' ),
+            new TextSettingMetadata( 'author', 'Author', '' ),
+            new TextSettingMetadata( 'date', 'Date', '' ),
+            new LongTextSettingMetadata( 'abstract', 'Abstract', '' )
+        ),
+        new SettingsCategoryMetadata(
+            'Math content',
+            new CategorySettingMetadata(
+                'notation',
+                'Default notation to use for new expressions',
+                [ 'Lurch notation', 'LaTeX' ],
+                appSettings.get( 'notation' )
+            ),
+            new CategorySettingMetadata(
+                'shell style',
+                'Style for displaying environments',
+                [ 'boxed', 'minimal' ],
+                'boxed'
+            )
+        )
+    )
+
+    /**
+     * This array lists those settings that should be marked as classes on the
+     * body element of the editor's document.  This exposes them to CSS rules
+     * in the editor, so that they can be used to style the document content.
+     * 
+     * In general, a setting with key "example one" and value "foo bar" will be
+     * marked on the body element with a class of "example-one-foo-bar".
+     * 
+     * @see {@link LurchDocument#updateBodyClasses updateBodyClasses()}
+     */
+    static bodySettings = [ 'shell style' ]
+
+    /**
+     * For each setting mentioned in {@link LurchDocument#bodySettings
+     * bodySettings}, this function ensures that there is precisely one CSS
+     * class on the body of the document beginning with that setting's key,
+     * and that is the class that ends with that settings value.
+     * 
+     * As documented in {@link LurchDocument#bodySettings bodySettings}, spaces
+     * are replaced with dashes, so that a setting with key "number of tacos"
+     * and value "not enough" would become a CSS class
+     * "number-of-tacos-not-enough".
+     * 
+     * @see {@link LurchDocument#bodySettings bodySettings}
+     */
+    updateBodyClasses () {
+        LurchDocument.bodySettings.forEach( settingKey => {
+            const prefix = settingKey.replace( ' ', '-' ) + '-'
+            const value = this.getMetadata( 'settings', settingKey )
+            const newClass = prefix + value.replace( ' ', '-' )
+            const oldClasses = Array.from( this.editor.dom.doc.body.classList )
+            oldClasses.forEach( oldClass => {
+                if ( oldClass.startsWith( prefix ) && oldClass != newClass )
+                    this.editor.dom.doc.body.classList.remove( oldClass )
+            } )
+            if ( !oldClasses.includes( newClass ) )
+                this.editor.dom.doc.body.classList.add( newClass )
+        } )
     }
 
 }

@@ -1,59 +1,22 @@
 
 /**
- * This module exports one function that installs in a TinyMCE editor features
- * for editing document settings, and it also exports the metadata for Lurch
- * document settings, including fields such as title, author, date, and
- * abstract.  This metadata can be used by the {@link LurchDocument} class to
- * edit document-level settings, which are distinct from the application-level
- * settings defined in {@link module:SettingsInstaller the Settings Installer
- * module}.
+ * This module exports a function that installs in a TinyMCE editor features
+ * for editing document settings.  It also exports
+ * {@link module:DocumentSettings.lookup lookup()} and
+ * {@link module:DocumentSettings.store store()} functions that are convenience
+ * shortcuts to metadata-related function calls in the {@link LurchDocument}
+ * class.
  * 
  * @module DocumentSettings
  */
 
 import { Settings } from './settings.js'
 import { appSettings } from './settings-install.js'
-import {
-    SettingsMetadata, SettingsCategoryMetadata, CategorySettingMetadata,
-    TextSettingMetadata, LongTextSettingMetadata
-} from './settings-metadata.js'
 import { LurchDocument } from './lurch-document.js'
 
 // Necessary for the use of appSettings below, except when being loaded in a web
 // worker, because localStorage does not exist there from which to load settings:
 if ( typeof( localStorage ) !== 'undefined' ) appSettings.load()
-
-/**
- * This metadata object can be used to create a {@link Settings} instance for
- * any given document, which can then present a UI to the user for editing the
- * document's settings (using {@link Settings#userEdit its userEdit()
- * function}).  We use it for this purpose in the menu item we create in the
- * {@link module:DocumentSettings.install install()} function.
- */
-export const documentSettingsMetadata = new SettingsMetadata(
-    new SettingsCategoryMetadata(
-        'Document metadata',
-        new TextSettingMetadata( 'title', 'Title', '' ),
-        new TextSettingMetadata( 'author', 'Author', '' ),
-        new TextSettingMetadata( 'date', 'Date', '' ),
-        new LongTextSettingMetadata( 'abstract', 'Abstract', '' )
-    ),
-    new SettingsCategoryMetadata(
-        'Math content',
-        new CategorySettingMetadata(
-            'notation',
-            'Default notation to use for new expressions',
-            [ 'Lurch notation', 'LaTeX' ],
-            appSettings.get( 'notation' )
-        ),
-        new CategorySettingMetadata(
-            'shell style',
-            'Style for displaying environments',
-            [ 'boxed', 'minimal' ],
-            'boxed'
-        )
-    )
-)
 
 /**
  * Installs in a given TinyMCE editor the UI features for editing document
@@ -118,7 +81,7 @@ export const install = editor => {
 export const lookup = ( editor, key ) => {
     // Create all the objects we need to use for lookup
     const settings = new Settings( 'Document settings',
-        documentSettingsMetadata )
+        LurchDocument.settingsMetadata )
     const metadata = settings.metadata.metadataFor( key )
     const LDoc = new LurchDocument( editor )
     // If the user has never given the setting a value, use the default
@@ -144,4 +107,4 @@ export const store = ( editor, key, value ) => {
     new LurchDocument( editor ).setMetadata( 'settings', key, 'json', value )
 }
 
-export default { documentSettingsMetadata, install }
+export default { install, lookup, store }
