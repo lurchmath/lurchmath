@@ -5,6 +5,7 @@ import {
     SettingsMetadata, SettingsCategoryMetadata, CategorySettingMetadata,
     TextSettingMetadata, LongTextSettingMetadata
 } from './settings-metadata.js'
+import { Dependency } from './dependencies.js'
 
 // Load the app settings if we're in the browser, where we can do that, so that
 // when we later try to use it, it actually contains the user's preferences.
@@ -194,7 +195,7 @@ export class LurchDocument {
      * editor's dirty flag.
      * 
      * @param {string} document - the document as it was retrieved from a
-     *   filesystem, ready to be loaded into this editor
+     *   filesystem (or another source), ready to be loaded into this editor
      * @see {@link LurchDocument#getDocument getDocument()}
      */
     setDocument ( document ) {
@@ -211,6 +212,10 @@ export class LurchDocument {
             this.clearDocument()
         this.editor.undoManager.clear()
         this.editor.setDirty( false )
+        // refresh any URL-based dependencies marked as "auto-refresh"
+        Dependency.refreshAllIn( this.editor.getBody(), true ).catch( error =>
+            Dialog.notify( this.editor, 'error',
+                `When auto-refreshing dependencies: ${error}` ) )
     }
     
     /**

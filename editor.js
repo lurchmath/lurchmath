@@ -185,7 +185,7 @@ window.Lurch = {
             ),
             document : buildMenu( 'Document',
                 'editheader extractheader embedheader',
-                'dependency',
+                'dependency refreshdependencies',
                 'validate clearvalidation',
                 'docsettings temptoggle'
             ),
