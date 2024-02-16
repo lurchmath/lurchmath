@@ -778,6 +778,8 @@ export class Atom {
         const className = element.dataset['metadata_type']
         const classObject = className ?
             Atom.subclasses.get( JSON.parse( className ) ) : Atom
+        if ( !classObject )
+            throw new Error( 'Unknown atom type: ' + className )
         return new classObject( element, editor )
     }
 
