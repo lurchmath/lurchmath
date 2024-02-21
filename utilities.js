@@ -138,7 +138,8 @@ export const copyWithoutPrototype = object => {
 export const appURL = () => {
     const result = window.location.protocol + '//'
                  + window.location.host + window.location.pathname
-    return result.endsWith( '/' ) ? result : result + '/'
+    return result.endsWith( '/' ) || result.endsWith( '.html' ) ?
+        result : result + '/'
 }
 
 /**
@@ -152,6 +153,7 @@ export const appURL = () => {
  * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
  *   `"'"`, and `'"'` replaced with character references instead
  * @function
+ * @see {@link module:Utilities.unescapeHTML unescapeHTML()}
  */
 export const escapeHTML = ( text = '' ) =>
     text.replaceAll( '&', '&amp;' )
@@ -159,6 +161,22 @@ export const escapeHTML = ( text = '' ) =>
         .replaceAll( '>', '&gt;' )
         .replaceAll( '"', '&quot;' )
         .replaceAll( "'", '&#039;' )
+
+/**
+ * Unescape a string so that was escaped by the `escapeHTML` function.
+ * 
+ * @param {string} text - text to unescape
+ * @returns {string} the same text, but with the characters `"&"`, `"<"`, `">"`,
+ *   `"'"`, and `'"'` recreated from their character references
+ * @function
+ * @see {@link module:Utilities.escapeHTML escapeHTML()}
+ */
+export const unescapeHTML = ( text = '' ) =>
+    text.replaceAll( '&#039;', "'" )
+        .replaceAll( '&quot;', '"' )
+        .replaceAll( '&gt;', '>' )
+        .replaceAll( '&lt;', '<' )
+        .replaceAll( '&amp;', '&' )
 
 /**
  * The following function takes as input an string containing HTML code and
@@ -294,7 +312,8 @@ export const editorForNode = node => {
 
 /**
  * Call a function on each element in an array, just like `array.forEach()`
- * would do, except use a zero-second timeout between each call.
+ * would do, except use a zero-second timeout between each call.  Returns a
+ * Promise object that resolves when all calls have completed.
  * 
  * @param {Function} func - the function to call for each element
  * @param {any[]} array - the array to iterate over
@@ -302,10 +321,16 @@ export const editorForNode = node => {
  * @function
  */
 Array.prototype.forEachWithTimeout = function( func, timeout = 0 ) {
-    if ( this.length == 0 ) return
-    func( this[0] )
-    setTimeout( () =>
-        this.slice(1).forEachWithTimeout( func, timeout ), timeout )
+    return new Promise( ( resolve, _ ) => {
+        const recur = array => {
+            if ( array.length == 0 ) resolve()
+            else {
+                func( array[0] )
+                setTimeout( () => recur( array.slice( 1 ) ), timeout )
+            }
+        }
+        recur( this )
+    } )
 }
 
 /**
@@ -337,3 +362,41 @@ export const isValidURL = text => {
         return false
     }
 }
+
+/**
+ * This function inspects a string and finds the largest prefix of whitespace on
+ * each line, then removes that prefix from each line, unindenting the text
+ * maximally.  Blank lines are ignored.  The resulting string is returned.
+ * 
+ * @param {string} text - the text to un-indent as described above
+ * @returns {string} the unindented text
+ */
+export const fullUnindent = text => {
+    let shortestIndent = Infinity
+    const lines = text.split( '\n' )
+    for ( let i = 0 ; i < lines.length ; i++ ) {
+        if ( lines[i].trim() != '' ) {
+            const indentSize = /^\s*/.exec( lines[i] )[0].length
+            shortestIndent = Math.min( shortestIndent, indentSize )
+        }
+    }
+    for ( let i = 0 ; i < lines.length ; i++ )
+        if ( lines[i].trim() != '' )
+            lines[i] = lines[i].slice( shortestIndent )
+    return lines.join( '\n' )
+}
+
+/**
+ * Determine whether the application is in an iframe inside another window.
+ * It does this by checking to see if the window containing the application is
+ * the top-level window in the browser or not.
+ * 
+ * One can also force the app to behave like an embedded version by passing
+ * `actAsEmbed=true` in the query string.  This function respects that as well,
+ * and classifies an app with that in its query string as embedded.
+ * 
+ * @returns {boolean} true iff the application is not the top-level window and
+ *   `actAsEmbed` was not set to true in the query string
+ */
+export const isEmbedded = () =>
+    window.top !== window || window.location.search.includes( 'actAsEmbed=true' )

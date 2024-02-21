@@ -320,8 +320,8 @@ export class DeclarationType {
      * the parameter is set to true, it adds in default types for any type-body
      * pair not represented by a phrase in the settings.
      * 
-     * @param {boolean=false} addDefaults - whether to add in default types for
-     *   any type-body pair not included in the settings
+     * @param {boolean} [addDefaults=false] - whether to add in default types
+     *   for any type-body pair not included in the settings
      * @returns {DeclarationType[]} an array of all DeclarationType instances
      *   mentioned in the user's settings, plus any default types needed, if the
      *   caller requested them with `addDefaults`

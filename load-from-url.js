@@ -44,11 +44,18 @@ export const loadFromURL = url => new Promise( ( resolve, reject ) => {
 } )
 
 /**
- * Check to see if the query string for the current page contains a "load=..."
- * parameter, and if so, treat its value as either an URL (and try to load a
- * Lurch document from that URL) or a filename in the browser's local storage
- * (and try to load a Lurch document from there).  Place the document in the
- * given editor on success, and report an error with a notification on failure.
+ * Check to see if the query string for the current page contains an instruction
+ * for loading a file.  This can be in one of two formats.
+ * 
+ * If the query string contains a "load=..." parameter, treat its value as
+ * either an URL (and try to load a Lurch document from that URL) or a filename
+ * in the browser's local storage (and try to load a Lurch document from there).
+ * Place the document in the given editor on success, and report an error with a
+ * notification on failure.
+ * 
+ * If the query string contains a "data=..." parameter, treat its value as the
+ * base-64 encoding of a document.  Decode it into a string containing HTML, and
+ * load that document into the given editor.
  * 
  * @param {tinymce.Editor} editor - the TinyMCE editor instance into which to
  *   load the document specified in the query string, if there is one
@@ -58,25 +65,37 @@ export const loadFromURL = url => new Promise( ( resolve, reject ) => {
  */
 export const loadFromQueryString = editor => {
     const params = new URL( window.location ).searchParams
-    if ( !params.has( 'load' ) ) return
-    const source = params.get( 'load' )
-    if ( fileExists( source ) ) {
-        new LurchDocument( editor ).setDocument( readFile( source ) )
-        if ( params.has( 'delete' ) && params.get( 'delete' ) == 'true' )
-            deleteFile( source )
-        // window.history.replaceState( null, null, appURL() )
-    } else if ( isValidURL( source ) ) {
-        loadFromURL( source )
-        .then( content => {
-            const LD = new LurchDocument( editor )
-            LD.setDocument( content )
-            LD.setFileID( source )
-        } ).catch( () => Dialog.notify( editor, 'error',
-            `Error importing document from ${source}.<br>
-            (Not all servers permit downloads from other domains.)` ) )
-        // window.history.replaceState( null, null, appURL() )
-    } else {
-        Dialog.notify( editor, 'error', 'Not a valid file source: ' + source )
+    // Handle the load=... case:
+    if ( params.has( 'load' ) ) {
+        const source = params.get( 'load' )
+        if ( fileExists( source ) ) {
+            new LurchDocument( editor ).setDocument( readFile( source ) )
+            if ( params.has( 'delete' ) && params.get( 'delete' ) == 'true' )
+                deleteFile( source )
+            // window.history.replaceState( null, null, appURL() )
+        } else if ( isValidURL( source ) ) {
+            loadFromURL( source )
+            .then( content => {
+                const LD = new LurchDocument( editor )
+                LD.setDocument( content )
+                LD.setFileID( source )
+            } ).catch( () => Dialog.notify( editor, 'error',
+                `Error importing document from ${source}.<br>
+                (Not all servers permit downloads from other domains.)` ) )
+            // window.history.replaceState( null, null, appURL() )
+        } else {
+            Dialog.notify( editor, 'error', 'Not a valid file source: ' + source )
+        }
+    }
+    // Handle the data=... case:
+    if ( params.has( 'data' ) ) {
+        try {
+            const content = atob( decodeURIComponent( params.get( 'data' ) ) )
+            new LurchDocument( editor ).setDocument( content )
+            // window.history.replaceState( null, null, appURL() )
+        } catch ( _ ) {
+            Dialog.notify( edior, 'error', 'Could not load the encoded document.' )
+        }
     }
 }
 

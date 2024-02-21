@@ -749,6 +749,42 @@ export class TextInputItem {
 }
 
 /**
+ * Functions just like {@link TextInputItem}, except it is an HTML textarea,
+ * and thus can contain multiple lines of input text.
+ */
+export class LongTextInputItem {
+
+    /**
+     * Construct a new long text input control.
+     * 
+     * @param {string} name - the key to use to identify this input control's
+     *   content in the dialog's key-value mapping for all input controls
+     * @param {string} label - the text to place above the input control to
+     *   explain it to the user
+     * @param {string} placeholder - optional, the text to include inside the
+     *   control when it is blank, as an example
+     */
+    constructor ( name, label, placeholder ) {
+        this.name = name
+        this.label = label
+        this.placeholder = placeholder
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        const result = {
+            type : 'textarea',
+            name : this.name,
+            label : this.label
+        }
+        if ( this.placeholder )
+            result.placeholder = this.placeholder
+        return [ result ]
+    }
+
+}
+
+/**
  * An item that can be used in a {@link Dialog} and shows up as a clickable
  * button.  This corresponds to the "button" type of body component in a TinyMCE
  * dialog.

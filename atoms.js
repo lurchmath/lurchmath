@@ -34,7 +34,7 @@
  * @see {@link module:Shells the Shells module}
  */
 
-import { removeScriptTags, isOnScreen } from './utilities.js'
+import { removeScriptTags, isOnScreen, editorForNode } from './utilities.js'
 import { getConverter } from './math-live.js'
 
 /**
@@ -124,9 +124,21 @@ export class Atom {
      * rather than importing the validation module and calling its "clear"
      * function ourselves, because it prevents a circular dependency.
      * 
-     * @see {@link Shell#dataChanged dataChanged() for Shells}
+     * @see {@link Atom#wasDeleted wasDeleted()}
      */
     dataChanged () { }
+
+    /**
+     * This function is a handler for whenever an atom has just been deleted
+     * from the document.  Its default implementation is to do nothing, but
+     * having it here allows {@link module:Validation the validation module} to
+     * replace this handler with one that clears all validation feedback.  We do
+     * it this way, rather than importing the validation module and calling its
+     * "clear" function ourselves, because it prevents a circular dependency.
+     * 
+     * @see {@link Atom#dataChanged dataChanged()}
+     */
+    wasDeleted () { }
 
     /**
      * Get the HTML representation of this atom, as it currently sits in the
@@ -571,10 +583,10 @@ export class Atom {
      */
     applyValidationMessage ( message ) {
         const possibilities = message.getAllFeedback()
-        // If it only has an undeclared variable error don't change the validation
-        // result as there might have been a prior message that sent it.
-        if (possibilities.length === 1 && 
-            possibilities[0].code === 'undeclared variable') return
+        // If it has only an undeclared variable error don't change the validation
+        // result as there might have been a prior result that we need to keep.
+        if ( possibilities.length == 1 && 
+             possibilities[0].code == 'undeclared variable' ) return
         // Drop scoping errors about undeclared variables
         const applicable = possibilities.filter(
             item => item.code != 'undeclared variable' )
@@ -766,6 +778,8 @@ export class Atom {
         const className = element.dataset['metadata_type']
         const classObject = className ?
             Atom.subclasses.get( JSON.parse( className ) ) : Atom
+        if ( !classObject )
+            throw new Error( 'Unknown atom type: ' + className )
         return new classObject( element, editor )
     }
 
@@ -788,6 +802,101 @@ export class Atom {
      * stored in its metadata.  The default implementation does nothing.
      */
     update () { }
+
+    /**
+     * When embedding a copy of the Lurch app in a larger page, users will want
+     * to write simple HTML describing a Lurch document, then have a script
+     * create a copy of the Lurch app and put that document into it.  This
+     * function can convert any HTML, including HTML that has atom elements in
+     * it, into that simplified HTML that is more human-readable, yet still
+     * describes a Lurch document.
+     * 
+     * @returns {string} the representation of the atom as a `lurch` element
+     */
+    static simplifiedHTML ( node ) {
+        const editor = editorForNode( node )
+        if ( Atom.isAtomElement( node ) ) {
+            const atom = Atom.from( node, editor )
+            return atom.toEmbed()
+        }
+        if ( !node.outerHTML ) return node.textContent
+        if ( node.childNodes.length == 0 ) return node.outerHTML
+        const copy = node.cloneNode( true )
+        copy.innerHTML = ''
+        const bothTags = copy.outerHTML
+        const startOfClose = bothTags.indexOf( '><' ) + 1
+        const openTag = bothTags.substring( 0, startOfClose )
+        const closeTag = bothTags.substring( startOfClose )
+        return openTag
+            + Array.from( node.childNodes ).map(
+                child => Atom.simplifiedHTML( child ) ).join( '' )
+            + closeTag
+    }
+
+    /**
+     * Traverse a DOM tree and convert any simplified HTML elements in it into
+     * HTML elements that represent atoms (or shells).  For example, an HTML
+     * element of the form `<latex>...</latex>` will be replaced with the full
+     * HTML code for a {@link ExpositorMath} atom as it sits in a Lurch
+     * application's document.
+     * 
+     * @param {Node} node - the DOM node to use as the root of the traversal;
+     *   it is modified in-place
+     * @param {tinymce.Editor} editor - the editor in which the modified DOM
+     *   will eventually be placed or copied
+     */
+    static unsimplifyDOM ( node, editor ) {
+        // base case 1: no tag to handle, no children to recur on
+        if ( node.childNodes.length == 0 || !node.tagName ) return
+        // base case 2: expository math atom
+        if ( node.tagName == 'LATEX' ) {
+            const atom = Atom.newInline( editor, '', {
+                type : 'expositorymath',
+                latex : node.textContent
+            } )
+            atom.update()
+            node.replaceWith( atom.element )
+        }
+        // base case 3: expression math atom
+        if ( node.tagName == 'LURCH' ) {
+            const atom = Atom.newInline( editor, '', {
+                type : 'expression',
+                lurchNotation : node.textContent
+            } )
+            atom.update()
+            node.replaceWith( atom.element )
+        }
+        // recursive case 1: tag indicates a proper subclass of Shell
+        const tag = node.tagName.toLowerCase()
+        if ( Atom.subclasses.has( tag ) ) {
+            const subclass = Atom.subclasses.get( tag )
+            const shellClass = Atom.subclasses.get( 'shell' )
+            if ( subclass != shellClass
+              && ( subclass.prototype instanceof shellClass ) ) {
+                const shell = Atom.from( shellClass.createElement( editor, tag ) )
+                // if the content we'll add is block-type, then delete all
+                // existing content (including the default <p> element) and add it
+                if ( Array.from( node.childNodes ).some( child =>
+                  tinymce.html.Schema().getBlockElements()[child.tagName] ) ) {
+                    shell.element.innerHTML = ''
+                    while ( node.firstChild )
+                        shell.element.appendChild( node.firstChild )
+                // if we're adding another kind of content, just put it inside
+                // the pre-existing <p> element inside the shell
+                } else if ( node.firstChild ) {
+                    shell.element.firstChild.innerHTML = ''
+                    while ( node.firstChild )
+                        shell.element.firstChild.appendChild( node.firstChild )
+                } // Otherwise, leave the default <p> element alone
+                Array.from( shell.element.childNodes ).forEach(
+                    child => Atom.unsimplifyDOM( child, editor ) )
+                node.replaceWith( shell.element )
+            }
+        }
+        // recursive case 2: no special tag; just recur on children
+        Array.from( node.childNodes ).forEach(
+            child => Atom.unsimplifyDOM( child, editor ) )
+    }
 
 }
 
@@ -817,6 +926,9 @@ export class Atom {
  * @function
  */
 export const install = editor => {
+    // Expose this class publicly through the editor, for use in debugging at
+    // the console, and for use in the CLI through Puppeteer.
+    editor.Atom = Atom
     // Install click handler to edit the atom that was clicked
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
@@ -838,26 +950,35 @@ export const install = editor => {
         // do that unless MathLive has been loaded, so first ensure that:
         getConverter().then( () => {
             const thisAtomElementList = Atom.allElementsIn( editor )
-            thisAtomElementList.filter(
+            // Record which atoms were deleted and which changed but stayed
+            const atomsThatWereDeleted = lastAtomElementList.filter(
+                element => !thisAtomElementList.includes( element )
+            ).map( element => Atom.from( element, editor ) )
+            const atomsThatChanged = thisAtomElementList.filter(
                 element => !lastAtomElementList.includes( element )
-            ).forEachWithTimeout(
-                element => {
+            ).map( element => Atom.from( element, editor ) )
+            // Those that stayed should be updated, and then only after that
+            // full (asynchronous) task has completed do we emit the various
+            // signals for changed/deleted atoms that the validation module
+            // might be listening for, to clear validation feedback
+            atomsThatChanged.forEachWithTimeout(
+                atom => {
                     try {
-                        const atom = Atom.from( element, editor )
                         atom.update()
-                        atom.dataChanged()
                     } catch ( e ) {
-                        console.log( 'Error when updating atom', element )
+                        console.log( 'Error when updating atom', atom )
                         console.log( e )
                     }
                 }
-            )
-            // Deleted ones trigger validation clearing:
-            lastAtomElementList.filter(
-                element => !thisAtomElementList.includes( element )
-            ).forEach(
-                element => Atom.from( element, editor ).dataChanged()
-            )
+            ).then( () => {
+                // Now we can notify people which atoms changed, or were deleted.
+                // We do this here, not at any earlier point, so that the message
+                // is sent once, not multiple times.
+                atomsThatChanged.forEach( atom => atom.dataChanged() )
+                atomsThatWereDeleted.forEach( atom => atom.wasDeleted() )
+                // We then also indicate that atom updating has finished.
+                editor.dispatch( 'atomUpdateFinished' )
+            } )
             lastAtomElementList = thisAtomElementList
         } )
     } )
@@ -867,6 +988,25 @@ export const install = editor => {
             const atom = Atom.findAbove( element, editor )
             return atom ? atom?.contextMenu() : [ ]
         }
+    } )
+    // TinyMCE does not show cursor selection well on atoms.
+    // The following code tries to rectify that by putting a special class on
+    // atoms that are within the current cursor selection, so that they can be
+    // styled in a way that makes it clear that they are selected.
+    editor.on( 'SelectionChange', () => {
+        const range = editor.selection.getRng()
+        const nodeIsSelected = node => {
+            const nodeRange = document.createRange()
+            nodeRange.selectNode( node )
+            return range.compareBoundaryPoints( Range.START_TO_START, nodeRange ) < 1
+                && range.compareBoundaryPoints( Range.END_TO_END, nodeRange ) > -1
+        }
+        Atom.allElementsIn( editor ).forEach( element => {
+            if ( nodeIsSelected( element ) )
+                element.classList.add( 'atom-is-selected' )
+            else
+                element.classList.remove( 'atom-is-selected' )
+        } )
     } )
 }
 

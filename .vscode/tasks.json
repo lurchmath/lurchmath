@@ -6,7 +6,7 @@
         {
             "label": "Build source code docs",
             "type": "shell",
-            "command": "rm -rf docs && jsdoc *.js -d docs -R doc-main.md -c jsdoc-conf.json --verbose",
+            "command": "rm -rf docs && jsdoc *.js cli/*.mjs -d docs -R doc-main.md -c jsdoc-conf.json --verbose",
             "problemMatcher": []
         },
         {

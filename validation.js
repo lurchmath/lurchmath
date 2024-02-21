@@ -91,6 +91,12 @@ export const install = editor => {
             queueClearAll()
     }
 
+    // Same as above, but now for the removal of an atom or shell.
+    // In this case, don't bother checking if it's on screen.
+    Atom.prototype.wasDeleted = function () {
+        if ( this.editor == editor ) queueClearAll()
+    }
+
     // Install event handler so that we can decorate the document correctly upon
     // receiving validation feedback.  We install it on both the worker and this
     // window, becauase when parsing errors happen, we send feedback about them
@@ -113,7 +119,7 @@ export const install = editor => {
                     // feedback about whole document; ignore for now
                 } else {
                     console.log( 'Warning: feedback message received with no target element' )
-                    // console.log( JSON.stringify( message.content, null, 4 ) )
+                    console.log( JSON.stringify( message.content, null, 4 ) )
                 }
             } else if ( message.is( 'progress' ) ) {
                 progressNotification.progressBar.value( message.get( 'complete' ) )
@@ -121,8 +127,11 @@ export const install = editor => {
                 progressNotification.close()
                 Dialog.notify( editor, 'success', 'Validation complete', 2000 )
                 progressNotification = null
+                editor.dispatch( 'validationFinished' )
             } else if ( message.content?.type?.startsWith( 'mathlive#' ) ) {
                 // Ignore messages MathLive is sending to itself
+            } else if ( event.data['lurch-embed'] ) {
+                // Ignore messages that initialize embedded Lurch instances
             } else {
                 console.log( 'Warning: unrecognized message type' )
                 // console.log( JSON.stringify( message.content, null, 4 ) )
@@ -130,20 +139,12 @@ export const install = editor => {
         } )
     )
 
-    // Add menu item for clearing validation results
-    editor.ui.registry.addMenuItem( 'clearvalidation', {
-        text : 'Clear validation',
-        tooltip : 'Remove all validation markers from the document',
-        shortcut : 'Meta+Shift+C',
-        onAction : () => clearAll()
-    } )
-    
     // Add menu item for running validation
     editor.ui.registry.addMenuItem( 'validate', {
-        text : 'Validate',
+        text : 'Check my reasoning',
         icon : 'checkmark',
-        tooltip : 'Run validation on the document',
-        shortcut : 'Meta+Shift+V',
+        tooltip : 'Run Lurch\'s checking algorithm on the document',
+        shortcut : 'Meta+Shift+C',
         onAction : () => {
             // Clear old results
             clearAll()
@@ -158,6 +159,14 @@ export const install = editor => {
         }
     } )
 
+    // Add menu item for clearing validation results
+    editor.ui.registry.addMenuItem( 'clearvalidation', {
+        text : 'Clear feedback',
+        tooltip : 'Remove all feedback marks from the document',
+        shortcut : 'Meta+Shift+X',
+        onAction : () => clearAll()
+    } )
+    
     // Add developer menu item for debugging document meaning
     editor.ui.registry.addMenuItem( 'viewdocumentcode', {
         text : 'View document code',

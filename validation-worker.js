@@ -105,6 +105,7 @@ const getValidationResults = LC => {
 
 // Validate using the imported Lurch Deductive Engine (LDE) module
 const validateDocument = LC => {
+    // First run validation, so that the LC contains feedback to send back:
     // console.log( LC.toPutdown() )
     try {
         LDE.validate( LC )
@@ -113,24 +114,50 @@ const validateDocument = LC => {
         Message.error( `Error running LDE validation: ${error.message}` )
         return
     }
-    // console.log( LC.toPutdown() )
-    for ( let descendant of LC.descendantsIterator() ) {
+    // Define a post-order tree traversal recursion that will find all the
+    // feedback the validation generated, and send feedback messages about each:
+    const queuedFeedback = { }
+    const postOrderTraversal = descendant => {
+        // We're doing a post-order tree traversal, so do the children first:
+        descendant.children().forEach( postOrderTraversal )
+        // Now that we've done the recursion on children, handle this LC:
         const results = getValidationResults( descendant )
-        if ( results.length == 0 ) continue
+        if ( results.length == 0 ) return
         try {
+            // Find the first ancestor that has an ID
             let walk
             for ( walk = descendant ; walk ; walk = walk.parent() )
                 if ( walk.ID() ) break
-            Message.feedback( {
+            // Create the feedback object we'll be sending
+            const feedbackObject = {
                 id : descendant.ID(),
                 ancestorID : walk ? walk.ID() : undefined,
                 // address : descendant.address( LC ),
                 // putdown : descendant.toPutdown(),
                 results : results
-            } )
+            }
+            // If it has an ID, send feedback about it, but first check to see if
+            // any descendant of it has feedback waiting to be combined with its
+            if ( feedbackObject.id ) {
+                if ( queuedFeedback.hasOwnProperty( feedbackObject.id ) ) {
+                    feedbackObject.results = feedbackObject.results.concat(
+                        queuedFeedback[feedbackObject.id] )
+                    delete queuedFeedback[feedbackObject.id]
+                }
+                Message.feedback( feedbackObject )
+            // Otherwise, we need to queue up its feedback to be added to that
+            // of an ancestor.  We do so like this:
+            } else {
+                queuedFeedback[feedbackObject.ancestorID] =
+                    ( queuedFeedback[feedbackObject.ancestorID] || [ ] ).concat(
+                        feedbackObject.results )
+            }
         } catch ( error ) {
             Message.error( `Error generating feedback: ${error.message}` )
         }
     }
+    // Apply the above recursive function to the LC, then be done:
+    // console.log( LC.toPutdown() )
+    postOrderTraversal( LC )
     Message.done()
 }

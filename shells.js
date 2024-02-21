@@ -338,6 +338,24 @@ export class Shell extends Atom {
         ].filter( isOnScreen ).filter( predicate )
     }
 
+    /**
+     * When embedding a copy of the Lurch app in a larger page, users will want
+     * to write simple HTML describing a Lurch document, then have a script
+     * create a copy of the Lurch app and put that document into it.  We allow
+     * for representing shells using `<classname>...</classname>` elements,
+     * where the tag name comes from the name of the Shell subclass.  The
+     * content of the tag will be the simplified HTML representation of the
+     * contents of the shell.
+     * 
+     * @returns {string} the representation of the atom as a `lurch` element
+     */
+    toEmbed () {
+        return `<${this.subclassName}>`
+            + Array.from( this.element.childNodes ).map(
+                child => Atom.simplifiedHTML( child ) ).join( '' )
+            + `</${this.subclassName}>`
+    }
+
 }
 
 /**
@@ -518,7 +536,7 @@ export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
     static beginnerFriendly = true
     finalize ( shellLC ) {
-        shellLC.makeIntoA( 'theorem' )
+        shellLC.makeIntoA( 'Theorem' )
     }
 }
 
@@ -548,6 +566,9 @@ export class Corollary extends Theorem {
 export class Proof extends Shell {
     static subclassName = Atom.registerSubclass( 'proof', Proof )
     static beginnerFriendly = true
+    finalize ( shellLC ) {
+        shellLC.makeIntoA( 'Proof' )
+    }
 }
 
 /**

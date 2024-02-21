@@ -4,6 +4,10 @@ const replacements = [
     [ /^\\Leftrightarrow/,        'iff'             ],
     [ /^\\mid/,                   'divides'         ],
     [ /^\\sim/,                   '~'               ],
+    [ /^\\land/,                  ' and '           ],
+    [ /^\\lor/,                   ' or '            ],
+    [ /^\\lnot/,                  ' not '           ],
+    [ /^\\neg/,                   ' not '           ],
     [ /^!/,                       ' factorial'      ],
     [ /^\\lambda/,                '𝜆'               ],
     [ /^\\rightarrow\\leftarrow/, ' contradiction ' ],
@@ -12,15 +16,15 @@ const replacements = [
     [ /^\\mathrm{([^}]*)}/,       ' $1 '            ],
     [ /^\\text{([^}]*)}/,         ' $1 '            ],
     [ /^[{}]/,                    ' '               ],
-    [ /^\\\\/,                    '\\'              ] 
+    [ /^\\\\/,                    '\\'              ]
 ]
 
 export const latexToLurch = input => {
     let result = ''
     while ( input.length > 0 ) {
-        const lengthBefore = input.length
+        let match = null
         for ( let i = 0 ; i < replacements.length ; i++ ) {
-            const match = replacements[i][0].exec( input )
+            match = replacements[i][0].exec( input )
             if ( match ) {
                 const prefix = input.substring( 0, match[0].length )
                 result += prefix.replace( ...replacements[i] )
@@ -28,7 +32,7 @@ export const latexToLurch = input => {
                 break
             }
         }
-        if ( input.length == lengthBefore ) {
+        if ( !match ) {
             result += input[0]
             input = input.substring( 1 )
         }

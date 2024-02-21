@@ -5,20 +5,22 @@
  */
 
 import { loadScript } from './utilities.js'
+import { loadFromQueryString } from './load-from-url.js'
+import { appSettings } from './settings-install.js'
+import { LurchDocument } from './lurch-document.js'
 import Settings from './settings-install.js'
-// import GoogleDrive from './google-drive-ui.js'
 import LocalStorageDrive from './local-storage-drive.js'
 import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
 import Expressions from './expressions.js'
+import ExpositoryMath from './expository-math.js'
 import Dependencies from './dependencies.js'
 import Shells from './shells.js'
 import Validation from './validation.js'
-import { loadFromQueryString } from './load-from-url.js'
 import AutoCompleter from './auto-completer.js'
-import { appSettings } from './settings-install.js'
-import { documentSettingsMetadata } from './document-settings.js'
+import Embedding from './embed-listener.js'
+// import GoogleDrive from './google-drive-ui.js'
 
 import { stylesheet as MathLiveCSS } from './math-live.js'
 
@@ -92,6 +94,22 @@ window.Lurch = {
      *    is correct.  If your HTML page is in a different folder than this
      *    repository, you will need to provide the path from the HTML page to
      *    the repository.
+     *  - `options.appDefaults` can be a dictionary that overrides the default
+     *    application settings.  Doing so may not affect the experience of a
+     *    user who has already customized their own application settings,
+     *    because this set of key-value pairs supplies only the *default*
+     *    settings.  The user's chosen settings naturally override the defaults.
+     *    To see which keys and values are available, see
+     *    {@link SettingsInstaller the settings installer module}, and view the
+     *    source code for the `appSettings` object.
+     *  - `options.documentDefaults` can be a dictionary that overrides the
+     *    default document settings.  Doing so may not affect the experience of
+     *    a user who loads a document that includes its own settings, because
+     *    this set of key-value pairs supplies only the *default* settings.  The
+     *    current document's settings naturally override the defaults.
+     *    To see which keys and values are available, see
+     *    {@link LurchDocument.settingsMetadata the document settings metadata}
+     *    in the {@link LurchDocument} class.
      * 
      * The `options` object is stored as an `appOptions` member in the TinyMCE
      * editor instance once it is created, so that any part of the app can refer
@@ -104,6 +122,23 @@ window.Lurch = {
      * @memberof Lurch
      */
     createApp : ( element, options = { } ) => {
+
+        // If the options object specifies default app settings, apply them:
+        Object.keys( options.appDefaults || { } ).forEach( key => {
+            const settingMetadata = appSettings.metadata.metadataFor( key )
+            if ( !settingMetadata )
+                console.log( 'No such setting:', key )
+            else
+                settingMetadata.defaultValue = object[key]
+        } )
+        // Do the same for default document settings:
+        Object.keys( options.documentDefaults || { } ).forEach( key => {
+            const settingMetadata = LurchDocument.settingsMetadata.metadataFor( key )
+            if ( !settingMetadata )
+                console.log( 'No such setting:', key )
+            else
+                settingMetadata.defaultValue = object[key]
+        } )
 
         // Ensure the element is/has a textarea, so we can install TinyMCE there
         if ( element.tagName !== 'TEXTAREA' ) {
@@ -123,6 +158,7 @@ window.Lurch = {
         const menuData = Object.assign( {
             file : buildMenu( 'File',
                 'newlurchdocument opendocument savedocument savedocumentas deletesaved',
+                'embeddocument',
                 'print'
             ),
             edit : buildMenu( 'Edit',
@@ -137,7 +173,7 @@ window.Lurch = {
             insert : buildMenu( 'Insert',
                 'link emoticons hr',
                 'insertdatetime',
-                'expression',
+                'expression expositorymath',
                 'environment paragraphabove paragraphbelow'
             ),
             format : buildMenu( 'Format',
@@ -149,15 +185,18 @@ window.Lurch = {
             ),
             document : buildMenu( 'Document',
                 'editheader extractheader embedheader',
-                'dependency',
-                'clearvalidation validate',
+                'dependency refreshdependencies',
+                'validate clearvalidation',
                 'docsettings temptoggle'
-            )
+            ),
+            help : buildMenu( 'Help', 'aboutlurch' )
         }, options.menuData || { } )
 
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
-            menuData.developer = buildMenu( 'Developer', 'viewdocumentcode' )
+            menuData.developer = buildMenu( 'Developer',
+                'viewdocumentcode redpen'
+            )
 
         // Add any help pages from the options object to a new help menu.
         // Further below, during editor initialization, we will install menu
@@ -212,23 +251,27 @@ window.Lurch = {
                 toolbar : toolbarData,
                 menubar : 'file edit insert format document developer help',
                 menu : menuData,
+                browser_spellcheck: true,
                 contextmenu : 'atoms',
-                plugins : 'lists link', // 'fullscreen', // enable full screen mode
+                plugins : 'lists link',
                 statusbar : false,
                 setup : editor => {
                     // Save the options object for any part of the app to reference:
                     editor.appOptions = options
 
-                    // As soon as the editor is ready, ensure it's not in front
-                    // of any future Google Drive dialogs
+                    // As soon as the editor is ready...
                     editor.on( 'init', () => {
-                        // editor.execCommand( 'mceFullScreen' )
+                        // Ensure it's not in front of any later Google Drive dialogs:
                         document.querySelector( '.tox-tinymce' ).style.zIndex = 500
+                        // And ensure it has a lurchDocument property:
+                        new LurchDocument( editor )
                     } )
+
                     // Install all tools the editor always needs:
                     Settings.install( editor )
                     Atoms.install( editor )
                     Expressions.install( editor )
+                    ExpositoryMath.install( editor )
                     Shells.install( editor )
                     Dependencies.install( editor )
                     Validation.install( editor )
@@ -239,21 +282,44 @@ window.Lurch = {
                         LocalStorageDrive.install( editor )
                         Headers.install( editor )
                         DocSettings.install( editor )
+                        Embedding.install( editor )
                         editor.on( 'init', () => loadFromQueryString( editor ) )
                     } else {
                         // Install tools we need only if we are the secondary app window:
-                        Headers.listen( editor )
                         editor.on( 'init', () => {
+                            Headers.listen( editor )
                             editor.dom.doc.body.classList.add( 'header-editor' )
                         } )
                     }
+
                     // Install any help pages specified in the options object
                     ( options.helpPages || [ ] ).forEach( ( page, index ) => {
                         editor.ui.registry.addMenuItem( `helpfile${index+1}`, {
                             text : page.title,
+                            icon : 'help',
                             onAction : () => window.open( page.url, '_blank' )
                         } )
                     } )            
+                    // Add About Lurch menu item
+                    editor.ui.registry.addMenuItem( 'aboutlurch', {
+                        text : 'About Lurch',
+                        icon : 'help',
+                        tooltip : 'About Lurch',
+                        onAction : () => window.open(
+                            'https://lurchmath.github.io/site/about/', '_blank' )
+                    } )
+
+                    // Add red pen menu item
+                    editor.ui.registry.addMenuItem( 'redpen', {
+                        text : 'Grading pen',
+                        tooltip : 'Enable grading pen style',
+                        shortcut : 'meta+shift+G',
+                        onAction : () => {
+                            editor.execCommand( 'Bold' )
+                            editor.execCommand( 'ForeColor', false, 'red' )
+                        }
+                    } )
+
                     // Create keyboard shortcuts for all menu items
                     const menuItems = editor.ui.registry.getAll().menuItems
                     for ( let itemName in menuItems ) {
@@ -267,6 +333,20 @@ window.Lurch = {
                         }
                     }
 
+                    // Handle tab key in a way more like what users will expect
+                    editor.on( 'keydown', event => {
+                        if ( event.keyCode == 9 ) {
+                            if ( event.shiftKey ) {
+                                editor.execCommand( 'outdent' )
+                            } else {
+                                editor.execCommand( 'indent' )
+                            }
+                            event.preventDefault()
+                            event.stopPropagation()
+                            return false
+                        }
+                    } )
+
                     // resolve the outer promise, to say that we finished
                     // TinyMCE setup
                     resolve( editor )
@@ -274,58 +354,6 @@ window.Lurch = {
             }, options.editor || { } )
             tinymce.init( tinymceSetupOptions )
         } ) )
-    },
-
-    /**
-     * If you want to override the default settings for the application, call
-     * this method with a set of key-value pairs.  Note that this may not affect
-     * the experience of a user who has already customized their own application
-     * settings, because this changes only the defaults.  The user's chosen
-     * settings naturally override the defaults.
-     * 
-     * To see which keys are available and what the corresponding sensible
-     * values are, view the file `settings-install.js`.
-     * 
-     * @param {Object} object - a set of key-value pairs to use as application
-     *   setting defaults
-     * @see {@link Lurch.setDocumentDefaults setDocumentDefaults()}
-     * @function
-     * @memberof Lurch
-     */
-    setAppDefaults : object => {
-        Object.keys( object ).forEach( key => {
-            const settingMetadata = appSettings.metadata.metadataFor( key )
-            if ( !settingMetadata )
-                console.log( 'No such setting:', key )
-            else
-                settingMetadata.defaultValue = object[key]
-        } )
-    },
-
-    /**
-     * If you want to override the default settings for Lurch documents, call
-     * this method with a set of key-value pairs.  Note that this may not affect
-     * the experience of a user who loads a document that has some settings
-     * specified within it, because this changes only the defaults.  A
-     * document's explicitly specified settings naturally override the defaults.
-     * 
-     * To see which keys are available and what the corresponding sensible
-     * values are, view the file `document-settings.js`.
-     * 
-     * @param {Object} object - a set of key-value pairs to use as document
-     *   setting defaults
-     * @see {@link Lurch.setAppDefaults setAppDefaults()}
-     * @function
-     * @memberof Lurch
-     */
-    setDocumentDefaults : object => {
-        Object.keys( object ).forEach( key => {
-            const settingMetadata = documentSettingsMetadata.metadataFor( key )
-            if ( !settingMetadata )
-                console.log( 'No such setting:', key )
-            else
-                settingMetadata.defaultValue = object[key]
-        } )
     }
 
 }    

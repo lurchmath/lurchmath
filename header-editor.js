@@ -48,7 +48,7 @@ const getHeaderHTML = editor => {
 }
 // For internal use only:  Save the given HTML text into the document metadata
 // as the document's header
-const setHeader = ( editor, header ) =>
+export const setHeader = ( editor, header ) =>
     new LurchDocument( editor ).setMetadata( 'main', 'header', 'html', header )
 
 // Internal constant used in URL query strings to tell a copy of the app that it
@@ -104,11 +104,28 @@ export const install = editor => {
                     'You are already editing this document\'s header in another window.' )
             window.headerEditorWindow = window.open(
                 `${appURL()}?${headerFlag}=true`, '_blank' )
-            window.headerEditorWindow.addEventListener( 'load', () =>
+            // We cannot tell when the header editor window is ready to receive
+            // messages, so we have to retry sending our content until either it
+            // lets us know that it received it, or the tab closes.
+            const interval = setInterval( () => {
+                if ( window.closed ) {
+                    clearInterval( interval )
+                    return
+                }
                 window.headerEditorWindow.postMessage(
-                    getHeaderHTML( editor ), appURL() ) )
+                    getHeaderHTML( editor ), appURL() )
+            }, 1000 )
             window.addEventListener( 'message', event => {
                 if ( event.source != window.headerEditorWindow ) return
+                // if it's a message saying they received our content, stop
+                // trying to send it
+                if ( event.data == 'content received' ) {
+                    clearInterval( interval )
+                    return
+                }
+                // otherwise, assume it's a "save" message with new content,
+                // because the user edited the header in the other window and
+                // then saved, which sends it back to us
                 setHeader( editor, event.data )
                 Dialog.notify( editor, 'success', 'Header updated from other window.', 5000 )
             }, false )
@@ -182,10 +199,12 @@ export const listen = editor => {
     window.addEventListener( 'message', event => {
         if ( !appURL().startsWith( event.origin ) ) return
         mainEditor = event.source
+        new LurchDocument( editor ).newDocument()
         editor.setContent( event.data )
         editor.mode.set( 'design' )
         Dialog.notify( editor, 'success',
             'Opened header data for editing.\nDon\'t forget to save before closing.' )
+        mainEditor.postMessage( 'content received', appURL() )
     }, false )
     editor.ui.registry.addMenuItem( 'savedocument', {
         text : 'Save',
@@ -193,7 +212,6 @@ export const listen = editor => {
         icon : 'save',
         shortcut : 'meta+S',
         onAction : () => {
-            console.log( mainEditor, editor.getContent() )
             if ( !mainEditor ) return
             mainEditor.postMessage( editor.getContent(), appURL() )
         }

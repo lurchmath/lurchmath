@@ -15,13 +15,9 @@ import {
 } from './settings-metadata.js'
 
 /**
- * This is a silly example of app setting metadata for now, because we have not
- * yet defined what the actual settings for this app will be.  However, this
- * collection of settings includes one from each type of setting, and two
- * different categories, so that we can test settings dialogs now, even before
- * we have the full collection of settings we will actually show to users in the
- * Lurch app.  Later, we can replace this with the actual definition of the
- * metadata for the app's settings.
+ * This is the global settings object that stores the user's settings in their
+ * browser's LocalStorage.  It includes metadata for all the settings of the app
+ * and gets loaded when the editor is initialized.
  * 
  * @see {@link Settings}
  */
@@ -29,16 +25,39 @@ export const appSettings = new Settings(
     'Application settings',
     new SettingsMetadata(
         new SettingsCategoryMetadata(
-            'Application warnings',
-            new ShowWarningSettingMetadata(
-                'warn before extract header',
-                'Show warning before moving the header into the document',
-                'Moving the header into the document is an action that cannot be undone.'
+            'Math content',
+            new CategorySettingMetadata(
+                'notation',
+                'Default notation to use for new documents',
+                [ 'Lurch notation', 'LaTeX' ],
+                'LaTeX'
             ),
-            new ShowWarningSettingMetadata(
-                'warn before embed header',
-                'Show warning before moving document content into header',
-                'Moving content into the header is an action that cannot be undone.'
+            new CategorySettingMetadata(
+                'expression editor type',
+                'Type of expression editor to use',
+                [ 'Beginner', 'Intermediate', 'Advanced' ],
+                'Beginner'
+            ),
+            new CategorySettingMetadata(
+                'expository math editor type',
+                'Type of expository math editor to use',
+                [ 'Beginner', 'Intermediate', 'Advanced' ],
+                'Beginner'
+            ),
+            new BoolSettingMetadata(
+                'dollar sign shortcut',
+                'Use $ as a shortcut for entering expository math',
+                false
+            ),
+            new CategorySettingMetadata(
+                'default shell style',
+                'Default style for environments in new documents',
+                [ 'boxed', 'minimal' ],
+                'boxed'
+            ),
+            new NoteMetadata(
+                'If you change the default environment style, you will need to '
+              + 'reload the application for the change to take effect.'
             )
         ),
         new SettingsCategoryMetadata(
@@ -75,29 +94,25 @@ export const appSettings = new Settings(
             )
         ),
         new SettingsCategoryMetadata(
-            'Math content',
-            new CategorySettingMetadata(
-                'notation',
-                'Default notation to use for new documents',
-                [ 'Lurch notation', 'LaTeX' ],
-                'LaTeX'
+            'Application warnings',
+            new ShowWarningSettingMetadata(
+                'warn before extract header',
+                'Show warning before moving the header into the document',
+                'Moving the header into the document is an action that cannot be undone.'
             ),
-            new CategorySettingMetadata(
-                'expression editor type',
-                'Type of expression editor to use',
-                [ 'Beginner', 'Intermediate', 'Advanced' ],
-                'Beginner'
-            ),
+            new ShowWarningSettingMetadata(
+                'warn before embed header',
+                'Show warning before moving document content into header',
+                'Moving content into the header is an action that cannot be undone.'
+            )
+        ),
+        new SettingsCategoryMetadata(
+            'Advanced',
             new CategorySettingMetadata(
                 'preferred meaning style',
                 'Preferred style to use when viewing content\'s meaning',
                 [ 'Hierarchy', 'Code' ],
                 'Hierarchy'
-            ),
-            new BoolSettingMetadata(
-                'dollar sign shortcut',
-                'Use $ as a shortcut for entering expressions',
-                false
             ),
             new LongTextSettingMetadata(
                 'declaration type templates',
@@ -150,11 +165,11 @@ const applySettings = changes => {
     // Now, for any change that must result in some code being run now to alter
     // the app's behavior, run that code.
     if ( !changes || changes.includes( 'application width in window' ) ) {
-        // If max width desired, just let CSS come through, because it has a
-        // max width built in.  Otherwise, block it with 'none'.
-        const appElement = document.querySelector( '#editor-container' )
-        const setting = appSettings.get( 'application width in window' )
-        appElement.style.maxWidth = setting == 'Fixed size' ? null : 'none'
+        // Mark the body as to whether we're full screen or not, so CSS responds
+        if ( appSettings.get( 'application width in window' ) == 'Fixed size' )
+            document.body.classList.remove( 'fullscreen' )
+        else
+            document.body.classList.add( 'fullscreen' )
     }
 }
 
@@ -177,7 +192,8 @@ export const install = editor => {
         icon : 'preferences',
         onAction : () => {
             appSettings.load()
-            appSettings.userEdit( editor ).then( applySettings )
+            appSettings.userEdit( editor ).then( changes =>
+                applySettings( changes ) )
         }
     } )
     editor.on( 'init', () => {

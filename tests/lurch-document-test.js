@@ -1,6 +1,9 @@
 
 import { loadScript } from '../utilities.js'
 import { LurchDocument } from '../lurch-document.js'
+import {
+    SettingMetadata, SettingsMetadata, SettingsCategoryMetadata
+} from '../settings-metadata.js'
 
 describe( 'Lurch Document interface', () => {
 
@@ -37,6 +40,44 @@ describe( 'Lurch Document interface', () => {
             LDoc2 = new LurchDocument( editor )
         } ).not.to.throw()
         expect( LDoc1 ).not.to.equal( LDoc2 )
+    } )
+
+    it( 'Should have doc settings metadata with the right structure', () => {
+        // it is an instance of SettingsMetadata
+        expect( LurchDocument.settingsMetadata ).to.be.instanceof( SettingsMetadata )
+        expect( LurchDocument.settingsMetadata.categories ).to.be.instanceof( Array )
+        // every category is an instance of SettingsCategoryMetadata
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category instanceof SettingsCategoryMetadata ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.hasOwnProperty( 'name' ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            typeof category.name == 'string' ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.hasOwnProperty( 'contents' ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents instanceof Array ) ).to.equal( true )
+        // everything in a category's contents array is all individual settings
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents.every( entry =>
+                entry instanceof SettingMetadata ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents.every( entry =>
+                entry.hasOwnProperty( 'name' ) ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents.every( entry =>
+                typeof entry.name == 'string'
+             || typeof entry.name == 'undefined' ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents.every( entry =>
+                entry.hasOwnProperty( 'label' ) ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents.every( entry =>
+                typeof entry.label == 'string'
+             || typeof entry.label == 'undefined' ) ) ).to.equal( true )
+        expect( LurchDocument.settingsMetadata.categories.every( category =>
+            category.contents.every( entry =>
+                entry.hasOwnProperty( 'defaultValue' ) ) ) ).to.equal( true )
     } )
 
     it( 'Should let us clear editor contents and metadata', () => {

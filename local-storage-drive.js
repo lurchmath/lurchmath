@@ -17,8 +17,8 @@
  */
 
 import { LurchDocument } from './lurch-document.js'
-import { Dialog, AlertItem } from './dialog.js'
-import { isValidURL } from './utilities.js'
+import { Dialog, AlertItem, LongTextInputItem } from './dialog.js'
+import { isValidURL, appURL, isEmbedded } from './utilities.js'
 import { downloadFile } from './upload-download.js'
 
 // Internal use only
@@ -216,6 +216,32 @@ export const install = editor => {
             }
         } )
     } )
+    editor.ui.registry.addMenuItem( 'embeddocument', {
+        text : 'Embed...',
+        tooltip : 'Embed document in a web page',
+        onAction : () => {
+            const html = new LurchDocument( editor ).getDocument()
+            const iframe = document.createElement( 'iframe' )
+            iframe.src = `${appURL()}?data=${encodeURIComponent( btoa( html ) )}`
+            iframe.style.width = '800px'
+            iframe.style.height = '400px'
+            const dialog = new Dialog( 'Embedding code', editor )
+            dialog.json.size = 'medium'
+            // We must put the styles in the element itself, to override
+            // TinyMCE's very aggressive CSS within dialogs:
+            dialog.addItem( new LongTextInputItem( 'code',
+                'Copy the following code into your web page' ) )
+            dialog.setInitialData( { code : iframe.outerHTML } )
+            dialog.removeButton( 'Cancel' )
+            dialog.setDefaultFocus( 'code' )
+            dialog.show()
+            const textarea = dialog.querySelector( 'textarea' )
+            textarea.select()
+            textarea.setAttribute( 'readonly', 'true' )
+            textarea.setAttribute( 'rows', 15 )
+            textarea.scrollTo( 0, 0 )
+        }
+    } )
     editor.ui.registry.addMenuItem( 'deletesaved', {
         text : 'Delete a saved document',
         tooltip : 'Delete a file currently stored in browser storage',
@@ -235,37 +261,40 @@ export const install = editor => {
             } )
         }
     } )
-    // When the editor is fully initialized, handle autosaving:
-    editor.on( 'init', () => {
-        // First, if there's an autosave, offer to load it:
-        if ( autosaveExists() ) {
-            const dialog = new Dialog( 'Unsaved work exists', editor )
-            dialog.addItem( new AlertItem(
-                'warn',
-                'There is an unsaved document stored in your browser.  '
-              + 'This could be from another copy of Lurch running in another tab, '
-              + 'or from a previous session in which you did not save your work.'
-            ) )
-            dialog.setButtons(
-                { text : 'Load it', type : 'submit', buttonType : 'primary' },
-                { text : 'Delete it', type : 'cancel' }
-            )
-            dialog.show().then( choseToLoad => {
-                if ( choseToLoad )
-                    new LurchDocument( editor ).setDocument( getAutosave() )
-                else
-                    new LurchDocument( editor )
-                removeAutosave()
-            } )
-        } else {
-            new LurchDocument( editor )
-        }
-        // Next, set up the recurring timer for autosaving:
-        setInterval( () => {
-            if ( editor.isDirty() )
-                autosave( new LurchDocument( editor ).getDocument() )
-        }, autosaveFrequencyInSeconds * 1000 )
-    } )
+    // When the editor is fully initialized, handle autosaving, but only if this
+    // is an actual copy of the app, not an embedded copy:
+    if ( !isEmbedded() ) {
+        editor.on( 'init', () => {
+            // First, if there's an autosave, offer to load it:
+            if ( autosaveExists() ) {
+                const dialog = new Dialog( 'Unsaved work exists', editor )
+                dialog.addItem( new AlertItem(
+                    'warn',
+                    'There is an unsaved document stored in your browser.  '
+                  + 'This could be from another copy of Lurch running in another tab, '
+                  + 'or from a previous session in which you did not save your work.'
+                ) )
+                dialog.setButtons(
+                    { text : 'Load it', type : 'submit', buttonType : 'primary' },
+                    { text : 'Delete it', type : 'cancel' }
+                )
+                dialog.show().then( choseToLoad => {
+                    if ( choseToLoad )
+                        new LurchDocument( editor ).setDocument( getAutosave() )
+                    else
+                        new LurchDocument( editor )
+                    removeAutosave()
+                } )
+            } else {
+                new LurchDocument( editor )
+            }
+            // Next, set up the recurring timer for autosaving:
+            setInterval( () => {
+                if ( editor.isDirty() )
+                    autosave( new LurchDocument( editor ).getDocument() )
+            }, autosaveFrequencyInSeconds * 1000 )
+        } )
+    }
 }
 
 /**

@@ -1,5 +1,15 @@
 
 import { appURL, isValidURL } from './utilities.js'
+import { appSettings } from './settings-install.js'
+import {
+    SettingsMetadata, SettingsCategoryMetadata, CategorySettingMetadata,
+    TextSettingMetadata, LongTextSettingMetadata
+} from './settings-metadata.js'
+import { Dependency } from './dependencies.js'
+
+// Load the app settings if we're in the browser, where we can do that, so that
+// when we later try to use it, it actually contains the user's preferences.
+if ( typeof localStorage !== 'undefined' ) appSettings.load()
 
 /**
  * A Lurch document will have several parts, including at least the following.
@@ -36,7 +46,9 @@ export class LurchDocument {
 
     /**
      * Construct a new instance for reading and/or writing data and metadata
-     * to and/or from the given editor.
+     * to and/or from the given editor.  Also, if the editor does not already
+     * have a LurchDocument instance stored in its `lurchDocument` property,
+     * place this new instance there.
      * 
      * @param {tinymce.editor} editor the editor with which this object will
      *   interface
@@ -44,6 +56,7 @@ export class LurchDocument {
     constructor ( editor ) {
         this.editor = editor
         if ( !this.editor.lurchMetadata ) this.clearMetadata()
+        if ( !this.editor.lurchDocument ) this.editor.lurchDocument = this
     }
 
     // Internal use only.  Clears out the editor's content.
@@ -55,7 +68,7 @@ export class LurchDocument {
         this.editor.lurchMetadata = this.editor.dom.doc.createElement( 'div' )
         this.editor.lurchMetadata.setAttribute( 'id', 'metadata' )
         this.editor.lurchMetadata.style.display = 'none'
-        this.setMetadata( 'settings', 'shell style', 'json', 'boxed' )
+        this.updateBodyClasses()
     }
     // Internal use only.  Ensure the editor has an element for showing a filename.
     getFilenameElement () {
@@ -67,6 +80,8 @@ export class LurchDocument {
             filenameDisplay = document.createElement( 'div' )
             filenameDisplay.id = 'lurch-filename-display'
             filenameDisplay.classList.add( 'tox-mbtn' )
+            filenameDisplay.style.color = '#aaaaaa'
+            filenameDisplay.style.paddingLeft = '1rem'
             menubar.appendChild( filenameDisplay )
         }
         return filenameDisplay
@@ -145,6 +160,7 @@ export class LurchDocument {
      *   filesystem, ready to be loaded into this editor
      * @returns {Object} an object with `"metadata"` and `"document"` fields, as
      *   documented above
+     * @see {@link LurchDocument#isDocumentHTML isDocumentHTML()}
      */
     static documentParts ( document ) {
         const temp = window.document.createElement( 'div' )
@@ -157,6 +173,21 @@ export class LurchDocument {
     }
 
     /**
+     * Is the given text a valid Lurch document?  This is checked by applying
+     * the {@link LurchDocument#documentParts documentParts()} function to it,
+     * and ensuring that it has at least a `document` member, even if it does
+     * not also have a `metadata` member.
+     * 
+     * @param {string} document - the document in HTML form
+     * @returns {boolean} true if the document is a valid Lurch document, false
+     *   otherwise
+     * @see {@link LurchDocument#documentParts documentParts()}
+     */
+    static isDocumentHTML ( document ) {
+        return LurchDocument.documentParts( document ).hasOwnProperty( 'document' )
+    }
+
+    /**
      * Load the given document into the editor given at construction time.  This
      * will replace what's visible in the UI with the visible portion of the
      * given document, and will also replace the invisible document settings and
@@ -164,7 +195,7 @@ export class LurchDocument {
      * editor's dirty flag.
      * 
      * @param {string} document - the document as it was retrieved from a
-     *   filesystem, ready to be loaded into this editor
+     *   filesystem (or another source), ready to be loaded into this editor
      * @see {@link LurchDocument#getDocument getDocument()}
      */
     setDocument ( document ) {
@@ -181,22 +212,51 @@ export class LurchDocument {
             this.clearDocument()
         this.editor.undoManager.clear()
         this.editor.setDirty( false )
+        // refresh any URL-based dependencies marked as "auto-refresh"
+        Dependency.refreshAllIn( this.editor.getBody(), true ).catch( error =>
+            Dialog.notify( this.editor, 'error',
+                `When auto-refreshing dependencies: ${error}` ) )
     }
     
     /**
      * Return the document being edited by the editor that was given at
      * construction time.  This includes its visible content as well as its
-     * metdata, which includes document settings and dependencies.
+     * metdata, which includes document settings and dependencies.  It may also
+     * include a link at the top of the document, which allows the reader to
+     * open the document in the live app from which it was saved.  That link can
+     * be customized using the parameter.
      * 
+     * @param {string|Function} openLink - the HTML content to use at the top of
+     *   the document, to provide a link for opening the document in the live
+     *   Lurch app.  If not provided, a sensible default is used, which is a DIV
+     *   containing just one link, whose URL is supplied by a small script that
+     *   runs at page load time and reads the document URL.  You can remove this
+     *   link entirely by setting this value to the empty string.  If this is a
+     *   function instead of a string, it will be called on the document content
+     *   *without* the open link, and should return an open link to be used as a
+     *   prefix.
      * @returns {string} the document in string form, ready to be stored in a
      *   filesystem
      * @see {@link LurchDocument#setDocument setDocument()}
      */
-    getDocument () {
+    getDocument ( openLink = LurchDocument.openLinkUsingURL ) {
         // Get the metadata and document as HTML strings
         const metadataHTML = this.editor.lurchMetadata.outerHTML
         const documentHTML = this.editor.getContent()
         // Use those to build the result
+        const body = `
+            ${metadataHTML}
+            <div id="document">${documentHTML}</div>
+        `
+        // Prefix the open link and return the result
+        return typeof( openLink ) == 'function' ? openLink( body ) + body :
+               typeof( openLink ) == 'string' ? openLink + body : body
+    }
+
+    // Internal use only.  Default parameter value for getDocument().
+    // Creates an open link that assumes the file is stored online somewhere,
+    // and uses its current URL to construct the link.
+    static openLinkUsingURL () {
         return `
             <div id="loadlink">
                 <p><a>Open this file in the Lurch web app</a></p>
@@ -206,8 +266,22 @@ export class LurchDocument {
                     link?.setAttribute( 'href', '${appURL()}?load=' + thisURL )
                 </script>
             </div>
-            ${metadataHTML}
-            <div id="document">${documentHTML}</div>
+        `
+    }
+
+    // Internal use only.  Creates an open link that assumes the file is small
+    // enough to be base-64 encoded into the URL query string.
+    static openLinkUsingBase64 ( body ) {
+        const data = encodeURIComponent( btoa( body ) )
+        return `
+            <div id="loadlink">
+                <p><a>Open this file in the Lurch web app</a></p>
+                <script language="javascript">
+                    const link = document.querySelector( '#loadlink > p > a' )
+                    const thisURL = encodeURIComponent( window.location.href )
+                    link?.setAttribute( 'href', '${appURL()}?data=${data}' )
+                </script>
+            </div>
         `
     }
 
@@ -221,16 +295,6 @@ export class LurchDocument {
         return this.metadataElements().find( element =>
             element.dataset.category == category
          && element.dataset.key == key )
-    }
-
-    // Internal use only.  Clear all shell style classes from editor.
-    clearShellStyles () {
-        const body = this.editor.dom.doc.body
-        const classes = Array.from( body.classList )
-        classes.forEach( className => {
-            if ( className.startsWith( 'shell-style-' ) )
-                body.classList.remove( className )
-        } )
     }
 
     /**
@@ -275,10 +339,7 @@ export class LurchDocument {
             this.editor.lurchMetadata.appendChild( newElement )
         }
         // Tweak editor DOM if needed
-        if ( category == 'settings' && key == 'shell style' ) {
-            this.clearShellStyles()
-            this.editor.dom.doc.body.classList.add( 'shell-style-' + value )
-        }
+        this.updateBodyClasses()
     }
 
     /**
@@ -305,7 +366,10 @@ export class LurchDocument {
      */
     getMetadata ( category, key ) {
         const element = this.findMetadataElement( category, key )
-        return !element ? undefined :
+        const defaultValue = category == 'settings' ?
+            LurchDocument.settingsMetadata.metadataFor( key )?.defaultValue :
+            undefined
+        return !element ? defaultValue :
                element.dataset.valueType == 'html' ? element.cloneNode( true ) :
                JSON.parse( element.innerHTML )
     }
@@ -378,8 +442,86 @@ export class LurchDocument {
         const element = this.findMetadataElement( category, key )
         if ( element ) element.remove()
         // Tweak editor DOM if needed
-        if ( category == 'settings' && key == 'shell style' )
-            this.clearShellStyles()
+        this.updateBodyClasses()
+    }
+
+    /**
+     * This metadata object can be used to create a {@link Settings} instance
+     * for any given document, which can then present a UI to the user for
+     * editing the document's settings (using
+     * {@link Settings#userEdit its userEdit() function}).  We use it for this
+     * purpose in the menu item we create in the
+     * {@link module:DocumentSettings.install install()} function, among other
+     * places.  Instances of this class also use it to return the appropriate
+     * defaults for settings the user may query about a document.
+     * 
+     * This metadata can be used to edit document-level settings, which are
+     * distinct from the application-level settings defined in
+     * {@link module:SettingsInstaller the Settings Installer module}.
+     */
+    static settingsMetadata = new SettingsMetadata(
+        new SettingsCategoryMetadata(
+            'Document metadata',
+            new TextSettingMetadata( 'title', 'Title', '' ),
+            new TextSettingMetadata( 'author', 'Author', '' ),
+            new TextSettingMetadata( 'date', 'Date', '' ),
+            new LongTextSettingMetadata( 'abstract', 'Abstract', '' )
+        ),
+        new SettingsCategoryMetadata(
+            'Math content',
+            new CategorySettingMetadata(
+                'notation',
+                'Default notation to use for new expressions',
+                [ 'Lurch notation', 'LaTeX' ],
+                appSettings.get( 'notation' )
+            ),
+            new CategorySettingMetadata(
+                'shell style',
+                'Style for displaying environments',
+                [ 'boxed', 'minimal' ],
+                appSettings.get( 'default shell style' )
+            )
+        )
+    )
+
+    /**
+     * This array lists those settings that should be marked as classes on the
+     * body element of the editor's document.  This exposes them to CSS rules
+     * in the editor, so that they can be used to style the document content.
+     * 
+     * In general, a setting with key "example one" and value "foo bar" will be
+     * marked on the body element with a class of "example-one-foo-bar".
+     * 
+     * @see {@link LurchDocument#updateBodyClasses updateBodyClasses()}
+     */
+    static bodySettings = [ 'shell style' ]
+
+    /**
+     * For each setting mentioned in {@link LurchDocument#bodySettings
+     * bodySettings}, this function ensures that there is precisely one CSS
+     * class on the body of the document beginning with that setting's key,
+     * and that is the class that ends with that settings value.
+     * 
+     * As documented in {@link LurchDocument#bodySettings bodySettings}, spaces
+     * are replaced with dashes, so that a setting with key "number of tacos"
+     * and value "not enough" would become a CSS class
+     * "number-of-tacos-not-enough".
+     * 
+     * @see {@link LurchDocument#bodySettings bodySettings}
+     */
+    updateBodyClasses () {
+        LurchDocument.bodySettings.forEach( settingKey => {
+            const prefix = settingKey.replace( ' ', '-' ) + '-'
+            const value = this.getMetadata( 'settings', settingKey )
+            const newClass = prefix + value.replace( ' ', '-' )
+            const oldClasses = Array.from( this.editor.dom.doc.body.classList )
+            oldClasses.forEach( oldClass => {
+                if ( oldClass.startsWith( prefix ) && oldClass != newClass )
+                    this.editor.dom.doc.body.classList.remove( oldClass )
+            } )
+            if ( !oldClasses.includes( newClass ) )
+                this.editor.dom.doc.body.classList.add( newClass )
+        } )
     }
 
 }
