@@ -129,7 +129,7 @@ window.Lurch = {
             if ( !settingMetadata )
                 console.log( 'No such setting:', key )
             else
-                settingMetadata.defaultValue = object[key]
+                settingMetadata.defaultValue = options.appDefaults[key]
         } )
         // Do the same for default document settings:
         Object.keys( options.documentDefaults || { } ).forEach( key => {
@@ -137,7 +137,7 @@ window.Lurch = {
             if ( !settingMetadata )
                 console.log( 'No such setting:', key )
             else
-                settingMetadata.defaultValue = object[key]
+                settingMetadata.defaultValue = options.documentDefaults[key]
         } )
 
         // Ensure the element is/has a textarea, so we can install TinyMCE there
