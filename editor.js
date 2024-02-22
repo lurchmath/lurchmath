@@ -25,7 +25,7 @@ import Embedding from './embed-listener.js'
 import { stylesheet as MathLiveCSS } from './math-live.js'
 
 // TinyMCE's CDN URL, from which we will load it
-const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
+const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.2/tinymce.min.js'
 
 /**
  * This namespace is installed globally when importing `editor.js`.  It allows
