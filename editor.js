@@ -315,8 +315,10 @@ window.Lurch = {
                         tooltip : 'Enable grading pen style',
                         shortcut : 'meta+shift+G',
                         onAction : () => {
-                            editor.execCommand( 'Bold' )
-                            editor.execCommand( 'ForeColor', false, 'red' )
+                            editor.execCommand( 'Italic' )
+                            editor.execCommand( 'ForeColor', false, '#DA1D0C' )
+                            editor.execCommand( 'FontName', false, 'Georgia' )
+                            editor.execCommand( 'FontSize', false, '1.2rem' )
                         }
                     } )
 
