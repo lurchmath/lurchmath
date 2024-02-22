@@ -318,7 +318,7 @@ window.Lurch = {
                             editor.execCommand( 'Italic' )
                             editor.execCommand( 'ForeColor', false, '#DA1D0C' )
                             editor.execCommand( 'FontName', false, 'Georgia' )
-                            editor.execCommand( 'FontSize', false, '1.2rem' )
+                            editor.execCommand( 'FontSize', false, '1.1rem' )
                         }
                     } )
 
