@@ -194,8 +194,9 @@ window.Lurch = {
 
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
-            menuData.developer = buildMenu( 'Developer',
-                'viewdocumentcode redpen'
+            menuData.developer = buildMenu( 'Instructor',
+               'dependency refreshdependencies',
+               'viewdocumentcode redpen'
             )
 
         // Add any help pages from the options object to a new help menu.
