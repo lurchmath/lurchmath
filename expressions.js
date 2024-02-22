@@ -600,8 +600,12 @@ export class Expression extends Atom {
                     return false
                 }
             } )
-            lurchInputElement.addEventListener( 'blur', () =>
-                setTimeout( () => dialog.close() ) )
+            // once the element receives focus for the first time...
+            lurchInputElement.addEventListener( 'focus', () =>
+                // then say that the next time it loses focus...
+                lurchInputElement.addEventListener( 'blur', () =>
+                    // we will close the dialog.
+                    setTimeout( () => dialog.close() ) ) )
         }
         return result
     }
