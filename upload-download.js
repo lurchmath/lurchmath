@@ -24,6 +24,7 @@ export const downloadFile = editor => {
     const anchor = document.createElement( 'a' )
     anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
         + encodeURIComponent( content ) )
+    let filename = LD.getFileID() || 'lurch-document.lurch'
     if ( filename.startsWith( 'file:///' ) )
         filename = filename.slice( 8 )
     else if ( isValidURL( filename ) )
