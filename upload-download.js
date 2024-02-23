@@ -24,7 +24,6 @@ export const downloadFile = editor => {
     const anchor = document.createElement( 'a' )
     anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
         + encodeURIComponent( content ) )
-    let filename = LD.getFileID() || 'lurch-document.html'
     if ( filename.startsWith( 'file:///' ) )
         filename = filename.slice( 8 )
     else if ( isValidURL( filename ) )
@@ -71,7 +70,7 @@ export class UploadItem {
                 <div id='drop_${this.name}' style='${this.style}'></div>
                 <div style='${this.style}'>
                     <p>Option 2:
-                    <input type='file' id='choose_${this.name}' accept=".html,text/html"/></p>
+                    <input type='file' id='choose_${this.name}' accept=".lurch,text/html"/></p>
                 </div>
             `
         } ]

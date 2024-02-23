@@ -117,7 +117,8 @@ export class LurchDocument {
     setFileID ( id ) {
         this.editor.lastLurchFileID = id
         if ( isValidURL( id ) ) id = id.split( '/' ).pop()
-        id = id.replace( /\.html$/, '' )
+        // id = id.replace( /\.html$/, '' )
+        id = id.replace( /\.lurch$/, '' )
         this.getFilenameElement().textContent = id
     }
 
