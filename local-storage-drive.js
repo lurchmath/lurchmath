@@ -135,19 +135,25 @@ const ensureWorkIsSaved = editor => new Promise( ( resolve, reject ) => {
  * @see {@link module:LocalStorageDrive.showSaveAsDialog showSaveAsDialog()}
  */
 const silentFileSave = editor => {
-    const LD = new LurchDocument( editor )
-    const filename = LD.getFileID()
-    if ( filename.startsWith( 'file:///' ) ) {
+    // change the behavior if only saving to computer 
+    const mode = editor.appOptions.fileSaveTabs
+    if (mode.length === 1 && mode[0] === 'To your computer') {
         downloadFile( editor )
-    } else if ( isValidURL( filename ) ) {
-        Dialog.notify( editor, 'error', `
-            You loaded this file from the web, so you cannot save it back there.
-            Instead, use File > Save As to choose where to save it.
-        ` )
     } else {
-        writeFile( filename, LD.getDocument() )
-        editor.setDirty( false )
-        removeAutosave()
+        const LD = new LurchDocument( editor )
+        const filename = LD.getFileID()
+        if ( filename.startsWith( 'file:///' ) ) {
+            downloadFile( editor )
+        } else if ( isValidURL( filename ) ) {
+            Dialog.notify( editor, 'error', `
+                You loaded this file from the web, so you cannot save it back there.
+                Instead, use File > Save As to choose where to save it.
+            ` )
+        } else {
+            writeFile( filename, LD.getDocument() )
+            editor.setDirty( false )
+            removeAutosave()
+        }
     }
 }
 
@@ -194,15 +200,21 @@ export const install = editor => {
         tooltip : 'Save or download file',
         shortcut : 'alt+S',
         onAction : () => {
-            if ( new LurchDocument( editor ).getFileID() )
+            // change the behavior if only saving to computer 
+            const mode = editor.appOptions.fileSaveTabs
+            if (mode.length === 1 && mode[0] === 'To your computer') {
                 silentFileSave( editor )
-            else
-                Dialog.saveFile( editor, 'Save file' ).then( saved => {
-                    if ( saved ) {
-                        editor.setDirty( false )
-                        removeAutosave()
-                    }
-                } )
+            } else {
+                if ( new LurchDocument( editor ).getFileID() )
+                    silentFileSave( editor )
+                else
+                    Dialog.saveFile( editor, 'Save file' ).then( saved => {
+                        if ( saved ) {
+                            editor.setDirty( false )
+                            removeAutosave()
+                        }
+                    } )
+            }
         }
     } )
     editor.ui.registry.addMenuItem( 'savedocumentas', {
