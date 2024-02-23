@@ -65,7 +65,7 @@ export const install = editor => {
     // Install that function as what happens when you use the Insert expression action
     editor.ui.registry.addMenuItem( 'expression', {
         text : 'Expression',
-        icon : 'insert-character',
+        icon : 'superscript',
         tooltip : 'Insert expression',
         shortcut : 'Meta+E',
         onAction : insertExpression

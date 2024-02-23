@@ -25,7 +25,7 @@ import Embedding from './embed-listener.js'
 import { stylesheet as MathLiveCSS } from './math-live.js'
 
 // TinyMCE's CDN URL, from which we will load it
-const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.0/tinymce.min.js'
+const TinyMCEURL = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.6.2/tinymce.min.js'
 
 /**
  * This namespace is installed globally when importing `editor.js`.  It allows
@@ -129,7 +129,7 @@ window.Lurch = {
             if ( !settingMetadata )
                 console.log( 'No such setting:', key )
             else
-                settingMetadata.defaultValue = object[key]
+                settingMetadata.defaultValue = options.appDefaults[key]
         } )
         // Do the same for default document settings:
         Object.keys( options.documentDefaults || { } ).forEach( key => {
@@ -137,7 +137,7 @@ window.Lurch = {
             if ( !settingMetadata )
                 console.log( 'No such setting:', key )
             else
-                settingMetadata.defaultValue = object[key]
+                settingMetadata.defaultValue = options.documentDefaults[key]
         } )
 
         // Ensure the element is/has a textarea, so we can install TinyMCE there
@@ -185,7 +185,6 @@ window.Lurch = {
             ),
             document : buildMenu( 'Document',
                 'editheader extractheader embedheader',
-                'dependency refreshdependencies',
                 'validate clearvalidation',
                 'docsettings temptoggle'
             ),
@@ -194,8 +193,9 @@ window.Lurch = {
 
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
-            menuData.developer = buildMenu( 'Developer',
-                'viewdocumentcode redpen'
+            menuData.developer = buildMenu( 'Instructor',
+               'dependency refreshdependencies',
+               'viewdocumentcode redpen'
             )
 
         // Add any help pages from the options object to a new help menu.
@@ -315,8 +315,10 @@ window.Lurch = {
                         tooltip : 'Enable grading pen style',
                         shortcut : 'meta+shift+G',
                         onAction : () => {
-                            editor.execCommand( 'Bold' )
-                            editor.execCommand( 'ForeColor', false, 'red' )
+                            editor.execCommand( 'Italic' )
+                            editor.execCommand( 'ForeColor', false, '#DA1D0C' )
+                            editor.execCommand( 'FontName', false, 'Georgia' )
+                            editor.execCommand( 'FontSize', false, '1.1rem' )
                         }
                     } )
 

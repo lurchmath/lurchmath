@@ -27,7 +27,7 @@ p {
     font-family : 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
 }
 .ML__latex {
-    font-size : 1.0rem;
+    font-size : 1.2rem;
 }
 span.feedback-marker-valid::after {
     content: '✓';

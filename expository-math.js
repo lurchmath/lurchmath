@@ -166,7 +166,6 @@ export const install = editor => {
     }
     editor.ui.registry.addMenuItem( 'expositorymath', {
         text : 'Expository math',
-        icon : 'insert-character',
         tooltip : 'Insert expository math',
         shortcut : 'Meta+Alt+E',
         onAction : insertExpositoryMath
