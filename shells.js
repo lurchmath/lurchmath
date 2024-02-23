@@ -486,8 +486,8 @@ export const install = editor => {
     //
     /////////
     editor.ui.registry.addMenuItem( 'temptoggle', {
-        text : 'Toggle environment style',
-        tooltip : 'Toggle between minimal and boxed styles for environments',
+        text : 'Toggle editing mode',
+        tooltip : 'Toggle between editing and presentation views of the document',
         shortcut : 'Meta+0',
         onAction : () => {
             const current = lookup( editor, 'shell style' )
