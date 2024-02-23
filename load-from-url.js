@@ -80,8 +80,9 @@ export const loadFromQueryString = editor => {
                 LD.setDocument( content )
                 LD.setFileID( source )
             } ).catch( () => Dialog.notify( editor, 'error',
-                `Error importing document from ${source}.<br>
-                (Not all servers permit downloads from other domains.)` ) )
+                // `Error importing document from ${source}.<br>
+                // (Not all servers permit downloads from other domains.)` ) )
+                `Unable to import document from ${source}` ) )
             // window.history.replaceState( null, null, appURL() )
         } else {
             Dialog.notify( editor, 'error', 'Not a valid file source: ' + source )
