@@ -4,16 +4,16 @@
  * Styling for the editor iframe within that page is in editor-styles.css.
  */
 
-/* import Lato font for Logo */
+/* import Lato font for Logo and Roboto for the rest */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 /* Background color */
 body {
     margin : 0;
     min-height : 100vh;
 }
-/* Remove background color in full screen mode so that it doesn't peek in around
+/* Don't use background color in full screen mode so that it doesn't peek in around
    the rounded corners of the application. */
 body:not(.fullscreen) {
     background : linear-gradient(45deg, darkslategrey, transparent);
@@ -30,6 +30,7 @@ textarea#editor {
     height : 100vh;
     position : relative
 }
+/* set the maximum width for fixed width mode  */
 body:not(.fullscreen) #editor-container {
   max-width : 853px;
 }
@@ -49,18 +50,24 @@ body:not(.fullscreen) #editor-container {
     color:#000;
     text-align:center;
 }
+
 #logo #check { 
     color:#4CAF50;
 }
+
 #logo a { 
     color:#000;
     text-decoration: none;
 }
 
 /* Document File Name */
+/* Commenting this out for now until we design something better */
+
+#lurch-filename-display {
+  display: none;
+}
+
 /*
- * Ken added this earlier, then decided he didn't like it, and told me I had to fix it.
- *
 div:has(> #lurch-filename-display) {
   position: relative;
   padding-top: 0.3rem;
