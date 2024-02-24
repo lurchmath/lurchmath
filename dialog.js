@@ -516,8 +516,7 @@ export class Dialog {
                         } )
                     } ).catch( () => {
                         Dialog.notify( editor, 'error',
-                            `Error importing document from ${url}.<br>
-                            (Not all servers permit downloads from other domains.)` )
+                            `Unable to open a document from ${url}` )
                         reject( 'Could not download from URL.' )
                     } )
                 } else {
