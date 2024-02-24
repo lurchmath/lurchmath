@@ -131,6 +131,8 @@ window.Lurch = {
             else
                 settingMetadata.defaultValue = options.appDefaults[key]
         } )
+        // And then have the settings recompute its cached default values:
+        appSettings.defaults = appSettings.metadata.defaultSettings()
         // Do the same for default document settings:
         Object.keys( options.documentDefaults || { } ).forEach( key => {
             const settingMetadata = LurchDocument.settingsMetadata.metadataFor( key )
