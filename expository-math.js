@@ -108,6 +108,14 @@ export class ExpositoryMath extends Atom {
                 return false
             }
         } )
+        if (mode === 'Advanced') {
+            // once the element receives focus for the first time...
+            latexInputElement.addEventListener( 'focus', () =>
+                // then say that the next time it loses focus...
+                latexInputElement.addEventListener( 'blur', () =>
+                    // we will close the dialog.
+                    setTimeout( () => dialog.close() ) ) )
+        }
         // hide latex input for beginner mode
         latexInputElement.parentNode.style.display = mode == 'Beginner' ? 'none' : ''
         return result
