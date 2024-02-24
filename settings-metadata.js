@@ -15,7 +15,7 @@ import { copyWithoutPrototype } from './utilities.js'
  * (a unique key used for saving it), its label (what prompt will be shown on
  * screen to the user when editing the setting), and its default value (which
  * will be its value before the user has ever edited or even seen that setting).
- * This abstract base class supports just thos three features, but does not do
+ * This abstract base class supports just those three features, but does not do
  * anything useful with them yet, except provide generic functionality factored
  * out of most subclasses.
  * 
