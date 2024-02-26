@@ -3,19 +3,37 @@
  * Styling for the main app page (which contains the editor and other things as
  * well) is in main-app-styles.css.
  */
- 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-/* for experimenting, this shold let us change most fonts */
-* {
-    font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* set css variables */
+:root {
+  /* for \text mode in Math Live */
+  --_text-font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
+  /* hovered or selected atom backround color */
+  --hovercolor: #B9D9F2;  
+  /* borders and titles of shells color */
+  --bordercolor: #b4d7ff;
+  /* green checkmark color */
+  --checkcolor: #4CAF50;  
+  /* question mark feedback icon color */
+  --questionmarkcolor: #d8b400;  
+  /* rule shell background color */
+  --rulecolor: #e7f3fd;  
+  /* theorem shell background color */
+  --theoremcolor: #f5f5f5;  
+  /* recall shell background color */
+  --recallcolor: #f7f7f7;
 }
 
-/* set css variable for \text mode in Math Live*/
-:root {
-    --_text-font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
+/* set the base font */
+body, p, h1, h2, h3, h4, h5, h6, div, ul, ol, li {
+  font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
 }
+
+/* Set the default font size.  This mainly affects word wrap. */
 p {
-    font-size: 12pt;
+  font-size: 12pt;
 }
 /* Expression atoms */
 .putdown-notation {
@@ -26,13 +44,35 @@ p {
     font-size : 16pt;
     font-family : 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
 }
+/* for some reason the math symbols are too small compared to the surrounding text 
+   so increase them here. */
 .ML__latex {
     font-size : 1.2rem;
 }
+/* But then the plain text in a math field is too big, so shrink it back here. */
+.ML__latex .ML__text {
+  font-size : 1rem;
+}
+
+/* We not only want to shade the background of a selected inline atom, but if
+the MathLive rendering spills outside the atom we want to shade that as well */
+.atom-is-selected,
+.atom-is-selected .lurch-atom,
+.atom-is-selected .ML__latex {
+  background-color: var(--hovercolor);
+  padding: 0;
+}
+/* Make the border color match the background shading */
+.mce-content-body [contentEditable=false][data-mce-selected] {
+  cursor: not-allowed;
+  outline: 3px solid var(--hovercolor)
+}
+
+/* Feedback icons for inline atoms */
 span.feedback-marker-valid::after {
     content: '✓';
     font-family: 'Lucida Grande';
-    color: #4CAF50;
+    color: var(--checkcolor);
     font-weight: bold;
 }
 span.feedback-marker-invalid::after {
@@ -44,7 +84,7 @@ span.feedback-marker-invalid::after {
 span.feedback-marker-indeterminate::after {
     content: '?';
     font-family: 'Lucida Grande';
-    color: rgb(216, 180, 0);
+    color: var(--questionmarkcolor);
     font-weight: bold;
 }
 span.feedback-marker-error::after {
@@ -54,174 +94,233 @@ span.feedback-marker-error::after {
     font-weight: bold;
 }
 
-.atom-is-selected {
-    background-color: #B4D7FF;
-}
-
 /* Editing View */
 /* Shows a border around atoms which highlights when hovered. */
 body.shell-style-boxed {
 
-    /* Atoms get borders (except not expository math atoms) */
-    .lurch-atom:not([data-metadata_type='"expositorymath"']) {
-        border: 1px solid #b4d7ff;
-        border-radius: 6px;
-        padding: 1px 2px;
-    }
-    /* Override that for atoms that are shells */
-    div.lurch-atom[data-shell_title] {
-        position: relative;
-        border: 1px solid #b4d7ff;
-        border-radius: 6px;
-        padding: 0.8rem 2rem 0.6rem;
-        margin: 1.5rem 0 1rem;
-    }
-    
-    /* Make atom borders thick when hovered */
-    :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
-        outline: 3px solid #b4d7ff
-    }
-    /* Reduce the padding and margins for subproofs and premises */
-    div.lurch-atom[data-shell_title=""] {
-        padding: 0.5em 0.75em;
-        margin: 1ex 0;
-    }
-    
-    /* Add a shell title */
-    div.lurch-atom[data-shell_title]::before {
-        content: attr(data-shell_title);
-        color: #B4D7FF;
-        background-color: white;
-        font-weight: bold;
-        position: absolute;
-        top: -9pt;
-        left: 6pt;
-        padding: 0 6pt;
-    }
-    /* Add a shell title for premises for now (possibly temporary) */
-    div.lurch-atom[data-metadata_type='"premise"']::before {
-        content: 'Premise';
-    }
+  /* paragraph margins inside boxes */
+  p {
+    margin: 0.2rem 0;
+  }
 
-    div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
-        content: '✓';
-        color: #4CAF50;
-        background-color: white;
-        font-family: 'Lucida Grande';
-        font-weight: bold;
-        position: absolute;
-        bottom: -7pt;
-        right: 6pt;
-        padding: 0 6pt;
-    }
-    div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
-        content: '✗';
-        color: rgb(235,78,50);
-        background-color: white;
-        font-family: 'Lucida Grande';
-        font-weight: bold;
-        position: absolute;
-        bottom: -7pt;
-        right: 6pt;
-        padding: 0 6pt;
-    }
-    div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
-        content: '?';
-        color: rgb(216, 180, 0);
-        background-color: white;
-        font-family: 'Lucida Grande';
-        font-weight: bold;
-        position: absolute;
-        bottom: -7pt;
-        right: 6pt;
-        padding: 0 6pt;
-    }
-    /* Code blocks get a shaded background */
-    code {
-        background-color: rgb(230, 230, 230);
-        font-size: 0.9em;
-        padding: 0.2em 0.4em;
-        border-radius: 4px;
-        font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-    }
+  /* Atoms get borders */
+  .lurch-atom {
+    /* border: 1px solid #bbb; */
+    border: 1px solid var(--bordercolor);
+    border-radius: 6px;
+    padding: 1px 2px;
+  }
 
-}
+  /* But not expository ones */
+  .lurch-atom[data-metadata_type='"expositorymath"'] {
+    border: none;
+    padding: 1px 2px;
+  }
+
+  /* Override padding and margins for  atoms that are shells */
+  div.lurch-atom[data-shell_title] {
+    position: relative;
+    padding: 0.8rem 1rem 0.6rem;
+    margin: 1.5rem 0 1rem;
+  }
+
+  /* prevent inline atoms on consecutive lines from overlapping */
+  span.lurch-atom {
+    display: inline-block;
+    margin-top: 0.2rem;
+  }
+
+  /* Make atom borders thick when hovered */
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
+    outline: 3px solid var(--bordercolor)
+  }
+
+  /* Reduce the padding and margins for subproofs and premises */
+  div.lurch-atom[data-shell_title=""] {
+    padding: 0.5em 0.75em;
+    margin: 1ex 0;
+  }
+  
+  /* Add a shell title */
+  div.lurch-atom[data-shell_title]::before {
+    content: attr(data-shell_title);
+    color: #b4d7ff;
+    background-color: white;
+    font-weight: bold;
+    position: absolute;
+    top: -9pt;
+    left: 6pt;
+    padding: 0 6pt;
+  }
+
+  /* Add a shell title for premises for now (possibly temporary) */
+  div.lurch-atom[data-metadata_type='"premise"']::before {
+    content: 'Premise:';
+  }
+
+  /* Validation icons for boxed shells */
+  div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
+      content: '✓';
+      color: var(--checkcolor);
+      background-color: transparent;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 6pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
+      content: '✗';
+      color: red;
+      background-color: transparent;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 6pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
+      content: '?';
+      color: var(--questionmarkcolor);
+      background-color: transparent;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 6pt;
+      padding: 0 6pt;
+  }
+
+  /* TinyMCE code formatting is currently useful for things like referring to menus */
+  code {
+    font-size: 0.9em;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+  }
+
+  /* reduce left padding from nested numbered lists inside atoms */
+  div.lurch-atom ol {
+    padding: 0 0 0 20px;
+  }
+
+} /* END of boxed mode */
 
 /* Minimal view shows no borders and uses whitespace to visually surround its
    content. */
 body.shell-style-minimal {
 
-    div.lurch-atom[data-shell_title] {
-        position: relative;
-        border: none;
-        padding: 0.5rem 1rem 0.5rem;
-        margin: 0.5rem 0; 
-    }
+  /* minimal view of shells */
+  div.lurch-atom[data-shell_title] {
+    position: relative;
+    border: none;
+    /* No right padding so shell checkmarks align */
+    padding: 0.5rem 0 0.5rem 1rem;
+    margin: 0.5rem 0; 
+  }
 
-    /* Highlighting of nested shells on hover */
-    :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
-        background-color: #e7f3fd;
-    }
-    
-    /* Minimal view of subproofs (shells with no title) is to be indented on the
-       left according to its nesting level. */
-    div.lurch-atom[data-shell_title=""] {
-        border: none;
-        margin: 0;
-        padding: 0 0 0 1.5rem;
-    }
+  /* Highlighting of nested shells on hover */
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)),
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) .ML__latex {
+    background-color: var(--hovercolor);
+  }
+  
+  /* Minimal view of subproofs (shells with no title) is to be indented on the
+     left according to it's nesting level. */
+  div.lurch-atom[data-shell_title=""] {
+      border: none;
+      margin: 0;
+      padding: 0 0 0 1.5rem;
+  }
 
-    div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
-        content: '✓';
-        color: #4CAF50;
-        background-color: white;
-        font-family: 'Lucida Grande';
-        font-weight: bold;
-        position: absolute;
-        bottom: -7pt;
-        right: 0pt;
-        padding: 0 6pt;
-    }
-    div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
-        content: '✗';
-        color: red;
-        background-color: white;
-        font-family: 'Lucida Grande';
-        font-weight: bold;
-        position: absolute;
-        bottom: -7pt;
-        right: 0pt;
-        padding: 0 6pt;
-    }
-    div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
-        content: '?';
-        color: rgb(216, 180, 0);
-        background-color: white;
-        font-family: 'Lucida Grande';
-        font-weight: bold;
-        position: absolute;
-        bottom: -7pt;
-        right: 0pt;
-        padding: 0 6pt;
-    }
-    /* Code blocks use the same font, slightly larger, with a standard background
-       and less padding. */
-    code {
-        font-size: 0.95em;
-        padding: 0.2em;
-        border-radius: 4px;
-        font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-    }
+  /* themed background color-coding of shells */
+  div.lurch-atom[data-metadata_type='"rule"'] {
+    background-color: var(--rulecolor);
+  }
+  div.lurch-atom[data-metadata_type='"theorem"'] {
+    background-color: var(--theoremcolor);
+  }
+  div.lurch-atom[data-metadata_type='"recall"'] {
+    background-color: var(--recallcolor);
+  }
 
-}
+  /* Now that we have editing/boxed view, this is no longer needed and we can
+     make much more M^2 documents without it. We can think of this as
+     hiding/showing an attribue of the shells, just like the boxed borders
+     shows their scopes.
+     div.lurch-atom[data-shell_title]::before {
+         content: attr(data-shell_title);
+         color: #aaa;
+         background-color: white;
+         font-weight: bold;
+         position: absolute;
+         top: -9pt;
+         left: 0pt;
+         padding: 0 6pt;
+     } 
+  */
 
-/* For both modes, minimal and boxed, remove margins and padding from paragraphs. */
-div.lurch-atom[data-shell_title] p,
-body.shell-style-minimal div.lurch-atom[data-shell_title] p
-{
+
+  div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
+      content: '✓';
+      color: var(--checkcolor);
+      background-color: transparent;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 0pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
+      content: '✗';
+      color: red;
+      background-color: transparent;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 0pt;
+      padding: 0 6pt;
+  }
+  div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
+      content: '?';
+      color: var(--questionmarkcolor);
+      background-color: transparent;
+      font-family: 'Lucida Grande';
+      font-weight: bold;
+      position: absolute;
+      bottom: -7pt;
+      right: 0pt;
+      padding: 0 6pt;
+  }
+  /* Code blocks use the same font, slightly larger, with a standard background
+     and less padding. */
+  code {
+    font-size: 0.95em;
+    padding: 0.2em;
+    border-radius: 4px;
+    /* font-family: 'Roboto Mono', 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace; */
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+  }
+  
+  /* remove left padding and margins from paragraphs inside atoms */
+  div.lurch-atom[data-shell_title] p {
     margin: 0;
     padding: 0;
-}
+  }
+  /* remove left padding from nested numbered lists inside atoms */
+  div.lurch-atom ol {
+    padding: 0 0 0 1rem;
+  }
+  /* remove left padding from nested numbered lists inside atoms */
+  div.lurch-atom ol ol {
+    padding: 0;
+  }
+  
+}  /* END of minimal mode */
 
 /* Dependency URL atoms  */
 .lurch-dependency {
@@ -246,11 +345,13 @@ body.shell-style-minimal div.lurch-atom[data-shell_title] p
 }
 
 /* Other */
+
+/* Not sure where this is used */
 span.URL {
     font-family : 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-    /* 'Courier New', Courier, monospace; */
     font-size: small;
 }
+/* LC meaning preview dialog pane */
 div.LC-meaning-preview {
     height: 10em;
     overflow-y: scroll;
@@ -259,5 +360,25 @@ div.LC-meaning-preview {
 /* Make the body of the editor look completely different if we are editing the
    header of a document, so that users do not confuse headers with documents. */
 body.header-editor {
-    border: 5px dashed #B4D7FF;
+    background-color: #ddd;
 }
+
+/*
+ * The following was an experiment in using background color for expression feedback.
+ * It was not perfect, so is commented out.  But I'm keeping it here so that we have
+ * the appropriate CSS selectors for reference if we want to improve this later.
+ *
+span:has(span > .feedback-marker-valid) {
+    background-color: #4CAF5080;
+}
+span:has(span > .feedback-marker-invalid) {
+    background-color: #FF000080;
+}
+span:has(span > .feedback-marker-indeterminate) {
+    background-color: #D8B40080;
+}
+span:has(span > .feedback-marker-error) {
+    background-color: #FF000080;
+}
+ *
+ */
