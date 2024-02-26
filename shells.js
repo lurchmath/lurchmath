@@ -492,6 +492,20 @@ export const install = editor => {
         onAction : () => {
             const current = lookup( editor, 'shell style' )
             store( editor, 'shell style', current == 'boxed' ? 'minimal' : 'boxed' )
+            // make the cursor stay in the middle of the screen when toggling views
+            const getOffsetRelativeToBody = (element) => {
+                let offsetTop = element.offsetTop
+                let parent = element.offsetParent
+                while (parent && parent !== document.body) {
+                    offsetTop += parent.offsetTop
+                    parent = parent.offsetParent
+                }
+                return offsetTop
+            }
+            const selection = editor.selection
+            const editorHeight = editor.getContainer().clientHeight
+            const scrollPosition = getOffsetRelativeToBody(selection.getEnd())
+            editor.getWin().scrollTo(0, scrollPosition - (editorHeight / 3))
         }
     } )
 }
