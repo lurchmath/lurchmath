@@ -61,7 +61,10 @@ export class Shell extends Atom {
     // By default, each shell type is not shown on the autocomplete menu for
     // beginners.  Certain subclasses will override this with "true" instead.
     static beginnerFriendly = false
-
+    // Most are useful for advanced users but are redundant so we may hide the
+    // redundant ones by overriding this with "false" instead.
+    static advancedFriendly = true
+    
     /**
      * Assign this shell a specific subclass, by name.  You must assign a
      * subclass by name, using one of the names registered using
@@ -162,7 +165,8 @@ export class Shell extends Atom {
      *   editing dialog cannot be shown or the user cancels
      */
     editShellType () {
-        const shellSubclassNames = Shell.subclassNames()
+        const shellSubclassNames = Shell.subclassNames().filter( name => { 
+            return (Atom.subclasses.get( name )?.advancedFriendly) } )
         if ( shellSubclassNames.length == 0 ) return false
         const dialog = new Dialog( 'Edit environment', this.editor )
         dialog.addItem( new SelectBoxItem(
@@ -467,9 +471,20 @@ export const install = editor => {
         } )
         const inBeginnerMode =
             appSettings.get( 'expression editor type' ) == 'Beginner'
+        const inAdvancedMode =
+            appSettings.get( 'expression editor type' ) == 'Advanced'
         return shellSubclassNames.map( subclassName => {
             const subclass = Atom.subclasses.get( subclassName )
-            if ( inBeginnerMode && !subclass.beginnerFriendly ) return null
+            if ( inBeginnerMode && !subclass.beginnerFriendly ||
+                 inAdvancedMode && !subclass.advancedFriendly) return null
+            if (inAdvancedMode) {
+                return {
+                    shortcut : subclassName.toLowerCase(),
+                    preview : (subclass.advancedName) ?
+                               `${subclass.advancedName} environment` :
+                               `a ${subclassName} environment`,
+                    content : subclass.defaultHTML
+            } }   
             return {
                 shortcut : subclassName.toLowerCase(),
                 preview : `${subclassName} environment`,
@@ -519,6 +534,7 @@ export const install = editor => {
  */
 export class Rule extends Shell {
     static subclassName = Atom.registerSubclass( 'rule', Rule )
+    static advancedName = 'an axiom, definition, or rule'
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'given' )
         shellLC.makeIntoA( 'Rule' )
@@ -531,6 +547,7 @@ export class Rule extends Shell {
  */
 export class Definition extends Rule {
     static subclassName = Atom.registerSubclass( 'definition', Definition )
+    static advancedFriendly = false
 }    
 
 /**
@@ -539,6 +556,7 @@ export class Definition extends Rule {
  */
 export class Axiom extends Rule {
     static subclassName = Atom.registerSubclass( 'axiom', Axiom )
+    static advancedFriendly = false
 }
 
 /**
@@ -548,6 +566,7 @@ export class Axiom extends Rule {
  */
 export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
+    static advancedName = 'a theorem, lemma, or corollary'
     static beginnerFriendly = true
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'Theorem' )
@@ -561,6 +580,7 @@ export class Theorem extends Shell {
 export class Lemma extends Theorem {
     static subclassName = Atom.registerSubclass( 'lemma', Lemma )
     static beginnerFriendly = false
+    static advancedFriendly = false
 }
 
 /**
@@ -570,6 +590,7 @@ export class Lemma extends Theorem {
 export class Corollary extends Theorem {
     static subclassName = Atom.registerSubclass( 'corollary', Corollary )
     static beginnerFriendly = false
+    static advancedFriendly = false
 }
 
 /**
