@@ -60,6 +60,12 @@ body:not(.fullscreen) #editor-container {
     text-decoration: none;
 }
 
+/* The text area for the advanced mode expression editor  */
+.tox .tox-textarea-wrap .tox-textarea.advancedTextArea:focus,
+.tox .tox-textarea-wrap .tox-textarea.advancedTextArea {
+  resize: auto;
+}
+
 /* Document File Name */
 /* Commenting this out for now until we design something better */
 

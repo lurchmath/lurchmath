@@ -16,7 +16,7 @@
 import { Atom } from './atoms.js'
 import { lookup } from './document-settings.js'
 import {
-    Dialog, TextInputItem, CheckBoxItem, SelectBoxItem
+    Dialog, LongTextInputItem, TextInputItem, CheckBoxItem, SelectBoxItem
 } from './dialog.js'
 import { parse, represent } from './notation.js'
 import { MathItem, getConverter } from './math-live.js'
@@ -550,7 +550,7 @@ export class Expression extends Atom {
         // set up dialog contents
         const dialog = new Dialog( 'Edit math', this.editor )
         dialog.hideHeader = dialog.hideFooter = true
-        const lurchInput = new TextInputItem( 'lurchNotation', '', '' )
+        const lurchInput = new LongTextInputItem( 'lurchNotation', '', '' )
         dialog.addItem( lurchInput )
         const mathLivePreview = new MathItem( 'latex', '' )
         mathLivePreview.finishSetup = () => {
@@ -591,21 +591,41 @@ export class Expression extends Atom {
         } )
         dialog.dialog.setEnabled( 'OK', !!convertToLatex() )
         // prevent enter to confirm if the input is invalid
-        const lurchInputElement = dialog.querySelector( 'input[type="text"]' )
+        const lurchInputElement = dialog.querySelector( 'textarea' )
         if ( lurchInputElement ) {
+            lurchInputElement.classList.add('advancedTextArea')
+            // set the initial height based on the number of current lines
+            // of text in the initial value
+            const numLines = lurchNotation.split('\n').length
+            let initheight = 36*numLines
+            lurchInputElement.style.height = `${initheight}px`
+
+            // if it ever loses focus...
+            lurchInputElement.addEventListener( 'blur', () =>
+                // we will close the dialog.
+                setTimeout( () => dialog.close() ) )
+            // and give it focus to start            
+            lurchInputElement.focus()
+
+            // listen for the ENTER and SHIFT-ENTER keys        
             lurchInputElement.addEventListener( 'keydown', event => {
+                // If it doesn't convert to LaTeX don't use it
                 if ( event.key == 'Enter' && !convertToLatex() ) {
                     event.preventDefault()
                     event.stopPropagation()
                     return false
+                // if they press SHIFT+ENTER add a line 
+                } else if (event.key === 'Enter' && event.shiftKey) {
+                    // increment the height to a maximum of 15 lines
+                    let height = parseInt(lurchInputElement.style.height.slice(0,-2))
+                    height = Math.min(540,36+height)
+                    lurchInputElement.style.height = `${height}px` 
+                // if they press ENTER submit the dialog if possible    
+                } else if (event.key == 'Enter' && !event.shiftKey) {
+                    const okButton = dialog.querySelector( 'button[title="OK"]' )
+                    okButton.click()
                 }
             } )
-            // once the element receives focus for the first time...
-            lurchInputElement.addEventListener( 'focus', () =>
-                // then say that the next time it loses focus...
-                lurchInputElement.addEventListener( 'blur', () =>
-                    // we will close the dialog.
-                    setTimeout( () => dialog.close() ) ) )
         }
         return result
     }
