@@ -70,7 +70,7 @@ export const appSettings = new Settings(
             ),
             new BoolSettingMetadata(
                 'developer mode on',
-                'Enable developer menu (for debugging Lurch itself)',
+                'Enable instructor menu',
                 false
             ),
             new NoteMetadata(
