@@ -143,6 +143,26 @@ export const appURL = () => {
 }
 
 /**
+ * Take a relative path and convert it to an absolute URL on the same server as
+ * the current page.  If the path begins with a slash, it will just have the
+ * protocol and host prepended to it.  If it does not begin with a slash, it
+ * will also have the full path to the current page (minus the page name)
+ * prepended as well.
+ * 
+ * @function
+ * @see {@link module:Utilities.appURL appURL()}
+ */
+export const makeAbsoluteURL = path => {
+    if ( path.startsWith( '/' ) ) {
+        return window.location.protocol + '//' + window.location.host + path
+    } else {
+        let allButFile = appURL().split( '/' )
+        allButFile.pop()
+        return allButFile.join( '/' ) + '/' + path
+    }
+}
+
+/**
  * Escape a string so that it can be safely inserted into an HTML document and
  * still represent the plain text within the given string (not interpreting the
  * string as HTML itself).  For example, the string `"x < a and a > b"` should

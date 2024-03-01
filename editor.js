@@ -4,7 +4,7 @@
  * can use that to install the Lurch app into their page at a chosen location.
  */
 
-import { loadScript } from './utilities.js'
+import { loadScript, makeAbsoluteURL } from './utilities.js'
 import { loadFromQueryString } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
 import { LurchDocument } from './lurch-document.js'
@@ -299,7 +299,8 @@ window.Lurch = {
                         editor.ui.registry.addMenuItem( `helpfile${index+1}`, {
                             text : page.title,
                             icon : 'help',
-                            onAction : () => window.open( page.url, '_blank' )
+                            onAction : () =>
+                                window.open( makeAbsoluteURL( page.url ), '_blank' )
                         } )
                     } )            
                     // Add About Lurch menu item

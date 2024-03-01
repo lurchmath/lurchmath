@@ -8,7 +8,7 @@
  */
 
 import { LurchDocument } from './lurch-document.js'
-import { appURL, isValidURL } from './utilities.js'
+import { appURL, isValidURL, makeAbsoluteURL } from './utilities.js'
 import { Dialog } from './dialog.js'
 import {
     fileExists, readFile, writeFile, deleteFile
@@ -51,11 +51,22 @@ export const loadFromURL = url => new Promise( ( resolve, reject ) => {
  * either an URL (and try to load a Lurch document from that URL) or a filename
  * in the browser's local storage (and try to load a Lurch document from there).
  * Place the document in the given editor on success, and report an error with a
- * notification on failure.
+ * notification on failure.  The priority for how to treat the parameter is as
+ * follows.
+ * 
+ *  1. If it is a file in the user's browser's local storage, load it and stop.
+ *  1. If it is a valid URL, load it and stop.
+ *  1. Try treating it as a relative URL and use the current page's URL as the
+ *     base from which to make it into an absolute URL.  If that produced a
+ *     valid absolute URL, load it and stop.
+ *  1. Give up with an error notification.
  * 
  * If the query string contains a "data=..." parameter, treat its value as the
  * base-64 encoding of a document.  Decode it into a string containing HTML, and
  * load that document into the given editor.
+ * 
+ * If the query string has both parameters (which it should not), the "load=..."
+ * parameter takes precedence and the "data=..." parameter is ignored.
  * 
  * @param {tinymce.Editor} editor - the TinyMCE editor instance into which to
  *   load the document specified in the query string, if there is one
@@ -67,26 +78,35 @@ export const loadFromQueryString = editor => {
     const params = new URL( window.location ).searchParams
     // Handle the load=... case:
     if ( params.has( 'load' ) ) {
-        const source = params.get( 'load' )
+        let source = params.get( 'load' )
         if ( fileExists( source ) ) {
             new LurchDocument( editor ).setDocument( readFile( source ) )
             if ( params.has( 'delete' ) && params.get( 'delete' ) == 'true' )
                 deleteFile( source )
             // window.history.replaceState( null, null, appURL() )
-        } else if ( isValidURL( source ) ) {
-            loadFromURL( source )
-            .then( content => {
-                const LD = new LurchDocument( editor )
-                LD.setDocument( content )
-                LD.setFileID( source )
-            } ).catch( () => Dialog.notify( editor, 'error',
-                // `Error importing document from ${source}.<br>
-                // (Not all servers permit downloads from other domains.)` ) )
-                `Unable to import document from ${source}` ) )
-            // window.history.replaceState( null, null, appURL() )
-        } else {
-            Dialog.notify( editor, 'error', 'Not a valid file source: ' + source )
+            return
         }
+        // If it's not a full URL, it might be a relative URL; try that.
+        if ( !isValidURL( source ) )
+            source = makeAbsoluteURL( source )
+        // If reinterpreteing as a relative URL failed, give up now.
+        if ( !isValidURL( source ) ) {
+            Dialog.notify( editor, 'error', 'Not a valid file source: ' + source )
+            return
+        }
+        // It's a valid URL, so let's try to load from it.
+        loadFromURL( source )
+        .then( content => {
+            const LD = new LurchDocument( editor )
+            LD.setDocument( content )
+            LD.setFileID( source )
+        } ).catch( () =>
+            Dialog.notify( editor, 'error',
+                `Unable to import document from ${source}` )
+            // Not all servers permit downloads from other domains.
+        )
+        // window.history.replaceState( null, null, appURL() )
+        return
     }
     // Handle the data=... case:
     if ( params.has( 'data' ) ) {
