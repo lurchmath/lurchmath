@@ -597,7 +597,7 @@ export class Expression extends Atom {
             // set the initial height based on the number of current lines
             // of text in the initial value
             const numLines = lurchNotation.split('\n').length
-            let initheight = 36*numLines
+            let initheight = 10+24*numLines
             lurchInputElement.style.height = `${initheight}px`
 
             // if it ever loses focus...
@@ -609,18 +609,19 @@ export class Expression extends Atom {
 
             // listen for the ENTER and SHIFT-ENTER keys        
             lurchInputElement.addEventListener( 'keydown', event => {
-                // If it doesn't convert to LaTeX don't use it
-                if ( event.key == 'Enter' && !convertToLatex() ) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    return false
-                // if they press SHIFT+ENTER add a line 
-                } else if (event.key === 'Enter' && event.shiftKey) {
+                // if they press SHIFT+ENTER add a line, whether or not it's currently valid input  
+                if (event.key === 'Enter' && event.shiftKey) {
                     // increment the height to a maximum of 15 lines
                     let height = parseInt(lurchInputElement.style.height.slice(0,-2))
-                    height = Math.min(540,36+height)
+                    height = Math.min(540,24+height)
                     lurchInputElement.style.height = `${height}px` 
-                // if they press ENTER submit the dialog if possible    
+                // If they press ENTER but it doesn't convert to LaTeX,
+                // don't allow it
+                } else if ( event.key == 'Enter' && !convertToLatex() ) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  return false    
+                // if they press ENTER submit the dialog if possible 
                 } else if (event.key == 'Enter' && !event.shiftKey) {
                     const okButton = dialog.querySelector( 'button[title="OK"]' )
                     okButton.click()
