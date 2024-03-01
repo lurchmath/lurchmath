@@ -932,14 +932,14 @@ export const install = editor => {
     // Install click handler to edit the atom that was clicked
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
-            Atom.findAbove( event.target, editor )?.edit() ) )
+            setTimeout( () => Atom.findAbove( event.target, editor )?.edit() ) ) )
     // Install Enter key handler for same purpose
     editor.on( 'keydown', event => {
         if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
             return
         const selected = editor.selection.getNode()
         if ( Atom.isAtomElement( selected ) )
-            Atom.from( selected, editor ).edit()
+            setTimeout( () => Atom.from( selected, editor ).edit() )
     } )
     // Whenever anything changes, check to see which atoms appeared and which
     // disappeared.  New ones need to have their appearance updated, and both

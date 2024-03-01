@@ -593,38 +593,34 @@ export class Expression extends Atom {
         // prevent enter to confirm if the input is invalid
         const lurchInputElement = dialog.querySelector( 'textarea' )
         if ( lurchInputElement ) {
-            lurchInputElement.classList.add('advancedTextArea')
+            lurchInputElement.classList.add( 'advancedTextArea' )
             // set the initial height based on the number of current lines
             // of text in the initial value
-            const numLines = lurchNotation.split('\n').length
-            let initheight = 10+24*numLines
-            lurchInputElement.style.height = `${initheight}px`
+            const numLines = lurchNotation.split( '\n' ).length
+            lurchInputElement.style.height = `${10 + 24 * numLines}px`
 
-            // if it ever loses focus...
-            lurchInputElement.addEventListener( 'blur', () =>
-                // we will close the dialog.
-                setTimeout( () => dialog.close() ) )
-            // and give it focus to start            
+            // give it focus, but if it ever loses focus, close the dialog
             lurchInputElement.focus()
+            lurchInputElement.addEventListener( 'blur', () =>
+                setTimeout( () => dialog.close() ) )
 
-            // listen for the ENTER and SHIFT-ENTER keys        
+            // listen for the Enter and Shift+Enter keys        
             lurchInputElement.addEventListener( 'keydown', event => {
-                // if they press SHIFT+ENTER add a line, whether or not it's currently valid input  
-                if (event.key === 'Enter' && event.shiftKey) {
-                    // increment the height to a maximum of 15 lines
-                    let height = parseInt(lurchInputElement.style.height.slice(0,-2))
-                    height = Math.min(540,24+height)
-                    lurchInputElement.style.height = `${height}px` 
-                // If they press ENTER but it doesn't convert to LaTeX,
-                // don't allow it
-                } else if ( event.key == 'Enter' && !convertToLatex() ) {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  return false    
-                // if they press ENTER submit the dialog if possible 
-                } else if (event.key == 'Enter' && !event.shiftKey) {
-                    const okButton = dialog.querySelector( 'button[title="OK"]' )
-                    okButton.click()
+                if ( event.key == 'Enter' ) {
+                    if ( event.shiftKey ) {
+                        // Shift+Enter adds a line to a maximum of 15 lines
+                        let height = parseInt(
+                            lurchInputElement.style.height.slice( 0, -2 ) )
+                        height = Math.min( 540, 24 + height )
+                        lurchInputElement.style.height = `${height}px`
+                    } else if ( convertToLatex() ) {
+                        // Plain enter submits if the input is valid
+                        dialog.querySelector( 'button[title="OK"]' ).click()
+                    } else {
+                        // Plain enter does nothing if the input is invalid
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
                 }
             } )
         }
