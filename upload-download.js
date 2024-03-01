@@ -140,7 +140,8 @@ export class UploadItem {
     get ( key ) {
         if ( key == this.name ) return {
             filename : `file:///${ this.uploadedName }`,
-            content : this.uploadedContent
+            content : this.uploadedContent,
+            source : 'upload'
         }
     }
 

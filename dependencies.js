@@ -30,9 +30,6 @@ import {
 } from './dialog.js'
 import { loadFromURL } from './load-from-url.js'
 
-// Internal use only; quick check to see if a filename looks like a URL
-const isURL = filename => /^https?:\/\//.test( filename )
-
 /**
  * Install into a TinyMCE editor instance a new menu item: Import dependency,
  * intended for the Document menu.  It adds a dependency atom (with no content
@@ -99,9 +96,11 @@ export class Dependency extends Atom {
         const description = this.getMetadata( 'description' )
         const origContent = this.getHTMLMetadata( 'content' )?.innerHTML
         const origFilename = this.getMetadata( 'filename' ) || '(not yet loaded)'
+        const origSource = this.getMetadata( 'source' ) || '(not yet loaded)'
         const autoRefresh = this.getMetadata( 'autoRefresh' )
         let newContent = origContent
         let newFilename = origFilename
+        let newSource = origSource
         const dialog = new Dialog( 'Edit dependency', this.editor )
         dialog.addItem( new HTMLItem( `
             <p>Dependency loaded from:
@@ -110,10 +109,11 @@ export class Dependency extends Atom {
         dialog.addItem( new ButtonItem( 'Load new contents', () => {
             Dialog.loadFile( this.editor, 'Load dependency contents' )
             .then( loaded => {
-                const oldIsURL = isURL( newFilename )
-                const newIsURL = isURL( loaded.filename )
+                const oldIsURL = newSource == 'web'
+                const newIsURL = loaded.source == 'web'
                 newFilename = loaded.filename
                 newContent = loaded.content
+                newSource = loaded.source
                 const filenameSpan = dialog.querySelector( '#dependencyFilename' )
                 filenameSpan.innerHTML = escapeHTML( newFilename )
                 const checkbox = dialog.querySelector( 'input[type="checkbox"]' )
@@ -137,11 +137,12 @@ export class Dependency extends Atom {
             this.setMetadata( 'description', dialog.get( 'description' ) )
             this.setHTMLMetadata( 'content', newContent ) // save loaded content
             this.setMetadata( 'filename', newFilename ) // and where it came from
+            this.setMetadata( 'source', newSource ) // and more of where it came from
             this.setMetadata( 'autoRefresh', dialog.get( 'autoRefresh' ) )
             this.update()
             return true
         } )
-        dialog.dialog.setEnabled( 'autoRefresh', isURL( newFilename ) )
+        dialog.dialog.setEnabled( 'autoRefresh', newSource == 'web' )
         return result
     }
 
@@ -158,10 +159,11 @@ export class Dependency extends Atom {
         this.element.style.padding = '0 1em 0 1em'
         const description = this.getMetadata( 'description' )
         const filename = this.getMetadata( 'filename' )
+        const source = this.getMetadata( 'source' )
         this.fillChild( 'body', simpleHTMLTable(
             'Imported dependency document',
             [ 'Description:', `<tt>${escapeHTML( description )}</tt>` ],
-            [ 'Source:', `<tt>${escapeHTML( filename )}</tt>` ],
+            [ 'Source:', `<tt>${escapeHTML( filename )}</tt> (${escapeHTML( source )})` ],
             [ 'Auto-refresh:', this.getMetadata( 'autoRefresh' ) ? 'yes' : 'no' ]
         ) )
     }
@@ -201,7 +203,7 @@ export class Dependency extends Atom {
         ).map( depElt => Atom.from( depElt ) )
         // Filter for just the refreshable ones (having an URL as their source)
         const toRefresh = topLevelDeps.filter( dependency =>
-            isURL( dependency.getMetadata( 'filename' ) ) )
+            dependency.getMetadata( 'source' ) == 'web' )
         // Return a promise that we will refresh each of them
         return Promise.all( toRefresh.map( dependency =>
             dependency.refresh( autoRefreshOnly ) ) )

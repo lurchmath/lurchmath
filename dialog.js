@@ -502,17 +502,13 @@ export class Dialog {
                 } else if ( title == 'From your computer' ) {
                     resolve( dialog.get( 'uploadedFile' ) )
                 } else if ( title == 'From the web' ) {
-                    // If the URL is relative, make it absolute, so that it's clearly
-                    // a URL and not later mistaken as a filename in localStorage.
-                    const url = new URL(
-                        dialog.get( 'importedFile' ), appURL()
-                    ).href
-                    // Now proceed to load.
+                    const url = new URL( dialog.get( 'importedFile' ), appURL() ).href
                     loadFromURL( url )
                     .then( content => {
                         resolve( {
                             filename : url,
-                            content : content
+                            content : content,
+                            source : 'web'
                         } )
                     } ).catch( () => {
                         Dialog.notify( editor, 'error',

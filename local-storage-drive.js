@@ -348,7 +348,8 @@ export class ChooseLocalFileItem {
     get ( key, data ) {
         if ( key == this.name && this.names && this.names.length > 0 ) return {
             filename : data[key],
-            content : readFile( data[key] )
+            content : readFile( data[key] ),
+            source : 'browser storage'
         }
     }
 
