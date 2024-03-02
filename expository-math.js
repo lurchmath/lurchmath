@@ -24,7 +24,7 @@
 import { Atom } from './atoms.js'
 import { represent } from './notation.js'
 import { appSettings } from './settings-install.js'
-import { Dialog, TextInputItem } from './dialog.js'
+import { Dialog, TextInputItem, LongTextInputItem } from './dialog.js'
 import { MathItem } from './math-live.js'
 
 /**
@@ -63,9 +63,14 @@ export class ExpositoryMath extends Atom {
         // set up dialog contents
         const dialog = new Dialog( 'Edit expository math', this.editor )
         dialog.hideHeader = dialog.hideFooter = mode == 'Advanced'
-        const latexInput = new TextInputItem( 'latex',
-            mode == 'Advanced' ? '' : 'LaTeX notation', '' )
+        const latexInput = mode == 'Advanced' 
+            // use an expandable textarea for Advanced mode
+            ? new LongTextInputItem( 'latex', '', '' )
+            : new TextInputItem( 'latex', 'LaTeX notation', '' )
         dialog.addItem( latexInput )
+        const textSelector = mode == 'Advanced' 
+            ? 'textarea[type="text"]'
+            : 'input[type="text"]'
         const mathLivePreview = new MathItem( 'preview',
             mode == 'Advanced' ? '' : 'Math editor' )
         mathLivePreview.finishSetup = () => {
@@ -87,7 +92,7 @@ export class ExpositoryMath extends Atom {
             if ( component.name == 'latex' )
                 mathLivePreview.setValue( dialog.get( 'latex' ) )
             if ( component.name == 'preview' )
-                dialog.querySelector( 'input[type="text"]' ).value =
+                dialog.querySelector( textSelector ).value =
                     mathLivePreview.mathLiveEditor.value
             dialog.dialog.setEnabled( 'OK', !empty() )
         }
@@ -100,7 +105,7 @@ export class ExpositoryMath extends Atom {
         } )
         dialog.dialog.setEnabled( 'OK', !empty() )
         // prevent enter to confirm if the input is empty
-        const latexInputElement = dialog.querySelector( 'input[type="text"]' )
+        const latexInputElement = dialog.querySelector( textSelector )
         latexInputElement.addEventListener( 'keydown', event => {
             if ( event.key == 'Enter' && empty() ) {
                 event.preventDefault()
@@ -109,12 +114,33 @@ export class ExpositoryMath extends Atom {
             }
         } )
         if (mode === 'Advanced') {
-            // once the element receives focus for the first time...
-            latexInputElement.addEventListener( 'focus', () =>
-                // then say that the next time it loses focus...
-                latexInputElement.addEventListener( 'blur', () =>
-                    // we will close the dialog.
-                    setTimeout( () => dialog.close() ) ) )
+            // set the initial height based on the number of current lines
+            // of text in the initial value
+            const numLines = latex.split( '\n' ).length
+            latexInputElement.style.height = `${10 + 24 * numLines}px`
+
+            // listen for the Enter and Shift+Enter keys        
+            latexInputElement.addEventListener( 'keydown', event => {
+                if ( event.key == 'Enter' ) {
+                    if ( event.shiftKey ) {
+                        // Shift+Enter adds a line to a maximum of 15 lines
+                        let height = parseInt(
+                            latexInputElement.style.height.slice( 0, -2 ) )
+                        height = Math.min( 540, 24 + height )
+                        latexInputElement.style.height = `${height}px`
+                    } else {
+                        // Plain enter submits whether or not it is valid
+                        // and lets the renderer's error system handle it
+                        dialog.querySelector( 'button[title="OK"]' ).click()
+                    }
+                }
+            } )
+            // add the css class
+            latexInputElement.classList.add( 'advancedTextArea' )
+            // give it focus, but if it ever loses focus, close the dialog
+            latexInputElement.focus()
+            latexInputElement.addEventListener( 'blur', () =>
+                setTimeout( () => dialog.close() ) )          
         }
         // hide latex input for beginner mode
         latexInputElement.parentNode.style.display = mode == 'Beginner' ? 'none' : ''
