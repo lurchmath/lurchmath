@@ -4,7 +4,7 @@
  * can use that to install the Lurch app into their page at a chosen location.
  */
 
-import { loadScript, makeAbsoluteURL } from './utilities.js'
+import { loadScript, makeAbsoluteURL, isEmbedded } from './utilities.js'
 import { loadFromQueryString } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
 import { LurchDocument } from './lurch-document.js'
@@ -70,6 +70,13 @@ window.Lurch = {
      *    for overriding just pieces of them.  E.g., you can provide `menuData`
      *    as `{ 'file' : { ... } }` and it will affect only the file menu,
      *    because it is incorporated into the defaults using `Object.assign()`.
+     *  - `options.preventLeaving` enables or disables the feature that prompts
+     *    the user to confirm before leaving the page, so that they do not lose
+     *    their work by accidentally reloading the page or closing a tab.  If
+     *    this value is not set, the default is `true` for the main app and
+     *    `false` for embedded version of the app (e.g., in our documentation
+     *    site, where users typically are not creating documents they care to
+     *    save).
      *  - `options.fileOpenTabs` can be used to reorder or subset the list of
      *    tabs in the File > Open dialog box, which defaults to
      *    `[ 'From browser storage', 'From your computer', 'From the web' ]`.
@@ -123,6 +130,15 @@ window.Lurch = {
      * @memberof Lurch
      */
     createApp : ( element, options = { } ) => {
+
+        // Make it so that the user cannot leave the page by accident, only
+        // on purpose (after confirming that it was on purpose).  See docs above
+        // for the default value of this feature.
+        const shouldPreventLeaving = options.hasOwnProperty( 'preventLeaving' ) ?
+            options.preventLeaving : !isEmbedded()
+        if ( shouldPreventLeaving )
+            window.addEventListener( 'beforeunload', event =>
+                event.returnValue = 'Are you sure you want to leave this page?' )
 
         // If the options object specifies default app settings, apply them:
         Object.keys( options.appDefaults || { } ).forEach( key => {
