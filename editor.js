@@ -193,13 +193,6 @@ window.Lurch = {
             help : buildMenu( 'Help', 'aboutlurch' )
         }, options.menuData )
 
-        // Make it so that the user cannot leave the page by accident, only
-        // on purpose (after confirming that it was on purpose).  See docs above
-        // for the default value of this feature.
-        if ( options.preventLeaving )
-            window.addEventListener( 'beforeunload', event =>
-                event.returnValue = true )
-
         // If the options object specifies default app settings, apply them:
         Object.keys( options.appDefaults ).forEach( key => {
             const settingMetadata = appSettings.metadata.metadataFor( key )
@@ -374,6 +367,16 @@ window.Lurch = {
                             return false
                         }
                     } )
+
+                    // Do not let the user leave the page accidentally, only on
+                    // purpose (after confirming via dialog).  See docs above
+                    // for the default value of this feature.
+                    if ( options.preventLeaving )
+                        window.addEventListener( 'beforeunload', event => {
+                            // Note: The following code is NOT the same as just
+                            // assigning isDirty() to the returnValue.
+                            if ( editor.isDirty() ) event.returnValue = true
+                        } )
 
                     // resolve the outer promise, to say that we finished
                     // TinyMCE setup
