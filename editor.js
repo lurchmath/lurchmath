@@ -93,7 +93,8 @@ window.Lurch = {
      *    do not need to provide this path, and it will default to `'.'`, which
      *    is correct.  If your HTML page is in a different folder than this
      *    repository, you will need to provide the path from the HTML page to
-     *    the repository.
+     *    the repository.  This is essential so that the app can find CSS and JS
+     *    files in the repository to load programmatically as needed.
      *  - `options.appDefaults` can be a dictionary that overrides the default
      *    application settings.  Doing so may not affect the experience of a
      *    user who has already customized their own application settings,
@@ -239,12 +240,12 @@ window.Lurch = {
             // ...then set up the editor in the textarea from above,
             // again overriding any of our default options with those specified
             // in the options object passed to createApp(), if any.
-            const lurchPath = options.appRoot || '.'
+            const repositoryRoot = options.appRoot || '.'
             const tinymceSetupOptions = Object.assign( {
                 selector : '#editor',
                 content_css : [
                     'document',
-                    `${lurchPath}/editor-styles.css`,
+                    `${repositoryRoot}/editor-styles.css`,
                     MathLiveCSS
                 ],
                 visual_table_class : 'lurch-borderless-table',
