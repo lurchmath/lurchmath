@@ -138,7 +138,7 @@ window.Lurch = {
             options.preventLeaving : !isEmbedded()
         if ( shouldPreventLeaving )
             window.addEventListener( 'beforeunload', event =>
-                event.returnValue = 'Are you sure you want to leave this page?' )
+                event.returnValue = true )
 
         // If the options object specifies default app settings, apply them:
         Object.keys( options.appDefaults || { } ).forEach( key => {
