@@ -94,6 +94,11 @@ window.Lurch = {
      *    they appear in this option.  Clicking any one of them just opens the
      *    URL in a new window.  This allows each Lurch installation to have its
      *    own custom set of help pages for students or other users.
+     *  - `options.autoSaveEnabled` enables or disables the feature of
+     *    auto-saving the user's work into the browser's local storage every few
+     *    seconds.  This is `true` (enabled) by default for the main app, but
+     *    false by default for embedded copies of the app.  You can use this
+     *    setting to change that default.
      *  - `options.appRoot` can be a relative path from the `index.html` file to
      *    the root of the repository in which `editor.js` is located.  If you
      *    are using the `index.html` provided in the Lurch repository, then you
@@ -131,49 +136,27 @@ window.Lurch = {
      */
     createApp : ( element, options = { } ) => {
 
-        // Make it so that the user cannot leave the page by accident, only
-        // on purpose (after confirming that it was on purpose).  See docs above
-        // for the default value of this feature.
-        const shouldPreventLeaving = options.hasOwnProperty( 'preventLeaving' ) ?
-            options.preventLeaving : !isEmbedded()
-        if ( shouldPreventLeaving )
-            window.addEventListener( 'beforeunload', event =>
-                event.returnValue = true )
-
-        // If the options object specifies default app settings, apply them:
-        Object.keys( options.appDefaults || { } ).forEach( key => {
-            const settingMetadata = appSettings.metadata.metadataFor( key )
-            if ( !settingMetadata )
-                console.log( 'No such setting:', key )
-            else
-                settingMetadata.defaultValue = options.appDefaults[key]
-        } )
-        // And then have the settings recompute its cached default values:
-        appSettings.defaults = appSettings.metadata.defaultSettings()
-        // Do the same for default document settings:
-        Object.keys( options.documentDefaults || { } ).forEach( key => {
-            const settingMetadata = LurchDocument.settingsMetadata.metadataFor( key )
-            if ( !settingMetadata )
-                console.log( 'No such setting:', key )
-            else
-                settingMetadata.defaultValue = options.documentDefaults[key]
-        } )
-
-        // Ensure the element is/has a textarea, so we can install TinyMCE there
-        if ( element.tagName !== 'TEXTAREA' ) {
-            element.insertBefore( document.createElement( 'textarea' ),
-                element.firstChild )
-            element = element.firstChild
-            element.setAttribute( 'id', 'editor' )
-        }
-
-        // Create the default JSON data for populating the editor's menus and toolbar:
+        // Fill in defaults for the options object.
+        options = Object.assign( {
+            appDefaults : { },
+            documentDefaults : { },
+            menuData : { },
+            helpPages : [ ],
+            appRoot : '.',
+            editor : { },
+            preventLeaving : !isEmbedded(),
+            autoSaveEnabled : !isEmbedded(),
+            toolbarData : 'undo redo | '
+                + 'styles bold italic | '
+                //   + 'link unlink | ' // reduce toolbar clutter
+                + 'alignleft aligncenter alignright outdent indent | '
+                + 'numlist bullist'
+        }, options )
+        // Handle menuData separately, because we support supplying just a part
+        // of the menuData object and having the rest filled in by defaults:
         const buildMenu = ( title, ...list ) => {
             return { title, items : list.join( ' | ' ) }
         }
-
-        // Define the data for the TinyMCE menus, using the defaults below,
-        // augmented by anything placed into the options object passed to us.
         const menuData = Object.assign( {
             file : buildMenu( 'File',
                 'newlurchdocument opendocument savedocument savedocumentas deletesaved',
@@ -208,7 +191,41 @@ window.Lurch = {
                 'docsettings temptoggle'
             ),
             help : buildMenu( 'Help', 'aboutlurch' )
-        }, options.menuData || { } )
+        }, options.menuData )
+
+        // Make it so that the user cannot leave the page by accident, only
+        // on purpose (after confirming that it was on purpose).  See docs above
+        // for the default value of this feature.
+        if ( options.preventLeaving )
+            window.addEventListener( 'beforeunload', event =>
+                event.returnValue = true )
+
+        // If the options object specifies default app settings, apply them:
+        Object.keys( options.appDefaults ).forEach( key => {
+            const settingMetadata = appSettings.metadata.metadataFor( key )
+            if ( !settingMetadata )
+                console.log( 'No such setting:', key )
+            else
+                settingMetadata.defaultValue = options.appDefaults[key]
+        } )
+        // And then have the settings recompute its cached default values:
+        appSettings.defaults = appSettings.metadata.defaultSettings()
+        // Do the same for default document settings:
+        Object.keys( options.documentDefaults ).forEach( key => {
+            const settingMetadata = LurchDocument.settingsMetadata.metadataFor( key )
+            if ( !settingMetadata )
+                console.log( 'No such setting:', key )
+            else
+                settingMetadata.defaultValue = options.documentDefaults[key]
+        } )
+
+        // Ensure the element is/has a textarea, so we can install TinyMCE there
+        if ( element.tagName !== 'TEXTAREA' ) {
+            element.insertBefore( document.createElement( 'textarea' ),
+                element.firstChild )
+            element = element.firstChild
+            element.setAttribute( 'id', 'editor' )
+        }
 
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
@@ -221,23 +238,13 @@ window.Lurch = {
         // Further below, during editor initialization, we will install menu
         // items with these names, associated with these help pages.
         // (Each will be an object of the form {title,url}.)
-        ;( options.helpPages || [ ] ).forEach( ( _, index ) => {
+        options.helpPages.forEach( ( _, index ) => {
             if ( !menuData.help )
                 menuData.help = buildMenu( 'Help', `helpfile${index+1}` )
             else
                 menuData.help.items += ' ' + `helpfile${index+1}`
         } )
 
-        // Define the data for the TinyMCE toolbars, using the defaults below,
-        // unless they were overridden by the options object passed to us.
-        let toolbarData = options.toolbarData || (
-            'undo redo | '
-          + 'styles bold italic | '
-        //   + 'link unlink | ' // reduce toolbar clutter
-          + 'alignleft aligncenter alignright outdent indent | '
-          + 'numlist bullist'
-        )
-        
         // If this instance of the app is just a popup for editing the header in the
         // document of a different instance of the app, we will need to delete
         // irrelevant menu items before they get installed/displayed:
@@ -256,18 +263,17 @@ window.Lurch = {
             // ...then set up the editor in the textarea from above,
             // again overriding any of our default options with those specified
             // in the options object passed to createApp(), if any.
-            const repositoryRoot = options.appRoot || '.'
             const tinymceSetupOptions = Object.assign( {
                 selector : '#editor',
                 content_css : [
                     'document',
-                    `${repositoryRoot}/editor-styles.css`,
+                    `${options.appRoot}/editor-styles.css`,
                     MathLiveCSS
                 ],
                 visual_table_class : 'lurch-borderless-table',
                 height : "100%",
                 promotion : false, // disable premium features advertisement
-                toolbar : toolbarData,
+                toolbar : options.toolbarData,
                 menubar : 'file edit insert format document developer help',
                 menu : menuData,
                 browser_spellcheck: true,
@@ -312,7 +318,7 @@ window.Lurch = {
                     }
 
                     // Install any help pages specified in the options object
-                    ( options.helpPages || [ ] ).forEach( ( page, index ) => {
+                    options.helpPages.forEach( ( page, index ) => {
                         editor.ui.registry.addMenuItem( `helpfile${index+1}`, {
                             text : page.title,
                             icon : 'help',
@@ -373,7 +379,7 @@ window.Lurch = {
                     // TinyMCE setup
                     resolve( editor )
                 }
-            }, options.editor || { } )
+            }, options.editor )
             tinymce.init( tinymceSetupOptions )
         } ) )
     }

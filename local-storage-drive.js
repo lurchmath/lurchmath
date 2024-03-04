@@ -137,7 +137,7 @@ const ensureWorkIsSaved = editor => new Promise( ( resolve, reject ) => {
 const silentFileSave = editor => {
     // change the behavior if only saving to computer 
     const mode = editor.appOptions.fileSaveTabs
-    if (mode.length === 1 && mode[0] === 'To your computer') {
+    if ( mode.length === 1 && mode[0] === 'To your computer' ) {
         downloadFile( editor )
     } else {
         const LD = new LurchDocument( editor )
@@ -273,9 +273,9 @@ export const install = editor => {
             } )
         }
     } )
-    // When the editor is fully initialized, handle autosaving, but only if this
-    // is an actual copy of the app, not an embedded copy:
-    if ( !isEmbedded() ) {
+    // When the editor is fully initialized, handle autosaving, but only if that
+    // feature is enabled in the app options:
+    if ( editor.appOptions.autoSaveEnabled ) {
         editor.on( 'init', () => {
             // First, if there's an autosave, offer to load it:
             if ( autosaveExists() ) {
