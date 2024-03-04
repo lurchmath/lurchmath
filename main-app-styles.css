@@ -64,6 +64,7 @@ body:not(.fullscreen) #editor-container {
 .tox .tox-textarea-wrap .tox-textarea.advancedTextArea:focus,
 .tox .tox-textarea-wrap .tox-textarea.advancedTextArea {
   resize: auto;
+  font-family: "Roboto Mono"
 }
 
 /* Document File Name */
