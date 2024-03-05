@@ -139,23 +139,29 @@ export const install = editor => {
         } )
     )
 
-    // Add menu item for running validation
+    // Add menu item for toggling validation
     editor.ui.registry.addMenuItem( 'validate', {
-        text : 'Check my reasoning',
+        text : 'Show/Hide feedback',
         icon : 'checkmark',
         tooltip : 'Run Lurch\'s checking algorithm on the document',
-        shortcut : 'Meta+Shift+C',
+        shortcut : 'Meta+Shift+V',
         onAction : () => {
-            // Clear old results
-            clearAll()
-            // Start progress bar in UI
-            progressNotification = editor.notificationManager.open( {
-                text : 'Validating...',
-                type : 'info',
-                progressBar : true
-            } )
-            // Send the document to the worker to initiate background validation
-            Message.document( editor, 'putdown' ).send( worker )
+            // check if there is any validation showing already, and if so, clear it
+            if (editor.getBody().querySelector( '[class^=feedback-marker]' )) { 
+                clearAll() 
+            // otherwise validate it
+            } else {
+                // Clear old results
+                clearAll()
+                // Start progress bar in UI
+                progressNotification = editor.notificationManager.open( {
+                    text : 'Validating...',
+                    type : 'info',
+                    progressBar : true
+                } )
+                // Send the document to the worker to initiate background validation
+                Message.document( editor, 'putdown' ).send( worker )
+            }
         }
     } )
 
