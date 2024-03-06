@@ -99,7 +99,7 @@ export const install = editor => {
 
     // Install event handler so that we can decorate the document correctly upon
     // receiving validation feedback.  We install it on both the worker and this
-    // window, becauase when parsing errors happen, we send feedback about them
+    // window, because when parsing errors happen, we send feedback about them
     // from this window itself before even sending anything to the worker.
     ;[ worker, window ].forEach( context =>
         context.addEventListener( 'message', event => {

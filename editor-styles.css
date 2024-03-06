@@ -75,17 +75,17 @@ span.feedback-marker-valid::after {
     color: var(--checkcolor);
     font-weight: bold;
 }
-span.feedback-marker-invalid::after {
-    content: '✗';
-    font-family: 'Lucida Grande';
-    color: red;
-    font-weight: bold;
-}
 span.feedback-marker-indeterminate::after {
     content: '?';
     font-family: 'Lucida Grande';
     color: var(--questionmarkcolor);
     font-weight: bold;
+}
+span.feedback-marker-invalid::after {
+  content: '✗';
+  font-family: 'Lucida Grande';
+  color: red;
+  font-weight: bold;
 }
 span.feedback-marker-error::after {
     content: '!';
@@ -170,17 +170,6 @@ body.shell-style-boxed {
       right: 6pt;
       padding: 0 6pt;
   }
-  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
-      content: '✗';
-      color: red;
-      background-color: transparent;
-      font-family: 'Lucida Grande';
-      font-weight: bold;
-      position: absolute;
-      bottom: -7pt;
-      right: 6pt;
-      padding: 0 6pt;
-  }
   div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
       content: '?';
       color: var(--questionmarkcolor);
@@ -192,6 +181,17 @@ body.shell-style-boxed {
       right: 6pt;
       padding: 0 6pt;
   }
+  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
+    content: '✗';
+    color: red;
+    background-color: transparent;
+    font-family: 'Lucida Grande';
+    font-weight: bold;
+    position: absolute;
+    bottom: -7pt;
+    right: 6pt;
+    padding: 0 6pt;
+}
 
   /* TinyMCE code formatting is currently useful for things like referring to menus */
   code {
@@ -274,17 +274,6 @@ body.shell-style-minimal {
       right: 0pt;
       padding: 0 6pt;
   }
-  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
-      content: '✗';
-      color: red;
-      background-color: transparent;
-      font-family: 'Lucida Grande';
-      font-weight: bold;
-      position: absolute;
-      bottom: -7pt;
-      right: 0pt;
-      padding: 0 6pt;
-  }
   div.lurch-atom[data-shell_title][data-validation_result="indeterminate"]::after {
       content: '?';
       color: var(--questionmarkcolor);
@@ -296,6 +285,17 @@ body.shell-style-minimal {
       right: 0pt;
       padding: 0 6pt;
   }
+  div.lurch-atom[data-shell_title][data-validation_result="invalid"]::after {
+    content: '✗';
+    color: red;
+    background-color: transparent;
+    font-family: 'Lucida Grande';
+    font-weight: bold;
+    position: absolute;
+    bottom: -7pt;
+    right: 0pt;
+    padding: 0 6pt;
+}
   /* Code blocks use the same font, slightly larger, with a standard background
      and less padding. */
   code {
