@@ -186,7 +186,6 @@ window.Lurch = {
                 'removeformat'
             ),
             document : buildMenu( 'Document',
-                'editheader extractheader embedheader',
                 'validate clearvalidation',
                 'docsettings temptoggle'
             ),
@@ -223,7 +222,7 @@ window.Lurch = {
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
             menuData.developer = buildMenu( 'Instructor',
-               'dependency refreshdependencies editdependencyurls',
+               'editdependencyurls',
                'viewdocumentcode redpen'
             )
 
