@@ -71,7 +71,7 @@ export class UploadItem {
                 <div id='drop_${this.name}' style='${this.style}'></div>
                 <div style='${this.style}'>
                     <p>Option 2:
-                    <input type='file' id='choose_${this.name}' accept=".lurch,text/html"/></p>
+                    <input type='file' id='choose_${this.name}' accept=".lurch"/></p>
                 </div>
             `
         } ]

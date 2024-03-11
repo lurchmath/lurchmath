@@ -504,6 +504,7 @@ export const install = editor => {
         text : 'Show/Hide meaning',
         tooltip : 'Toggle between meaning and presentation views of the document',
         shortcut : 'Meta+0',
+        icon: 'select-all',
         onAction : () => {
             const current = lookup( editor, 'shell style' )
             store( editor, 'shell style', current == 'boxed' ? 'minimal' : 'boxed' )
