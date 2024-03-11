@@ -418,7 +418,7 @@ export const install = editor => {
     // The two actions for inserting blank paragraphs, described above
     // (Same comments apply as given above, re: Insert menu and naming)
     editor.ui.registry.addMenuItem( 'paragraphabove', {
-        text : 'Empty paragraph above',
+        text : 'Insert paragraph above',
         tooltip : 'Insert an empty paragraph above the current block',
         shortcut : 'Meta+Shift+Enter',
         onAction : () => {
@@ -438,7 +438,7 @@ export const install = editor => {
         }
     } )
     editor.ui.registry.addMenuItem( 'paragraphbelow', {
-        text : 'Empty paragraph below',
+        text : 'Insert paragraph below',
         tooltip : 'Insert an empty paragraph below the current block',
         shortcut : 'Meta+Enter',
         onAction : () => {
@@ -501,8 +501,8 @@ export const install = editor => {
     //
     /////////
     editor.ui.registry.addMenuItem( 'temptoggle', {
-        text : 'Toggle editing mode',
-        tooltip : 'Toggle between editing and presentation views of the document',
+        text : 'Show/Hide meaning',
+        tooltip : 'Toggle between meaning and presentation views of the document',
         shortcut : 'Meta+0',
         onAction : () => {
             const current = lookup( editor, 'shell style' )

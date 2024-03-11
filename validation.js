@@ -99,7 +99,7 @@ export const install = editor => {
 
     // Install event handler so that we can decorate the document correctly upon
     // receiving validation feedback.  We install it on both the worker and this
-    // window, becauase when parsing errors happen, we send feedback about them
+    // window, because when parsing errors happen, we send feedback about them
     // from this window itself before even sending anything to the worker.
     ;[ worker, window ].forEach( context =>
         context.addEventListener( 'message', event => {
@@ -139,23 +139,29 @@ export const install = editor => {
         } )
     )
 
-    // Add menu item for running validation
+    // Add menu item for toggling validation
     editor.ui.registry.addMenuItem( 'validate', {
-        text : 'Check my reasoning',
+        text : 'Show/Hide feedback',
         icon : 'checkmark',
         tooltip : 'Run Lurch\'s checking algorithm on the document',
-        shortcut : 'Meta+Shift+C',
+        shortcut : 'Meta+Shift+V',
         onAction : () => {
-            // Clear old results
-            clearAll()
-            // Start progress bar in UI
-            progressNotification = editor.notificationManager.open( {
-                text : 'Validating...',
-                type : 'info',
-                progressBar : true
-            } )
-            // Send the document to the worker to initiate background validation
-            Message.document( editor, 'putdown' ).send( worker )
+            // check if there is any validation showing already, and if so, clear it
+            if (editor.getBody().querySelector( '[class^=feedback-marker]' )) { 
+                clearAll() 
+            // otherwise validate it
+            } else {
+                // Clear old results
+                clearAll()
+                // Start progress bar in UI
+                progressNotification = editor.notificationManager.open( {
+                    text : 'Validating...',
+                    type : 'info',
+                    progressBar : true
+                } )
+                // Send the document to the worker to initiate background validation
+                Message.document( editor, 'putdown' ).send( worker )
+            }
         }
     } )
 
