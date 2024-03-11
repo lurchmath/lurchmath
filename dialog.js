@@ -792,11 +792,14 @@ export class ButtonItem {
      * @param {string} text - the text shown on the button
      * @param {function} action - the function to call when the button is
      *   clicked; it will be passed the {@link Dialog} instance
+     * @param [string] name - the name of the button, internally (will default
+     *   to the text parameter, but if you have multiple buttons with the same
+     *   text, TinyMCE requires they all have different names internally)
      */
-    constructor ( text, action ) {
-        this.name = text.replace( /[^_a-zA-Z]/g, '_' )
+    constructor ( text, action, name ) {
         this.text = text
         this.action = action
+        this.name = ( name || text ).replace( /[^_a-zA-Z0-9]/g, '_' )
     }
 
     // internal use only; creates the JSON to represent this object to TinyMCE
@@ -882,6 +885,42 @@ export class CheckBoxItem {
             name : this.name,
             label : this.label
         } ]
+    }
+
+}
+
+/**
+ * An item that can be used in a {@link Dialog} and takes up the full width of
+ * the dialog, but can be populated with an array of inner items, that will be
+ * arranged in that row.  This corresponds to the "bar" type of body component
+ * in a TinyMCE dialog.  By default, all columns in the row take up the same
+ * amount of space, but you can make one larger if you modify the style of the
+ * element after it has been placed into the DOM, setting one of the
+ * sub-elements to have `width: 100%`.
+ */
+export class DialogRow {
+
+    /**
+     * Construct a dialog row.
+     * 
+     * @param  {...Object} items - an array of dialog items (e.g.,
+     *   {@link AlertItem} or {@link ButtonItem}) to place into this row
+     */
+    constructor ( ...items ) {
+        this.items = items
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        return [ {
+            type : 'bar',
+            items : this.items.map( item => item.json() ).flat()
+        } ]
+    }
+
+    // internal use only; pass any action notifications on to my children
+    onAction ( ...args ) {
+        this.items.forEach( item => item.onAction?.( ...args ) )
     }
 
 }
