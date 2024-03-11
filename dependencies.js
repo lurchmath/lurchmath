@@ -169,6 +169,24 @@ export class Dependency extends Atom {
     }
 
     /**
+     * Get all top-level dependency atoms inside a given DOM node.
+     * 
+     * @param {Node} node - the DOM node in which to find Dependency atoms to
+     *   refresh
+     */
+    static topLevelDependenciesIn ( node ) {
+        // Find all elements inside the node representing dependency atoms
+        const type = JSON.stringify( Dependency.subclassName )
+        const allDepElts = Array.from( node.querySelectorAll(
+            `.${className}[data-metadata_type='${type}']` ) )
+        // Filter for just those that are top-level (not inside others)
+        return allDepElts.filter( depElt =>
+            !allDepElts.some( other =>
+                other !== depElt && other.contains( depElt ) )
+        ).map( depElt => Atom.from( depElt ) )
+    }
+
+    /**
      * Find all dependency atoms in the specified DOM node and refresh those for
      * which refreshing is possible.  A dependency atom can be refreshed if its
      * source is a URL.  The refreshing action on an individual dependency atom
@@ -192,15 +210,7 @@ export class Dependency extends Atom {
      * @see {@link module:Dependencies.Dependency#refresh refresh()}
      */
     static refreshAllIn ( node, autoRefreshOnly = false ) {
-        // Find all elements inside the node representing dependency atoms
-        const type = JSON.stringify( Dependency.subclassName )
-        const allDepElts = Array.from( node.querySelectorAll(
-            `.${className}[data-metadata_type='${type}']` ) )
-        // Filter for just those that are top-level (not inside others)
-        const topLevelDeps = allDepElts.filter( depElt =>
-            !allDepElts.some( other =>
-                other !== depElt && other.contains( depElt ) )
-        ).map( depElt => Atom.from( depElt ) )
+        const topLevelDeps = Dependency.topLevelDependenciesIn( node )
         // Filter for just the refreshable ones (having an URL as their source)
         const toRefresh = topLevelDeps.filter( dependency =>
             dependency.getMetadata( 'source' ) == 'web' )
