@@ -223,7 +223,7 @@ window.Lurch = {
         // If developer mode is enabled in settings, create the Developer menu
         if ( appSettings.get( 'developer mode on' ) === true )
             menuData.developer = buildMenu( 'Instructor',
-               'dependency refreshdependencies',
+               'dependency refreshdependencies editdependencyurls',
                'viewdocumentcode redpen'
             )
 

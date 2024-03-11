@@ -22,7 +22,12 @@
 import { appURL } from './utilities.js'
 import { LurchDocument } from './lurch-document.js'
 import { appSettings } from './settings-install.js'
-import { Dialog } from './dialog.js'
+import {
+    Dialog, DialogRow, HTMLItem, ButtonItem, TextInputItem
+} from './dialog.js'
+import { Dependency } from './dependencies.js'
+import { openFileInNewWindow, autoOpenLink } from './load-from-url.js'
+import { Atom } from './atoms.js'
 
 /**
  * The metadata element for a document is stored in the editor rather than the
@@ -174,6 +179,111 @@ export const install = editor => {
                 editor.undoManager.clear()
             } )
             .catch( () => { } )
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'editdependencyurls', {
+        text : 'Edit background material',
+        tooltip : 'Edit the list of documents on which this one depends',
+        onAction : () => {
+            let header = getHeader( editor ) // important! this is a clone!
+            const relevantDependencies = !header ? [ ] :
+                Dependency.topLevelDependenciesIn( header ).filter(
+                    dependency => dependency.getMetadata( 'source' ) == 'web' )
+            const chosenDependencyURLs = relevantDependencies.map(
+                dependency => dependency.getMetadata( 'filename' ) )
+            const dialog = new Dialog( 'Edit background material', editor )
+            const touchUpDialogDOM = () => {
+                dialog.querySelector( 'input[type="text"]' )
+                    .classList.add( 'expand-this' )
+                ;[ ...dialog.querySelectorAll( '.expand-this' ) ].forEach(
+                    node => node.parentNode.style.width = '100%' )
+            }
+            const fillDialog = () => {
+                while ( dialog.items.length > 0 ) dialog.removeItem( 0 )
+                dialog.addItem( new HTMLItem( 'Existing background material:' ) )
+                if ( chosenDependencyURLs.length == 0 ) {
+                    dialog.addItem( new HTMLItem( '(none)' ) )
+                } else {
+                    chosenDependencyURLs.forEach( ( url, index ) => {
+                        dialog.addItem( new DialogRow(
+                            new HTMLItem( `<code class="expand-this">${url}</code>` ),
+                            new ButtonItem(
+                                'View',
+                                () => window.open( autoOpenLink( url ), '_blank' ),
+                                `view${index}`
+                            ),
+                            new ButtonItem(
+                                'Remove',
+                                () => {
+                                    chosenDependencyURLs.splice( index, 1 )
+                                    fillDialog()
+                                    dialog.reload()
+                                    touchUpDialogDOM()
+                                },
+                                `remove${index}`
+                            )
+                        ) )
+                    } )
+                }
+                dialog.addItem( new HTMLItem( '&nbsp;' ) )
+                dialog.addItem( new HTMLItem( 'To add new background material:' ) )
+                dialog.addItem( new DialogRow(
+                    new TextInputItem(
+                        'new_url', '', 'Enter URL here' ),
+                    new ButtonItem( 'Add', () => {
+                        const newURL = dialog.get( 'new_url' )
+                        if ( newURL.trim() == '' ) return
+                        chosenDependencyURLs.push( newURL )
+                        fillDialog()
+                        dialog.reload()
+                        touchUpDialogDOM()
+                    } )
+                ) )
+                dialog.setDefaultFocus( 'new_url' )
+            }
+            fillDialog()
+            dialog.show().then( userHitOK => {
+                if ( userHitOK ) {
+                    if ( !header ) {
+                        setHeader( editor, '' )
+                        header = getHeader( editor )
+                    }
+                    relevantDependencies.forEach(
+                        dependency => dependency.element.remove() )
+                    chosenDependencyURLs.forEach( url => {
+                        const newDependency = Atom.newBlock( editor, '', {
+                            type : 'dependency',
+                            description : 'none',
+                            filename : url,
+                            source : 'web',
+                            content : '', // will be populated later; see below
+                            autoRefresh : true
+                        } )
+                        newDependency.update()
+                        header.appendChild( newDependency.element )
+                    } )
+                    // because "header" is a clone of the actual header, the
+                    // in-place edits above did not touch the actual document,
+                    // so we must do the following to "save" our changes:
+                    setHeader( editor, header.innerHTML )
+                    // This is the code that populates all header dependencies:
+                    // (It is a bit of a hack because we are using the "private"
+                    // method findMetadataElement(), but it's what we need.)
+                    const savedHeader = new LurchDocument( editor )
+                        .findMetadataElement( 'main', 'header' )
+                    Dependency.refreshAllIn( savedHeader ).then( () => {
+                        Dialog.notify( editor, 'success',
+                            'Refreshed all background material from the web.',
+                            5000 )
+                    } ).catch( error => {
+                        Dialog.notify( editor, 'error',
+                            'Could not refresh all background material from the web.' )
+                        console.log( 'Error when refreshing background material',
+                            error )
+                    } )
+                }
+            } )
+            touchUpDialogDOM()
         }
     } )
 }
