@@ -185,22 +185,35 @@ export const install = editor => {
         text : 'Edit background material',
         tooltip : 'Edit the list of documents on which this one depends',
         onAction : () => {
+            // Get all dependency information from the document
             let header = getHeader( editor ) // important! this is a clone!
             const relevantDependencies = !header ? [ ] :
                 Dependency.topLevelDependenciesIn( header ).filter(
                     dependency => dependency.getMetadata( 'source' ) == 'web' )
             const chosenDependencyURLs = relevantDependencies.map(
                 dependency => dependency.getMetadata( 'filename' ) )
+            // Create the dialog, but it is a dynamic dialog, so we do not
+            // populate it directly, but instead create functions that will do
+            // so as needed.
             const dialog = new Dialog( 'Edit background material', editor )
+            // This first function handles the width of column 1 in the dialog's
+            // rows, to improve aesthetics.  It must be called after each
+            // dynamic update to the dialog.  (See calls below.)
             const touchUpDialogDOM = () => {
                 dialog.querySelector( 'input[type="text"]' )
                     .classList.add( 'expand-this' )
                 ;[ ...dialog.querySelectorAll( '.expand-this' ) ].forEach(
                     node => node.parentNode.style.width = '100%' )
             }
+            // This function clears out all dialog content and repopulates the
+            // dialog based on which dependency URLs are currently chosen.
+            // The list of dependency URLs starts out as whatever the document
+            // currently contains, as computed above, but will be edited over
+            // time by the user, using this dialog, before hitting OK or Cancel.
             const fillDialog = () => {
                 while ( dialog.items.length > 0 ) dialog.removeItem( 0 )
                 dialog.addItem( new HTMLItem( 'Existing background material:' ) )
+                // Add 0 or more rows, one for each URL:
                 if ( chosenDependencyURLs.length == 0 ) {
                     dialog.addItem( new HTMLItem( '(none)' ) )
                 } else {
@@ -225,6 +238,7 @@ export const install = editor => {
                         ) )
                     } )
                 }
+                // Add controls for adding another URL:
                 dialog.addItem( new HTMLItem( '&nbsp;' ) )
                 dialog.addItem( new HTMLItem( 'To add new background material:' ) )
                 dialog.addItem( new DialogRow(
@@ -241,48 +255,57 @@ export const install = editor => {
                 ) )
                 dialog.setDefaultFocus( 'new_url' )
             }
+            // Call the above function to populate the dialog for the first time.
             fillDialog()
+            // Show the dialog then handle what happens when the user does Cancel/OK.
             dialog.show().then( userHitOK => {
-                if ( userHitOK ) {
-                    if ( !header ) {
-                        setHeader( editor, '' )
-                        header = getHeader( editor )
-                    }
-                    relevantDependencies.forEach(
-                        dependency => dependency.element.remove() )
-                    chosenDependencyURLs.forEach( url => {
-                        const newDependency = Atom.newBlock( editor, '', {
-                            type : 'dependency',
-                            description : 'none',
-                            filename : url,
-                            source : 'web',
-                            content : '', // will be populated later; see below
-                            autoRefresh : true
-                        } )
-                        newDependency.update()
-                        header.appendChild( newDependency.element )
-                    } )
-                    // because "header" is a clone of the actual header, the
-                    // in-place edits above did not touch the actual document,
-                    // so we must do the following to "save" our changes:
-                    setHeader( editor, header.innerHTML )
-                    // This is the code that populates all header dependencies:
-                    // (It is a bit of a hack because we are using the "private"
-                    // method findMetadataElement(), but it's what we need.)
-                    const savedHeader = new LurchDocument( editor )
-                        .findMetadataElement( 'main', 'header' )
-                    Dependency.refreshAllIn( savedHeader ).then( () => {
-                        Dialog.notify( editor, 'success',
-                            'Refreshed all background material from the web.',
-                            5000 )
-                    } ).catch( error => {
-                        Dialog.notify( editor, 'error',
-                            'Could not refresh all background material from the web.' )
-                        console.log( 'Error when refreshing background material',
-                            error )
-                    } )
+                if ( !userHitOK ) return
+                // The user hit OK, so we make changes to the document.
+                // If it doesn't have a header, create a new, empty one.
+                // Note that `header` is a DOM clone of the actual header!
+                if ( !header ) {
+                    setHeader( editor, '' )
+                    header = getHeader( editor )
                 }
+                // Delete any old dependency atoms from the (copy of the) header:
+                relevantDependencies.forEach(
+                    dependency => dependency.element.remove() )
+                // Add the new list of dependency atoms to the end of the
+                // (copy of the) header:
+                chosenDependencyURLs.forEach( url => {
+                    const newDependency = Atom.newBlock( editor, '', {
+                        type : 'dependency',
+                        description : 'none',
+                        filename : url,
+                        source : 'web',
+                        content : '', // will be populated later; see below
+                        autoRefresh : true
+                    } )
+                    newDependency.update()
+                    header.appendChild( newDependency.element )
+                } )
+                // Because "header" is a clone of the actual header, the
+                // in-place edits above did not touch the actual document,
+                // so we must do the following to "save" our changes:
+                setHeader( editor, header.innerHTML )
+                // This is the code that recursively populates header dependencies:
+                // (It is a bit of a hack because we are using the "private"
+                // method findMetadataElement(), but it's what we need.)
+                const savedHeader = new LurchDocument( editor )
+                    .findMetadataElement( 'main', 'header' )
+                Dependency.refreshAllIn( savedHeader ).then( () => {
+                    Dialog.notify( editor, 'success',
+                        'Refreshed all background material from the web.',
+                        5000 )
+                } ).catch( error => {
+                    Dialog.notify( editor, 'error',
+                        'Could not refresh all background material from the web.' )
+                    console.log( 'Error when refreshing background material',
+                        error )
+                } )
             } )
+            // Now that we've shown the dialog for the first time,
+            // do the necessary tweaks to make its aesthetics right:
             touchUpDialogDOM()
         }
     } )
