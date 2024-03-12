@@ -40,6 +40,7 @@ import { Dialog, SelectBoxItem } from './dialog.js'
 import { Environment } from './lde-cdn.js'
 import { lookup, store } from './document-settings.js'
 import { appSettings } from './settings-install.js'
+import { Dependency } from './dependencies.js'
 
 /**
  * For information about the concept of shells in Lurch in general, see the
@@ -649,6 +650,56 @@ export class Recall extends Shell {
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'BIH' )
     }
+}
+
+/**
+ * A "preview" can be used to show a dependency in the editor without allowing
+ * the user to edit it or any of its contents.  The preview has no meaning (in
+ * terms of LCs that will be used for validation) and is thus exactly what it
+ * says on the tin: just a preview.
+ */
+export class Preview extends Shell {
+
+    static subclassName = Atom.registerSubclass( 'preview', Preview )
+
+    // Internal use only
+    // Takes a DOM node as argument and replaces all dependencies in it
+    // (recursively) with their contents (removing the metadata DIV and the
+    // open-in-lurch link DIV from each dependency).
+    // Modifies the given HTMLElement in-place, so pass it a clone.
+    static flattenDependencies ( container ) {
+        // The container must contain a document if we are to proceed
+        const document = Array.from( container.childNodes ).find(
+            child => child.id == 'document' )
+        if ( !document ) return
+        document.id = undefined // no duplicate IDs, please
+        // Find any dependency atoms in it and recursively process them
+        Dependency.topLevelDependenciesIn( document ).forEach( dependency =>
+            dependency.element.replaceWith( Preview.flattenDependencies(
+                dependency.getHTMLMetadata( 'content' ) ) ) )
+        // The result is the newly modified document node
+        return document
+    }
+
+    /**
+     * Fill this shell with the content of the specified dependency, recursively
+     * flattened so that all inner dependencies have been expanded out to be
+     * visible as well.
+     * 
+     * @param {Dependency} dependency - the Dependency atom to show in the preview
+     */
+    imitate ( dependency ) {
+        this.element.innerHTML = Preview.flattenDependencies(
+            dependency.getHTMLMetadata( 'content' ).cloneNode( true )
+        ).innerHTML
+    }
+
+    // Internal use only
+    // Erase all children of this shell before validation; it has no meaning
+    finalize ( shellLC ) {
+        while ( shellLC.numChildren() > 0 ) shellLC.removeChild( 0 )
+    }
+
 }
 
 export default { Shell, install }

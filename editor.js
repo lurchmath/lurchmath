@@ -186,6 +186,7 @@ window.Lurch = {
                 'removeformat'
             ),
             document : buildMenu( 'Document',
+                'viewdependencyurls',
                 'validate clearvalidation',
                 'docsettings temptoggle'
             ),

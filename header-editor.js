@@ -26,7 +26,7 @@ import {
     Dialog, DialogRow, HTMLItem, ButtonItem, TextInputItem
 } from './dialog.js'
 import { Dependency } from './dependencies.js'
-import { openFileInNewWindow, autoOpenLink } from './load-from-url.js'
+import { autoOpenLink } from './load-from-url.js'
 import { Atom } from './atoms.js'
 
 /**
@@ -307,6 +307,41 @@ export const install = editor => {
             // Now that we've shown the dialog for the first time,
             // do the necessary tweaks to make its aesthetics right:
             touchUpDialogDOM()
+        }
+    } )
+    editor.ui.registry.addMenuItem( 'viewdependencyurls', {
+        text : 'Hide/show background material',
+        tooltip : 'View the mathematical content on which this document depends',
+        onAction : () => {
+            // If there are preview atoms in the document, remove them and be done
+            const existingPreviews = Atom.allIn( editor ).filter(
+                atom => atom.getMetadata( 'type' ) == 'preview' )
+            if ( existingPreviews.length > 0 ) {
+                existingPreviews.forEach( preview => preview.element.remove() )
+                return
+            }
+            // If not, we have to create them from the content in the header.
+            // If there is no content in the header, report that and be done.
+            const header = getHeader( editor )
+            if ( !header ) {
+                Dialog.notify( editor, 'warning',
+                    'This document does not import any background material.',
+                    5000 )
+                return
+            }
+            // Accumulate the HTML representation of all previews of all
+            // dependencies in the header.
+            let allPreviewHTML = ''
+            Dependency.topLevelDependenciesIn( header ).forEach( dependency => {
+                const preview = Atom.newBlock( editor, '', { type : 'preview' } )
+                preview.imitate( dependency )
+                allPreviewHTML += preview.element.outerHTML
+            } )
+            // Insert it into the document.
+            editor.selection.setCursorLocation() // == start
+            editor.insertContent( allPreviewHTML )
+            editor.undoManager.clear()
+            editor.selection.setCursorLocation() // deselect new insertions
         }
     } )
 }

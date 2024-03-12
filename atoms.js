@@ -486,6 +486,18 @@ export class Atom {
     }
 
     /**
+     * Atoms are always editable, unless they sit inside some DOM node that is
+     * marked as `contenteditable=false`.  This function checks to see if that
+     * is the case, and returns true iff no ancestor DOM node has that property.
+     */
+    isEditable () {
+        for ( let walk = this.element ; walk ; walk = walk.parentNode )
+            if ( walk.getAttribute?.( 'contenteditable' ) == 'false' )
+                return false
+        return true
+    }
+
+    /**
      * The standard way to insert a new atom into the editor is to create it off
      * screen, open up an editing dialog for that atom, and then if the user
      * saves their edits, insert the new atom into the document, in the final
@@ -945,14 +957,20 @@ export const install = editor => {
     // Install click handler to edit the atom that was clicked
     editor.on( 'init', () =>
         editor.dom.doc.body.addEventListener( 'click', event =>
-            setTimeout( () => Atom.findAbove( event.target, editor )?.edit() ) ) )
+            setTimeout( () => {
+                const toEdit = Atom.findAbove( event.target, editor )
+                if ( toEdit?.isEditable() ) toEdit.edit()
+            } ) ) )
     // Install Enter key handler for same purpose
     editor.on( 'keydown', event => {
         if ( event.key != 'Enter' || event.shiftKey || event.ctrlKey || event.metaKey )
             return
         const selected = editor.selection.getNode()
         if ( Atom.isAtomElement( selected ) )
-            setTimeout( () => Atom.from( selected, editor ).edit() )
+            setTimeout( () => {
+                const toEdit = Atom.from( selected, editor )
+                if ( toEdit?.isEditable() ) toEdit.edit()
+            } )
     } )
     // Whenever anything changes, check to see which atoms appeared and which
     // disappeared.  New ones need to have their appearance updated, and both
