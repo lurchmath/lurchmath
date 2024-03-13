@@ -678,7 +678,18 @@ export class Preview extends Shell {
             child => child.id == 'document' )
         if ( !document ) return
         document.id = undefined // no duplicate IDs, please
-        // Find any dependency atoms in it and recursively process them
+        // If there's a header, move it into the document before proceeding
+        const metadata = Array.from( container.childNodes ).find(
+            child => child.id == 'metadata' )
+        if ( metadata ) {
+            const header = metadata.querySelector(
+                '[data-category="main"][data-key="header"]' )
+            if ( header )
+                for ( let i = header.childNodes.length - 1 ; i >= 0 ; i-- )
+                    document.insertBefore(
+                        header.childNodes[i], document.childNodes[0] )
+        }
+        // Find any dependency atoms in the document and recursively process them
         Dependency.topLevelDependenciesIn( document ).forEach( dependency =>
             dependency.element.replaceWith( Preview.flattenDependencies(
                 dependency.getHTMLMetadata( 'content' ) ) ) )
