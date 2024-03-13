@@ -184,6 +184,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'editdependencyurls', {
         text : 'Edit background material',
         tooltip : 'Edit the list of documents on which this one depends',
+        icon : 'edit-block',
         onAction : () => {
             // Get all dependency information from the document
             let header = getHeader( editor ) // important! this is a clone!
@@ -312,7 +313,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'viewdependencyurls', {
         text : 'Show/hide rules',
         icon : 'character-count',
-        shortcut : 'meta+shift+0',
+        shortcut : 'meta+shift+alt+0',
         tooltip : 'View the mathematical content on which this document depends',
         onAction : () => {
             // If there are preview atoms in the document, remove them and be done
@@ -320,6 +321,7 @@ export const install = editor => {
                 atom => atom.getMetadata( 'type' ) == 'preview' )
             if ( existingPreviews.length > 0 ) {
                 existingPreviews.forEach( preview => preview.element.remove() )
+                editor.selection.setCursorLocation(editor.getBody(),0)
                 return
             }
             // If not, we have to create them from the content in the header.

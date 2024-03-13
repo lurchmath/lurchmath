@@ -333,6 +333,7 @@ window.Lurch = {
                         text : 'Grading pen',
                         tooltip : 'Enable grading pen style',
                         shortcut : 'meta+shift+G',
+                        icon : 'highlight-bg-color',
                         onAction : () => {
                             editor.execCommand( 'Italic' )
                             editor.execCommand( 'ForeColor', false, '#DA1D0C' )
