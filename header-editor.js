@@ -184,6 +184,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'editdependencyurls', {
         text : 'Edit background material',
         tooltip : 'Edit the list of documents on which this one depends',
+        icon : 'edit-block',
         onAction : () => {
             // Get all dependency information from the document
             let header = getHeader( editor ) // important! this is a clone!
