@@ -214,9 +214,12 @@ export class LurchDocument {
         this.editor.undoManager.clear()
         this.editor.setDirty( false )
         // refresh any URL-based dependencies marked as "auto-refresh"
+        Dependency.refreshAllIn( this.editor.lurchMetadata, true ).catch( error =>
+            Dialog.notify( this.editor, 'error',
+                `When auto-refreshing dependencies in header: ${error}` ) )
         Dependency.refreshAllIn( this.editor.getBody(), true ).catch( error =>
             Dialog.notify( this.editor, 'error',
-                `When auto-refreshing dependencies: ${error}` ) )
+                `When auto-refreshing dependencies in document: ${error}` ) )
     }
     
     /**
