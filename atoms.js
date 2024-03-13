@@ -491,7 +491,7 @@ export class Atom {
      * is the case, and returns true iff no ancestor DOM node has that property.
      */
     isEditable () {
-        for ( let walk = this.element ; walk ; walk = walk.parentNode )
+        for ( let walk = this.element?.parentNode ; walk ; walk = walk.parentNode )
             if ( walk.getAttribute?.( 'contenteditable' ) == 'false' )
                 return false
         return true
