@@ -320,6 +320,7 @@ export const install = editor => {
                 atom => atom.getMetadata( 'type' ) == 'preview' )
             if ( existingPreviews.length > 0 ) {
                 existingPreviews.forEach( preview => preview.element.remove() )
+                editor.selection.setCursorLocation(editor.getBody(),0)
                 return
             }
             // If not, we have to create them from the content in the header.
