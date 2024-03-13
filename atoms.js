@@ -657,6 +657,18 @@ export class Atom {
     }
 
     /**
+     * If this atom is contained inside another atom, then the innermost such
+     * atom is this one's "parent."  This function returns that parent, if any,
+     * and null otherwise.
+     * 
+     * @returns {Atom?} the Atom that is the parent of this Atom, if any
+     */
+    parent () {
+        if ( !this.element.parentNode ) return null
+        return Atom.findAbove( this.element.parentNode )
+    }
+
+    /**
      * Create an HTMLElement that can be placed into the given `editor` and that
      * represents an inline or block-type atom, as specified by the second
      * parameter.  The element will be given an HTML/CSS class that marks it as
@@ -827,6 +839,16 @@ export class Atom {
      * stored in its metadata.  The default implementation does nothing.
      */
     update () { }
+
+    /**
+     * The default context menu for an atom is just the context menu for its
+     * parent atom, if any, or the empty array otherwise.  This makes it easy to
+     * include the context menu for all ancestor atoms in any atom, by just
+     * starting with the context menu of the superclass and then adding items.
+     */
+    contextMenu ( forThis ) {
+        return this.parent()?.contextMenu( forThis ) || [ ]
+    }
 
     /**
      * When embedding a copy of the Lurch app in a larger page, users will want
@@ -1017,7 +1039,7 @@ export const install = editor => {
     editor.ui.registry.addContextMenu( 'atoms', {
         update : element => {
             const atom = Atom.findAbove( element, editor )
-            return atom ? atom?.contextMenu() : [ ]
+            return atom ? atom?.contextMenu( atom ) : [ ]
         }
     } )
     // TinyMCE does not show cursor selection well on atoms.
