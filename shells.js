@@ -41,6 +41,7 @@ import { Environment } from './lde-cdn.js'
 import { lookup, store } from './document-settings.js'
 import { appSettings } from './settings-install.js'
 import { Dependency } from './dependencies.js'
+import { autoOpenLink } from './load-from-url.js'
 
 /**
  * For information about the concept of shells in Lurch in general, see the
@@ -223,19 +224,23 @@ export class Shell extends Atom {
      * @returns {Object[]} data representing the contents of a TinyMCE context
      *   menu
      */
-    contextMenu () {
-        const shellSubclassNames = Shell.subclassNames()
-        return ( shellSubclassNames.length == 0 ? [ ] : [
-            {
-                text : 'Change environment type',
-                onAction : () => this.editShellType( shellSubclassNames )
-            }
-        ] )/*.concat( [
-            {
-                text : 'View meaning',
-                onAction : () => Dialog.meaningOfAtom( this )
-            }
-        ] )*/ // This will need to wait until toLCs() for shells gets an upgrade
+    contextMenu ( forThis ) {
+        const result = super.contextMenu( forThis )
+        const shellSubclassNames = Shell.subclassNames().filter(
+            name => name != 'preview' )
+        if ( forThis == this ) {
+            if ( this.isEditable() && shellSubclassNames.length > 0 )
+                result.unshift( {
+                    text : 'Change environment type',
+                    onAction : () => this.editShellType( shellSubclassNames )
+                } )
+            // // Later when toLCs() for shells gets an upgrade:
+            // result.unshift( {
+            //     text : 'View meaning',
+            //     onAction : () => Dialog.meaningOfAtom( this )
+            // } )
+        }
+        return result
     }
 
     /**
@@ -692,12 +697,34 @@ export class Preview extends Shell {
         this.element.innerHTML = Preview.flattenDependencies(
             dependency.getHTMLMetadata( 'content' ).cloneNode( true )
         ).innerHTML
+        if ( dependency.getMetadata( 'source' ) == 'web' )
+            this.setMetadata( 'url', dependency.getMetadata( 'filename' ) )
+        else
+            this.removeMetadata( 'url' )
     }
 
     // Internal use only
     // Erase all children of this shell before validation; it has no meaning
     finalize ( shellLC ) {
         while ( shellLC.numChildren() > 0 ) shellLC.removeChild( 0 )
+    }
+
+    // Internal use only
+    // Overrides the default isEditable() to always be false
+    isEditable () { return false }
+
+    // Internal use only
+    // Overrides the default so that we don't let users change the environment
+    // type for previews, but can open them in new windows.
+    contextMenu ( forThis ) {
+        const result = super.contextMenu( forThis )
+        const url = this.getMetadata( 'url' )
+        if ( url )
+            result.push( {
+                text : 'Open in new Lurch window',
+                onAction : () => window.open( autoOpenLink( url ), '_blank' )
+            } )
+        return result
     }
 
 }

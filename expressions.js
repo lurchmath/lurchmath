@@ -800,13 +800,14 @@ export class Expression extends Atom {
      * @returns {Object[]} data representing the contents of a TinyMCE context
      *   menu
      */
-    contextMenu () {
-        return [
-            {
+    contextMenu ( forThis ) {
+        const result = super.contextMenu( forThis )
+        if ( forThis == this )
+            result.unshift( {
                 text : 'View meaning',
                 onAction : () => Dialog.meaningOfAtom( this )
-            }
-        ]
+            } )
+        return result
     }
 
     /**
