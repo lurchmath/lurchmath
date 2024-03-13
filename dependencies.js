@@ -64,7 +64,10 @@ export const install = editor => {
         tooltip : 'Refresh all dependencies whose source is a URL',
         onAction : () => {
             editor.setProgressState( true )
-            Dependency.refreshAllIn( editor.getBody() ).then( () => {
+            Promise.all( [
+                Dependency.refreshAllIn( editor.lurchMetadata ),
+                Dependency.refreshAllIn( editor.getBody() )
+            ] ).then( () => {
                 editor.setProgressState( false )
                 Dialog.notify( editor, 'success', 'Refreshed all dependencies.' )
             } ).catch( error => {
