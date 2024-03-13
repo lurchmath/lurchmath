@@ -144,7 +144,7 @@ export const install = editor => {
         text : 'Show/Hide feedback',
         icon : 'checkmark',
         tooltip : 'Run Lurch\'s checking algorithm on the document',
-        shortcut : 'Meta+Shift+V',
+        shortcut : 'meta+0',
         onAction : () => {
             // check if there is any validation showing already, and if so, clear it
             if (editor.getBody().querySelector( '[class^=feedback-marker]' )) { 

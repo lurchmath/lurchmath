@@ -504,7 +504,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'temptoggle', {
         text : 'Show/Hide meaning',
         tooltip : 'Toggle between meaning and presentation views of the document',
-        shortcut : 'Meta+0',
+        shortcut : 'meta+shift+0',
         icon: 'select-all',
         onAction : () => {
             const current = lookup( editor, 'shell style' )
