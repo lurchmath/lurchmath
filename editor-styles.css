@@ -221,12 +221,6 @@ body.shell-style-minimal {
     margin: 0.5rem 0; 
   }
 
-  /* Highlighting of nested shells on hover */
-  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)),
-  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) .ML__latex {
-    background-color: var(--hovercolor);
-  }
-  
   /* Minimal view of subproofs (shells with no title) is to be indented on the
      left according to it's nesting level. */
   div.lurch-atom[data-shell_title=""] {
@@ -262,7 +256,6 @@ body.shell-style-minimal {
      } 
   */
 
-
   div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
       content: '✓';
       color: var(--checkcolor);
@@ -295,7 +288,19 @@ body.shell-style-minimal {
     bottom: -7pt;
     right: 0pt;
     padding: 0 6pt;
-}
+  }
+  
+  /* Highlighting of nested shells on hover */
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
+    background-color: var(--hovercolor)
+  }
+  :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
+    .ML__latex, [data-metadata_type='"rule"'], [data-metadata_type='"theorem"'],
+    [data-metadata_type='"recall"'] {
+      background-color: var(--hovercolor)
+    }
+  }
+  
   /* Code blocks use the same font, slightly larger, with a standard background
      and less padding. */
   code {
