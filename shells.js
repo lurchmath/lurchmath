@@ -688,7 +688,8 @@ export class Recall extends Shell {
 export class Preview extends Shell {
 
     static subclassName = Atom.registerSubclass( 'preview', Preview )
-
+    static advancedFriendly = false
+    
     // Internal use only
     // Takes a DOM node as argument and replaces all dependencies in it
     // (recursively) with their contents (removing the metadata DIV and the
