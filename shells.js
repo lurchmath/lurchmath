@@ -118,7 +118,7 @@ export class Shell extends Atom {
      * 
      * @returns {LogicConcept[]} an array containing exactly one Environment
      *   instance, representing this shell, with no children
-     * @see {@link Shell#finalizeChildLCs finalizeChildLCs()}
+     * @see {@link Shell#finalize finalize()}
      */
     toLCs () { return [ new Environment() ] }
 
@@ -604,12 +604,34 @@ export class Corollary extends Theorem {
  * A proof is a type of shell that has the word "Proof" on top and no other
  * special functionality.  The LDE will treat it as a container with things
  * inside that should be validated.
+ * 
+ * It also provides a context menu item (no matter where inside the proof the
+ * user right-clicked) that lets the user ask to run validation only for this
+ * proof.  The implementation for that is to send the exact same validation
+ * request to the deductive engine, except adding a "target=true" attribute to
+ * the environment for this proof.  The engine will recognize that attribute and
+ * send feedback only for the proof environment marked with that attribute.
  */
 export class Proof extends Shell {
     static subclassName = Atom.registerSubclass( 'proof', Proof )
     static beginnerFriendly = true
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'Proof' )
+        if ( this.element.validateThisOnly )
+            shellLC.setAttribute( 'target', true )
+    }
+    contextMenu ( forThis ) {
+        const result = super.contextMenu( forThis )
+        result.unshift( {
+            text : 'Show feedback for this proof only',
+            onAction : () => {
+                this.element.validateThisOnly = true
+                this.editor.ui.registry.getAll().menuItems.clearvalidation.onAction()
+                this.editor.ui.registry.getAll().menuItems.validate.onAction()
+                delete this.element.validateThisOnly
+            }
+        } )
+        return result
     }
 }
 

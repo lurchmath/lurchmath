@@ -147,7 +147,7 @@ export const install = editor => {
         shortcut : 'meta+0',
         onAction : () => {
             // check if there is any validation showing already, and if so, clear it
-            if (editor.getBody().querySelector( '[class^=feedback-marker]' )) { 
+            if ( editor.getBody().querySelector( '[class^=feedback-marker]' ) ) { 
                 clearAll() 
             // otherwise validate it
             } else {
