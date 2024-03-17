@@ -138,7 +138,9 @@
     [ 'for all'                , 'forall'                 ] ,
     [ 'for each'               , 'forall'                 ] ,
     [ 'for every'              , 'forall'                 ] ,
-    [ 'there exists'           , 'exists'                 ] 
+    [ 'there exists'           , 'exists'                 ] ,
+    [ '(?<![a-zA-Z0-9])pair\\('    , 'tuple('  ] ,
+    [ '(?<![a-zA-Z0-9])triple\\('  , 'tuple('  ] 
   ]
   
   const UnicodeNames = {
@@ -158,11 +160,13 @@
     'cong'      : '≅' , 'leq'      : '≤'  , 'lt'     : '<'  , 'factorial'    : '!'     ,
     'divides'   : '|' , 'cdot'     : '⋅'  , '*'      : '⋅'  , 'love'         : 'loves' ,
     'in'        : '∈' , 'Sum'      : 'sum', '\\'     : ' '  , 'fear'         : 'fears' ,
-    'complement': '°' , 'intersect': '∩'  , 'union'  : '∪'
+    'complement': '°' , 'intersect': '∩'  , 'union'  : '∪'  , 'cap'          : '∩'     ,
+    'cup'       : '∪' , 'comp'     : '∘'  , 'circ'   : '∘'  
   }
 
   // for use in Declare's, look up the internal name of a reserved word or
-  // symbol that might appear in the declare sequence
+  // symbol that might appear in the declare sequence.  If the name isn't on the list
+  // then it is internally just iteslf
   const internal = s => {
     return internalNames[s] || s
   }
@@ -408,7 +412,7 @@ Let = 'Let'i __ a:Symbol __ 'in'i __ b:Expression
                             { return `:[${a}, ${b}]` } /
       'Let'i __ a:SymbolSeq { return `:[${a}]`       }
   // Comma separated symbols, numbers, and reserved words
-  DeclareSeq = a:(ReservedWord / Number / Symbol)|1..,comma| 
+  DeclareSeq = a:(Symbol / Number / ReservedWord)|1..,comma| 
                 { return a.map(internal).join(' ') }    
   // We allow Reserved Words and Numbers to be declared by a Declare, but not
   // by a Let or ForSome.
@@ -696,10 +700,10 @@ Symbol "Symbol" =
 ReservedWord  = $(
     'declare'i / 'existsUnique' / 'forall' / 'exists' / '*' / 'leq' /
     'not' / 'to' / 'from' / 'implies' / 'iff' / 'intersect' / 'union' /
-    'cross' / 'in' / 'subset' / 'setminus'i / 'circ' / 'wedge' / 'vee' / 
+    'cross' / 'subset' / 'setminus'i / 'circ' / 'comp' / 'wedge' / 'vee' / 
     'equiv' / 'mapsto' / 'approx' / 'langle' / 'rangle' / 'complement' / 
-    'inv' / 'and' / 'or' / '=' / '<' / '+' / '*' / '|' / '-' / 'sum'i / 
-    'to' / 'of' / 'from' / 'as' / 'for' / '^' )
+    'in' / 'and' / 'or' / '=' / '<' / '+' / '*' / '|' / '-' / 
+    'sum'i / 'to' / 'of' / 'from' / 'as' / 'for' / '^' )
 
 ///////////////////////////////////////////////////////////////////////////////
 // punctuation and character classes

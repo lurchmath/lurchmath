@@ -160,14 +160,15 @@
       '*'     : '\\cdot'    , cdot     : '\\cdot'      , leq        : '\\leq'        ,
       in      : '\\in'      , cap      : '\\cap'       , cup        : '\\cup'        ,
       union   : '\\cup'     , intersect: '\\cap'       , setminus   : '\\setminus'   ,
-      subset  : '\\subseteq', powerset : '\\mathsf{P}' , complement : '{}^\\circ'    ,
+      subset  : '\\subseteq', powerset : '\\mathsf{P}' , complement : '\''           ,
       '^'     : '{}^\\wedge', cross    : '\\times'     , '~'        : '\\sim'        ,
+      circ    : '\\circ'    , comp     : '\\circ'      , inv        : '\\text{inv}'  ,
       iff                 : '\\Leftrightarrow'             ,   
       contradiction       : '\\rightarrow\\leftarrow'      ,
       equivalenceRelation : '\\text{equivalence relation}' ,
       strictPartialOrder  : '\\text{strict partial order}' ,
       partialOrder        : '\\text{partial order}'        ,
-      totalOrder          : '\\text{total order}' 
+      totalOrder          : '\\text{total order}'          ,
     } 
     return (tex[s]) ? tex[s] : s
   }
@@ -257,7 +258,9 @@
     [ 'for all'                , 'forall'                 ] ,
     [ 'for each'               , 'forall'                 ] ,
     [ 'for every'              , 'forall'                 ] ,
-    [ 'there exists'           , 'exists'                 ] 
+    [ 'there exists'           , 'exists'                 ] ,
+    [ '(?<![a-zA-Z0-9])pair\\('    , 'tuple('             ] ,
+    [ '(?<![a-zA-Z0-9])triple\\('  , 'tuple('             ] 
   ]
   
   const UnicodeNames = {
@@ -277,11 +280,13 @@
     'cong'      : '≅' , 'leq'      : '≤'  , 'lt'     : '<'  , 'factorial'    : '!'     ,
     'divides'   : '|' , 'cdot'     : '⋅'  , '*'      : '⋅'  , 'love'         : 'loves' ,
     'in'        : '∈' , 'Sum'      : 'sum', '\\'     : ' '  , 'fear'         : 'fears' ,
-    'complement': '°' , 'intersect': '∩'  , 'union'  : '∪'
+    'complement': '°' , 'intersect': '∩'  , 'union'  : '∪'  , 'cap'          : '∩'     ,
+    'cup'       : '∪' , 'comp'     : '∘'  , 'circ'   : '∘'  
   }
 
   // for use in Declare's, look up the internal name of a reserted word or
-  // symbol that might appear in the declare sequence
+  // symbol that might appear in the declare sequence.  If the name isn't on the
+  // list, then it is just itself internally.
   const internal = s => {
     return internalNames[s] || s
   }
@@ -533,7 +538,8 @@ Let = a:'Let'i __ b:Symbol __ 'in'i __ c:Expression
           { return `${txt(a)}${b}\\text{ such that }${c}` }    /
       a:'Let'i __ b:SymbolSeq { return `${txt(a)}${b}`       }
   // Comma separated symbols, numbers, and reserved words
-  DeclareSeq = a:(ReservedWord / Number / Symbol)|1..,comma| {return sequence(a) }
+  DeclareSeq = a:(Symbol / Number / ReservedWord)|1..,comma| 
+                {return sequence(a) }
   // We allow Reserved Words and Numbers to be declared by a Declare, but not
   // by a Let or ForSome.
   SymbolSeq  = a:(Symbol)|1..,comma| { return sequence(a) }
@@ -849,9 +855,9 @@ Symbol "Symbol" =  a:('contradiction' / '✔︎' / '✗' / '⁉︎' / '~' ) { re
 ReservedWord  = $(
     'declare'i / 'existsUnique' / 'forall' / 'exists' / '*' / 'leq' /
     'not' / 'to' / 'from' / 'implies' / 'iff' / 'intersect' / 'union' /
-    'cross' / 'in' / 'subset' / 'setminus'i / 'circ' / 'wedge' / 'vee' /
+    'cross' / 'subset' / 'setminus'i / 'circ' / 'wedge' / 'vee' /
     'equiv' / 'mapsto' / 'approx' / 'langle' / 'rangle' / 'complement' /
-    'inv' / 'and' / 'or' / '=' / '<' / '+' / '*' / '|' / '-' / '^')
+    'in' / 'and' / 'or' / '=' / '<' / '+' / '*' / '|' / '-' / '^')
 
 ///////////////////////////////////////////////////////////////////////////////
 // punctuation and character classes
