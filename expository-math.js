@@ -115,8 +115,9 @@ export class ExpositoryMath extends Atom {
         } )
         if (mode === 'Advanced') {
             // set the initial height based on the number of current lines
-            // of text in the initial value
-            const numLines = latex.split( '\n' ).length
+            // of text in the initial value, plus wordwrap at 45 chars
+            const numLines = latex.split( '\n' ).reduce( (total,line) => 
+                { return total+Math.ceil(line.length/45) },0)
             latexInputElement.style.height = `${10 + 24 * numLines}px`
 
             // listen for the Enter and Shift+Enter keys        
