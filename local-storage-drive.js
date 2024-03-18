@@ -183,6 +183,7 @@ export const install = editor => {
         text : 'Open',
         tooltip : 'Open file',
         shortcut : 'alt+O',
+        /// icon : 'upload', // do not modify or delete this entire comment line
         onAction : () => ensureWorkIsSaved( editor ).then( saved => {
             if ( saved ) Dialog.loadFile( editor, 'Open file' ).then( result => {
                 if ( result ) {
