@@ -163,12 +163,13 @@
       subset  : '\\subseteq', powerset : '\\mathsf{P}' , complement : '\''           ,
       '^'     : '{}^\\wedge', cross    : '\\times'     , '~'        : '\\sim'        ,
       circ    : '\\circ'    , comp     : '\\circ'      , inv        : '\\text{inv}'  ,
+      Fib     : 'F'         ,
       iff                 : '\\Leftrightarrow'             ,   
       contradiction       : '\\rightarrow\\leftarrow'      ,
       equivalenceRelation : '\\text{equivalence relation}' ,
       strictPartialOrder  : '\\text{strict partial order}' ,
       partialOrder        : '\\text{partial order}'        ,
-      totalOrder          : '\\text{total order}'          ,
+      totalOrder          : '\\text{total order}'          
     } 
     return (tex[s]) ? tex[s] : s
   }
@@ -183,7 +184,12 @@
 
   // convert prefix function application to lisp
   const texPrefix = (op,args) => {
-      return op+args.map(s=>`\\left(${s}\\right)`).join('')
+      // write(op)
+      // write(args)
+      return op + args.map( s => 
+          (s[0]) ?  `_{${s[3]}}`
+                 :  `\\left(${s[3]}\\right)`
+      ).join('')
   }
 
   // Convert optional associative binary operator to lisp. This is used to
@@ -513,7 +519,8 @@ Shorthand = Equiv / a:(BIH / Ruleset / Rule / Thm / Proof / Cases)
 // TODO: use Expression|1..,comma|
 Given = a:GivenLabel b:Environment { return `${txt(a)} ${b}` } /
         a:GivenLabel b:Expression|1..,comma| { return `${txt(a)} ${sequence(b)}` }
-  GivenLabel = @':'_ / @('assume'i / 'given'i / 'suppose'i / 'if'i) _x
+  GivenLabel = @':'_ / @('assume'i / 'given'i / 'suppose'i / 
+                         'if'i / 'from'i) _x
 
 ///////////////////////////////////////////////////////////////////////////////
 // Environments
@@ -526,8 +533,10 @@ Environment =  '{' a:LCs '}' { return `\\left\\{ ${a} \\right\\}` }
 // Declare constants (cannot have a body and is a given)
 Declare = a:'declare'i __ b:DeclareSeq { return `${txt(a)} ${b}` }
 // ForSome declaration (always a claim)
-ForSome = body:Expression __ 'for' __ 'some' __ a:SymbolSeq 
-          { return `${body}\\text{ for some }${a}` }
+ForSome = body:Expression __ 'for'i __ 'some'i __ a:Symbol __ 'in'i __ b:Expression
+            { return `${body}\\text{ for some }${a}\\in ${b}` } /
+          body:Expression __ 'for' __ 'some' __ a:SymbolSeq 
+            { return `${body}\\text{ for some }${a}` }
 // the 'given' colon is optional since these are always 'given'. We also 
 // allow the special shortand `Let x∈A` since it is so common.            
 Let = a:'Let'i __ b:Symbol __ 'in'i __ c:Expression 
@@ -766,6 +775,20 @@ Multinomial = 'multinomial('i _ a:Expression comma b:Expression _')'
 // parsing.js.  Note that 𝜆 gets replaced by '@' up front in the input. This is
 // not intended for use in any other way than for writing rules that require
 // 𝜆P(k) where P is a single character Symbol and k an Expression.
+//
+// In order to allow subscripted variables and expressions like id_A we
+// allow an options underscore character immediately preceeding the opening
+// parentheses of a funciton application.  This is completely ignored as far
+// as meaning is concerned but allows the user to decide whether they want
+// e.g. x(0) or x_0 for how the expression appears.  So they can enter
+// either `x_(0)` or `x(0)` to get `(x 0)` in putdown, but the parentheses
+// cannot be omitted in the former case. We might allow e.g. `x_0` with no
+// parentheses in the case where the function argument is a Symbol or
+// Number, but for now we do not do that so that it reinforces the concept
+// for students that it's just a formatting difference, not a meaningful
+// difference and that subscripting is just a notationally different way to
+// enter function application.  This seems more valuable than learning that,
+// e.g. in LaTeX you would enter `x_{n+1}` instead of `x_(n+1)`.
 Prefix =  // LDE EFA's first
           // Notice that for tex purposes there's no need to show the user the @
           // or 𝜆, thought technically both P(k) and @P(k) will render the same.
@@ -785,8 +808,8 @@ Prefix =  // LDE EFA's first
           'tuple('i _ b:ExpressionSeq _ ')'  
             { return `\\left\\langle\\,${b}\\,\\right\\rangle` } /  
           // then the rest 
-          a:(Exp / Symbol / Parenthesized)
-          b:( '('_ @ExpressionSeq _')' )+ { return texPrefix(a,b) }
+          a:(Exp / Symbol / Parenthesized) 
+          b:( '_'? '('_ ExpressionSeq _')' )+ { return texPrefix(a,b) }
   
     // If we made it to here, we are at the bottom of the food chain for
     // compound expressions, so it's ok to return a symbol or other atomic at
