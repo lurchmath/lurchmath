@@ -199,10 +199,15 @@ export const install = editor => {
         atom.update()
         atom.editThenInsert()
     }
+    const svgicon = '<svg width="24" height="24" viewBox="0 0 24 24"><text x="0" y="18" font-size="8" font-family="sans-serif">$$</text></svg>'
+    editor.ui.registry.addIcon('tex',svgicon)
     editor.ui.registry.addMenuItem( 'expositorymath', {
-        text : 'Expository math',
+        // text : 'Expository math',
+        text : 'LaTeX',
         tooltip : 'Insert expository math',
-        shortcut : 'Meta+Alt+E',
+        // shortcut : 'Meta+Alt+E',
+        icon : 'tex',
+        shortcut : '$',
         onAction : insertExpositoryMath
     } )
     // Install that function as what happens when you type a dollar sign,
