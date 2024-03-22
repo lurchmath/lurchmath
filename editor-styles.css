@@ -230,13 +230,13 @@ body.shell-style-minimal {
   }
 
   /* themed background color-coding of shells */
-  div.lurch-atom[data-metadata_type='"rule"'] {
+  div.lurch-atom[data-metadata_type='"rule"']:not(.atom-is-selected,:hover) {
     background-color: var(--rulecolor);
   }
-  div.lurch-atom[data-metadata_type='"theorem"'] {
+  div.lurch-atom[data-metadata_type='"theorem"']:not(.atom-is-selected,:hover) {
     background-color: var(--theoremcolor);
   }
-  div.lurch-atom[data-metadata_type='"recall"'] {
+  div.lurch-atom[data-metadata_type='"recall"']:not(.atom-is-selected,:hover) {
     background-color: var(--recallcolor);
   }
 
