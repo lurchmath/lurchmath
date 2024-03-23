@@ -313,7 +313,7 @@ export const install = editor => {
     editor.ui.registry.addMenuItem( 'viewdependencyurls', {
         text : 'Show/hide rules',
         icon : 'character-count',
-        shortcut : 'ctrl+alt+0',
+        shortcut : 'meta+alt+0',
         tooltip : 'View the mathematical content on which this document depends',
         onAction : () => {
             // If there are preview atoms in the document, remove them and be done
