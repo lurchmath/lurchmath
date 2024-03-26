@@ -483,12 +483,12 @@ export const install = editor => {
             const subclass = Atom.subclasses.get( subclassName )
             if ( inBeginnerMode && !subclass.beginnerFriendly ||
                  inAdvancedMode && !subclass.advancedFriendly) return null
-            if (inAdvancedMode) {
+            if ( inAdvancedMode ) {
                 return {
                     shortcut : subclassName.toLowerCase(),
-                    preview : (subclass.advancedName) ?
-                               `${subclass.advancedName} environment` :
-                               `a ${subclassName} environment`,
+                    preview : subclass.advancedName ?
+                              `${subclass.advancedName} environment` :
+                              `a ${subclassName} environment`,
                     content : subclass.defaultHTML
             } }   
             return {
@@ -515,10 +515,10 @@ export const install = editor => {
             const current = lookup( editor, 'shell style' )
             store( editor, 'shell style', current == 'boxed' ? 'minimal' : 'boxed' )
             // make the cursor stay in the middle of the screen when toggling views
-            const getOffsetRelativeToBody = (element) => {
+            const getOffsetRelativeToBody = element => {
                 let offsetTop = element.offsetTop
                 let parent = element.offsetParent
-                while (parent && parent !== document.body) {
+                while ( parent && parent !== document.body ) {
                     offsetTop += parent.offsetTop
                     parent = parent.offsetParent
                 }
@@ -526,8 +526,8 @@ export const install = editor => {
             }
             const selection = editor.selection
             const editorHeight = editor.getContainer().clientHeight
-            const scrollPosition = getOffsetRelativeToBody(selection.getEnd())
-            editor.getWin().scrollTo(0, scrollPosition - (editorHeight / 3))
+            const scrollPosition = getOffsetRelativeToBody( selection.getEnd() )
+            editor.getWin().scrollTo( 0, scrollPosition - ( editorHeight / 3 ) )
         }
     } )
 }
