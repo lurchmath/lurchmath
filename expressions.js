@@ -596,24 +596,27 @@ export class Expression extends Atom {
             lurchInputElement.classList.add( 'advancedTextArea' )
             // set the initial height based on the number of current lines
             // of text in the initial value, plus wordwrap at 45 chars
-            const numLines = lurchNotation.split( '\n' ).reduce( (total,line) => 
-                { return total+Math.ceil(line.length/45) },0)
-            lurchInputElement.style.height = `${10 + 24 * numLines}px`
+            const computeHeight = (s) => 10+24*Math.max(1,
+              s.split( '\n' ).reduce( (total,line) => 
+                  { return total+Math.max(1,Math.ceil(line.length/45)) },0)) 
+          
+            lurchInputElement.style.height = computeHeight(lurchNotation)+'px'
 
             // give it focus, but if it ever loses focus, close the dialog
             lurchInputElement.focus()
             lurchInputElement.addEventListener( 'blur', () =>
                 setTimeout( () => dialog.close() ) )
 
+            lurchInputElement.addEventListener('input', () => {
+              lurchInputElement.style.height = 
+                  computeHeight(lurchInputElement.value)+'px'
+            })
+
             // listen for the Enter and Shift+Enter keys        
             lurchInputElement.addEventListener( 'keydown', event => {
                 if ( event.key == 'Enter' ) {
                     if ( event.shiftKey ) {
-                        // Shift+Enter adds a line to a maximum of 15 lines
-                        let height = parseInt(
-                            lurchInputElement.style.height.slice( 0, -2 ) )
-                        height = Math.min( 540, 24 + height )
-                        lurchInputElement.style.height = `${height}px`
+                        // allow Shift+Enter to add a line
                     } else if ( convertToLatex() ) {
                         // Plain enter submits if the input is valid
                         dialog.querySelector( 'button[title="OK"]' ).click()

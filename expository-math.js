@@ -116,20 +116,21 @@ export class ExpositoryMath extends Atom {
         if (mode === 'Advanced') {
             // set the initial height based on the number of current lines
             // of text in the initial value, plus wordwrap at 45 chars
-            const numLines = latex.split( '\n' ).reduce( (total,line) => 
-                { return total+Math.ceil(line.length/45) },0)
-            latexInputElement.style.height = `${10 + 24 * numLines}px`
+            const computeHeight = (s) => 10+24*Math.max(1,
+                s.split( '\n' ).reduce( (total,line) => 
+                    { return total+Math.max(1,Math.ceil(line.length/45)) },0)) 
+            
+            latexInputElement.style.height = computeHeight(latex)+'px'
+
+            latexInputElement.addEventListener('input', () => {
+              latexInputElement.style.height = 
+                  computeHeight(latexInputElement.value)+'px'
+            })
 
             // listen for the Enter and Shift+Enter keys        
             latexInputElement.addEventListener( 'keydown', event => {
                 if ( event.key == 'Enter' ) {
-                    if ( event.shiftKey ) {
-                        // Shift+Enter adds a line to a maximum of 15 lines
-                        let height = parseInt(
-                            latexInputElement.style.height.slice( 0, -2 ) )
-                        height = Math.min( 540, 24 + height )
-                        latexInputElement.style.height = `${height}px`
-                    } else {
+                    if ( !event.shiftKey ) {
                         // Plain enter submits whether or not it is valid
                         // and lets the renderer's error system handle it
                         dialog.querySelector( 'button[title="OK"]' ).click()
