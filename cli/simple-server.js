@@ -3,10 +3,10 @@
 // https://stackoverflow.com/questions/16333790/node-js-quick-file-server-static-files-over-http
 // Thank you!
 
-const http = require( 'http' )
-const url = require( 'url' )
-const fs = require( 'fs' )
-const path = require( 'path' )
+import http from 'http'
+import url from 'url'
+import fs from 'fs'
+import path from 'path'
 const port = 8080
 
 const startServer = ( options = { } ) => {
@@ -89,4 +89,4 @@ const startServer = ( options = { } ) => {
 
 }
 
-module.exports = { startServer }
+export { startServer }

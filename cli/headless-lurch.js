@@ -39,12 +39,12 @@ import puppeteer from 'puppeteer'
 import chalk from 'chalk'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { startServer } from './simple-server.js'
 
 // We need to be running a simple web server so that the headless browser has
 // a place from which to load the Lurch app
 const port = 8080
-import( './simple-server.cjs' ).then( module =>
-    module.startServer( { verbose : false, port : port } ) )
+startServer( { verbose : false, port : port } )
 
 // All the functions below refer to these same module-global variables
 let browser = null

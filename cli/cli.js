@@ -3,7 +3,7 @@
  * @file The Lurch command-line interface (CLI)
  * 
  * You can run this module from the command line in the repository root via
- * `node cli/cli.mjs`, passing arguments as documented below.  There are
+ * `node cli/cli.js`, passing arguments as documented below.  There are
  * several use cases for this command-line interface.
  * 
  * **NOTE:** If you do not have Chromium installed so that the puppeteer module
@@ -34,7 +34,7 @@
  * a markdown file (ending in `.md`) or an HTML file (ending in `.html`) in
  * either of two formats (simplified HTML or long-form HTML, described below).
  * 
- * `node cli/cli.mjs path/to/your-file.md`
+ * `node cli/cli.js path/to/your-file.md`
  * 
  * This mode will convert your file into standard Lurch form, load it into an
  * invisible copy of the full Lurch web app running in a headless Chromium
@@ -59,7 +59,7 @@
  * can ask for HTML output instead, which shows the long-form HTML that is
  * stored in the actual Lurch app editor.  Do so with the following command:
  * 
- * `node cli/cli.mjs --html path/to/your-file.md`
+ * `node cli/cli.js --html path/to/your-file.md`
  * 
  * This type of output is suitable for redirecting to an `.html` file that can
  * then be opened by the main Lurch app.  It will include the results of
@@ -67,7 +67,7 @@
  * `--html-only` switch instead of `--html`.  For example, to redirect to an
  * HTML file and exclude validation results, use the following form.
  * 
- * `node cli/cli.mjs --html-only path/to/your-file.md > output-file.html`
+ * `node cli/cli.js --html-only path/to/your-file.md > output-file.html`
  * 
  * If you would like to create a readable representation of the document for a
  * non-technical audience, you can output to PDF.  This mode of the CLI will
@@ -75,7 +75,7 @@
  * with a `.pdf` extension.  The PDF is just a direct capture of the Lurch app
  * running in the headless Chromium, with your document loaded and validated.
  * 
- * `node cli/cli.mjs --pdf path/to/your-file.md`
+ * `node cli/cli.js --pdf path/to/your-file.md`
  * 
  * ## Simplified HTML vs. long-form HTML
  * 
@@ -130,7 +130,7 @@
  * app itself, and thus in the long-form HTML format, you can pass it to the CLI
  * to have it validated.
  * 
- * `node cli/cli.mjs path/to/your-file.html`
+ * `node cli/cli.js path/to/your-file.html`
  * 
  * The output is the same as when Markdown input is given; it will be indented
  * text output of the validation results.  To instead see the output as HTML,
@@ -146,7 +146,7 @@
  * of output.  (The HTML output forms are typically for redirecting to a file,
  * and thus do not make sense in this context.)
  * 
- * `node cli/cli.mjs path/to/your-folder`
+ * `node cli/cli.js path/to/your-folder`
  * 
  * ## Use case 4: Watching for changes
  * 
@@ -168,7 +168,7 @@
  * each time they save, see the latest validation results.  Thus the only output
  * format that makes sense is the default one.
  * 
- * `node cli/cli.mjs --watch path/to/your-folder`
+ * `node cli/cli.js --watch path/to/your-folder`
  * 
  * ## Use case 5: Converting an entire folder
  * 
@@ -178,7 +178,7 @@
  * filenames, but with each extension changed to `.html`.  The output form is
  * long-form HTML, meaning that it is ready to be opened in the main Lurch app.
  * 
- * `node cli/cli.mjs path/to/your-source-folder path/to/your-destination-folder`
+ * `node cli/cli.js path/to/your-source-folder path/to/your-destination-folder`
  * 
  * In this way, the user can write an entire library of mathematical documents
  * with dependencies among one another in a single folder, in a convenient
@@ -193,7 +193,7 @@
 
 import {
     openApp, openDocument, validationResults, documentHTML, documentAsPDF
-} from './headless-lurch.mjs'
+} from './headless-lurch.js'
 import chalk from 'chalk'
 import { statSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -204,12 +204,12 @@ import chokidar from 'chokidar'
 
 const validCommands = [ 'html', 'html-only', 'pdf', 'no-table', 'watch' ]
 const usage = () => {
-    console.error( 'Usages: node [optional switches] cli.mjs <file>' )
-    console.error( '    or: node [optional switches] cli.mjs <folder>' )
-    console.error( '    or: node [optional switches] cli.mjs <srcfolder> <destfolder>' )
+    console.error( 'Usages: node [optional switches] cli.js <file>' )
+    console.error( '    or: node [optional switches] cli.js <folder>' )
+    console.error( '    or: node [optional switches] cli.js <srcfolder> <destfolder>' )
     console.error( 'Valid switches: '+validCommands.map(x=>'--'+x).join( ', ' ) )
 }
-// drop "node cli.mjs" off the list off the args list:
+// drop "node cli.js" off the list off the args list:
 const args = process.argv.slice( 2 )
 // find all switches and ensure they're valid
 const commands = [ ]
