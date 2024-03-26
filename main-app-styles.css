@@ -32,7 +32,7 @@ textarea#editor {
 }
 /* set the maximum width for fixed width mode  */
 body:not(.fullscreen) #editor-container {
-  max-width : 853px;
+    max-width : 853px;
 }
 
 /* The Lurch Logo  */
@@ -63,43 +63,43 @@ body:not(.fullscreen) #editor-container {
 /* The text area for the advanced mode expression editor  */
 .tox .tox-textarea-wrap .tox-textarea.advancedTextArea:focus,
 .tox .tox-textarea-wrap .tox-textarea.advancedTextArea {
-  resize: auto;
-  font-family: "Roboto Mono"
+    resize: auto;
+    font-family: "Roboto Mono"
 }
 
 /* Document File Name */
 /* Commenting this out for now until we design something better */
 
 #lurch-filename-display {
-  display: none;
+    display: none;
 }
 
 /*
 div:has(> #lurch-filename-display) {
-  position: relative;
-  padding-top: 0.3rem;
+    position: relative;
+    padding-top: 0.3rem;
 }
 
 #lurch-filename-display {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-  color: darkgoldenrod;
-  font-weight: 500;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+    color: darkgoldenrod;
+    font-weight: 500;
 }
 #lurch-filename-display::before {
-  content: '(';
-  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-  color: darkslategrey;
-  font-weight: 500;
+    content: '(';
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+    color: darkslategrey;
+    font-weight: 500;
 }
 #lurch-filename-display::after {
-  content: ')';
-  font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
-  color: darkslategrey;
-  font-weight: 500;
+    content: ')';
+    font-family: 'Anonymous Pro', 'PT Mono', 'Oxygen monospace', monospace;
+    color: darkslategrey;
+    font-weight: 500;
 }
  *
  */
