@@ -21,7 +21,6 @@ const startServer = ( options = { } ) => {
     const server = http.createServer( ( req, res ) => {
         const parsedUrl = url.parse( req.url )
         let pathname = `.${parsedUrl.pathname}`
-        let ext = path.parse( pathname ).ext
         const extensionToMime = {
             '.ico'  : 'image/x-icon',
             '.html' : 'text/html',
@@ -51,10 +50,10 @@ const startServer = ( options = { } ) => {
             if ( fs.statSync( pathname ).isDirectory() ) {
                 if ( !pathname.endsWith( '/' ) ) pathname += '/'
                 pathname += 'index.html'
-                ext = '.html'
             }
         
             // read file from file system
+            const ext = path.parse( pathname ).ext
             fs.readFile( pathname, ( err, data ) => {
                 if ( err ) {
                     // error getting file
