@@ -18,7 +18,13 @@ import http from 'http'
 import url from 'url'
 import fs from 'fs'
 import path from 'path'
-const port = 8080
+const port = 8888
+
+// Load stylesheet so we don't have to serve it dynamically, which would require
+// us to figure out how to handle paths correctly from any possible root folder:
+const CSS = fs.readFileSync( path.join(
+    path.dirname( url.fileURLToPath( import.meta.url ) ),
+    'file-list-styles.css' ) )
 
 // Ensure the user passed one or more folders to us to display as student work:
 const folders = process.argv.slice( 2 )
@@ -39,11 +45,13 @@ folders.forEach( folder => {
 } )
 
 // Utility functions to generate the nested lists of folders and files:
-const fileToHTML = ( name, fullPath ) =>
-    `<div class="file">
-        <a href="/index.html?load=${path.join( path.sep, 'grading', fullPath )}"
-            >${name}</a>
+const fileToHTML = ( name, fullPath ) => {
+    const encodedPath = encodeURIComponent( path.join(
+        path.sep, 'grading', path.resolve( fullPath ) ) )
+    return `<div class="file">
+        <a href="/index.html?load=${encodedPath}" target="_blank">${name}</a>
     </div>`
+}
 const folderToHTML = ( name, fullPath ) => {
     const contents = fs.readdirSync( fullPath ).map( name => {
         const inner = path.join( fullPath, name )
@@ -64,9 +72,7 @@ const foldersToHTML = fullPaths =>
         folderToHTML( fullPath, fullPath ) ).join( '\n' )
 const generatePage = () => `
 <html>
-    <head>
-        <link type="text/css" rel="stylesheet" href="./grading-tools/file-list-styles.css">
-    </head>
+    <head><style>${CSS}</style></head>
     <body>
         <h1>Folders for grading</h1>
         ${foldersToHTML( folders )}
@@ -78,13 +84,13 @@ const generatePage = () => `
 const server = http.createServer( ( req, res ) => {
     const parsedUrl = url.parse( req.url )
     let parts = path.parse( parsedUrl.pathname )
-    parts = [ ...parts.dir.split( path.sep ), parts.base ]
+    parts = [ parts.root, ...parts.dir.split( path.sep ).slice( 1 ), parts.base ]
     let fileToLoad = null
 
     // Serve one of three things:
     // 1. If the request is empty, then our root is a nested list of links
     // representing the contents of the grading folder:
-    if ( parts.every( part => part == '' ) ) {
+    if ( parts.slice( 1 ).every( part => part == '' ) ) {
         console.log( ` GENERATED: ${req.url}` )
         res.setHeader( 'Content-type', 'text/html' )
         res.end( generatePage() )
