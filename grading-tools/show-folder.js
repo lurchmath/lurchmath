@@ -46,8 +46,19 @@ folders.forEach( folder => {
 
 // Utility functions to generate the nested lists of folders and files:
 const fileToHTML = ( name, fullPath ) => {
-    const encodedPath = encodeURIComponent( path.join(
-        path.sep, 'grading', path.resolve( fullPath ) ) )
+    // We encode the URI component TWICE here, for good reason:
+    // 1. It must be encoded as a query string parameter, load=..., because on
+    //    the other end, searchParams.get() will automatically decode it.
+    // 2. When that is done, the decoded URL will be used in an XHR to fetch the
+    //    file in question.  At that point, we cannot encode it again, because
+    //    doing so would encode ALL its symbols, including the :// in http://,
+    //    etc., making it no longer an URL but a single filename, unintended.
+    // 3. Consequently, this server will receive that XHR with the folders in
+    //    the path encoded ONCE (not twice, since searchParams.get() did one
+    //    level of decoding) and we will therefore use decodeURIComponent() in
+    //    the code for handling /grading/ URLs, later in this script.
+    const encodedPath = path.join( path.sep, 'grading',
+        encodeURIComponent( encodeURIComponent( path.resolve( fullPath ) ) ) )
     return `<div class="file">
         <a href="/index.html?load=${encodedPath}" target="_blank">${name}</a>
     </div>`
@@ -99,7 +110,7 @@ const server = http.createServer( ( req, res ) => {
     // 2. If the request is for a file in /grading/..., then serve that file,
     // after removing the /grading/ prefix:
     if ( parts[1] == 'grading' ) {
-        fileToLoad = path.join( parts[0], ...parts.slice( 2 ) )
+        fileToLoad = path.join( parts[0], decodeURIComponent( parts[2] ) )
     }
     // 3. Every other request is for a file in the current folder:
     else {
