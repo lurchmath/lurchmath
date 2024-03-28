@@ -577,7 +577,7 @@ Quantified = 'forall' _x b:Binding           { return `\\forall ${b}`   } /
              'existsUnique' _x b:Binding     { return `\\exists! ${b}` } 
 // binding expressions / anonymous maps
 Binding = a:Symbol period _ b:Expression 
-          { return `${a}. ${b}` } /
+          { return `${a}.\\, ${b}` } /
   a:Symbol _'mapsto'_x b:Expression 
           { return `${a}\\mapsto ${b}` }
 

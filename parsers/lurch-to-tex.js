@@ -785,7 +785,7 @@ function peg$parse(input, options) {
   var peg$f17 = function(b) { return `\\forall ${b}`   };
   var peg$f18 = function(b) { return `\\exists ${b}`   };
   var peg$f19 = function(b) { return `\\exists! ${b}` };
-  var peg$f20 = function(a, b) { return `${a}. ${b}` };
+  var peg$f20 = function(a, b) { return `${a}.\\, ${b}` };
   var peg$f21 = function(a, b) { return `${a}\\mapsto ${b}` };
   var peg$f22 = function(a) { return a.join('\\Leftrightarrow ')  };
   var peg$f23 = function(a) { return a.join('\\Rightarrow ')      };
