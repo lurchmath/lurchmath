@@ -83,7 +83,9 @@ const foldersToHTML = fullPaths =>
         folderToHTML( fullPath, fullPath ) ).join( '\n' )
 const generatePage = () => `
 <html>
-    <head><style>${CSS}</style></head>
+    <head><style>${CSS}</style>
+        <link rel="shortcut icon" href="lurchmath/grading-tools/favicon.svg">
+    </head>
     <body>
         <h1>Folders for grading</h1>
         ${foldersToHTML( folders )}
