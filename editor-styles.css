@@ -10,8 +10,10 @@
 :root {
     /* for \text mode in Math Live */
     --_text-font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
-    /* hovered or selected atom backround color */
-    --hovercolor: #B9D9F2;  
+    /* hovered atom background color */
+    --hovercolor: #BBD6FB;  /* rgb(187,214,251); #B9D9F2*/
+    /* selected atom backround color */
+    --selectedcolor: #A1C6F5;
     /* borders and titles of shells color */
     --bordercolor: #b4d7ff;
     /* green checkmark color */
@@ -65,7 +67,7 @@ the MathLive rendering spills outside the atom we want to shade that as well */
 /* Make the border color match the background shading */
 .mce-content-body [contentEditable=false][data-mce-selected] {
     cursor: not-allowed;
-    outline: 3px solid var(--hovercolor)
+    outline: 3px solid var(--selectedcolor)
 }
 
 /* Feedback icons for inline atoms */
@@ -291,16 +293,24 @@ body.shell-style-minimal {
     }
     
     /* Highlighting of nested shells on hover */
-    :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
+    :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)
+        ) {
         background-color: var(--hovercolor)
     }
     :not(:not(.lurch-atom:hover),.lurch-atom:has(.lurch-atom:hover)) {
-        .ML__latex, [data-metadata_type='"rule"'], [data-metadata_type='"theorem"'],
-        [data-metadata_type='"recall"'] {
-            background-color: var(--hovercolor)
-        }
+      .atom-is-selected, 
+      .atom-is-selected .lurch-atom,
+      .atom-is-selected .ML__latex  {
+        background-color: var(--selectedcolor)
+      }
+      /* .ML__latex:not(.atom-is-selected),  */
+      [data-metadata_type='"rule"'], 
+      [data-metadata_type='"theorem"'],
+      [data-metadata_type='"recall"'] {
+        background-color: var(--hovercolor)
+      }
     }
-    
+  
     /* Code blocks use the same font, slightly larger, with a standard background
       and less padding. */
     code {
