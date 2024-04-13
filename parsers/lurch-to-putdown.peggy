@@ -171,7 +171,7 @@
     'divides'   : '|' , 'cdot'     : '⋅'  , '*'      : '⋅'  , 'love'         : 'loves' ,
     'in'        : '∈' , 'Sum'      : 'sum', '\\'     : ' '  , 'fear'         : 'fears' ,
     'complement': '°' , 'intersect': '∩'  , 'union'  : '∪'  , 'cap'          : '∩'     ,
-    'cup'       : '∪' , 'comp'     : '∘'  , 'circ'   : '∘'  
+    'cup'       : '∪' , 'comp'     : '∘'  , 'circ'   : '∘'  , 'cross'        : '×'
   }
 
   // for use in Declare's, look up the internal name of a reserved word or
@@ -324,7 +324,9 @@
 //   to be compound expressions for each of their operators, and save the atomic
 //   ones to be checked for last, with the arguments to lower precendence
 //   operations coming from the category of expressions that are higher than it
-//   in precedence.  The order we define here is roughly as follows from lowest to highest.
+//   in precedence.  The order we define here is roughly as follows from lowest
+//   to highest.
+//
 //     - Quantified : 
 //     - Binding    :
 //     - Prop       :
@@ -379,8 +381,8 @@ StringLiteral = $('"' [^"]* '"')
 // Shorthands are special symbols which are not allowed to be part
 // of a larger expression and are post-processed by the LDE
 // They cannot be part of a longer symbol
-Shorthand = a:(BIH / Ruleset / Rule / Thm / Proof / Cases / Equiv) !alphanum 
-              { return a }
+Shorthand = a:(BIH / Ruleset / Rule / Thm / Proof / Cases / Subs / Equiv) 
+              !alphanum { return a }
   // Shorthands
   Equiv = 'equiv'i { return '≡' }
   BIH = ('since'i / 'because'i / 'recall'i) { return '>>' }
@@ -389,6 +391,7 @@ Shorthand = a:(BIH / Ruleset / Rule / Thm / Proof / Cases / Equiv) !alphanum
   Thm = ('theorem'i / 'thm'i / 'lemma'i / 'corollary'i) ':'? { return 'thm>' }
   Proof = 'proof'i ':'? { return 'proof>' }
   Cases = 'CasesRule'i ':'? { return 'cases>' }
+  Subs = 'Substitution'i ':'? { return 'subs>' }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Givens

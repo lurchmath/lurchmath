@@ -169,7 +169,7 @@
       '*'     : '\\cdot'    , cdot     : '\\cdot'      , leq        : '\\leq'        ,
       in      : '\\in'      , cap      : '\\cap'       , cup        : '\\cup'        ,
       union   : '\\cup'     , intersect: '\\cap'       , setminus   : '\\setminus'   ,
-      subset  : '\\subseteq', powerset : '\\mathsf{P}' , complement : '\''           ,
+      subset  : '\\subseteq', powerset : '\\mathscr{P}', complement : '\''           ,
       '^'     : '{}^\\wedge', cross    : '\\times'     , '~'        : '\\sim'        ,
       circ    : '\\circ'    , comp     : '\\circ'      , inv        : '\\text{inv}'  ,
       Fib     : 'F'         ,
@@ -510,7 +510,7 @@ StringLiteral = $('"' [^"]* '"')
 // Shorthands are special symbols which are not allowed to be part
 // of a larger expression and are post-processed by the LDE
 // They cannot be part of a longer symbol
-Shorthand = Equiv / a:(BIH / Ruleset / Rule / Thm / Proof / Cases)
+Shorthand = Equiv / a:(BIH / Ruleset / Rule / Thm / Proof / Cases / Subs)
                      !alphanum { return txt(a) }
   // Shorthands
   Equiv   = 'equiv'i { return '\\text{ iff }' }
@@ -520,6 +520,7 @@ Shorthand = Equiv / a:(BIH / Ruleset / Rule / Thm / Proof / Cases)
   Thm     = $(('theorem'i / 'thm'i / 'lemma'i / 'corollary'i) ':'?)
   Proof   = $('proof'i ':'?)
   Cases   = $('CasesRule'i ':'?)
+  Subs    = $('Substitution'i ':'?)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Givens
