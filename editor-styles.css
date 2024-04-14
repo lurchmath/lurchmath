@@ -306,7 +306,8 @@ body.shell-style-minimal {
       /* .ML__latex:not(.atom-is-selected),  */
       [data-metadata_type='"rule"'], 
       [data-metadata_type='"theorem"'],
-      [data-metadata_type='"recall"'] {
+      [data-metadata_type='"recall"'],
+      .ML__latex {
         background-color: var(--hovercolor)
       }
     }
@@ -325,6 +326,7 @@ body.shell-style-minimal {
     div.lurch-atom[data-shell_title] p {
         margin: 0;
         padding: 0;
+        line-height: 1.15;
     }
     /* remove left padding from nested numbered lists inside atoms */
     div.lurch-atom ol {
