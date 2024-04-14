@@ -1,0 +1,51 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+body, p, h1, h2, h3, h4, h5, h6, div, ul, ol, li {
+    font-family: 'Roboto', 'Arial', Helvetica, sans-serif;
+}
+
+body {
+  width: 800px;
+  margin: 2rem auto;    
+  background : #EAEAEA;
+}
+
+#container {
+  max-width : 853px;
+  padding: 1rem 2rem 1rem;
+  border-radius: 1rem; 
+  background-color: white;
+}
+
+.folder-name {
+  margin: 0.5rem 0;
+} 
+
+.folder-contents {
+    margin: 0.5rem 0.27rem;
+    border-left: 1px solid gray;
+    padding-left: 1.5em;
+}
+
+.file a {
+    text-decoration: none;
+}
+
+.folder-name.active::before {
+  content: '-';
+  font-family:'Courier New', Courier, monospace;
+  padding-right: 0.4rem;
+  font-weight: 800;
+}
+.folder-name:not(.active)::before {
+  content: '+';
+  font-family:'Courier New', Courier, monospace;
+  padding-right: 0.4rem;
+  font-weight: 800;
+}
+
+.expandall {
+  padding: 0.25rem;
+  background-color: white;
+}
