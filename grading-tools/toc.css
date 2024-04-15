@@ -16,6 +16,7 @@ body {
   padding: 1rem 2rem 1rem;
   border-radius: 1rem; 
   background-color: white;
+  position: relative;
 }
 
 .folder-name {
@@ -48,4 +49,29 @@ body {
 .expandall {
   padding: 0.25rem;
   background-color: white;
+}
+
+/* The Lurch Logo  */
+#logo { 
+  position: absolute; 
+  top : 0; 
+  right : 0; 
+  width : 120px;
+  z-index: 9999; 
+  margin: 25.5px 40px; 
+  font-size: xx-large; 
+  /* font-family: Lato;  */
+  font-weight: 900; 
+  letter-spacing:-0.01em;
+  color:#000;
+  text-align:center;
+}
+
+#logo #check { 
+  color:#4CAF50;
+}
+
+#logo a { 
+  color:#000;
+  text-decoration: none;
 }
