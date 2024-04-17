@@ -68,7 +68,7 @@ export const generatePage = (...folders) => {
       <div id='container'>
         <div id="logo">Lurch<span id="check">&#x2713</span></div>
         <h1>Table of Contents</h1>
-        <p><span id='expandall'>⇅</span></p>
+        <p><button id='expandall'>⇅ - all</button></p>
         ${foldersToHTML( folders )}
       <div>
     </body>

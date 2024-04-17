@@ -46,9 +46,15 @@ body {
   font-weight: 800;
 }
 
-.expandall {
-  padding: 0.25rem;
+#expandall {
+  padding: 0px 5px; 
   background-color: white;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px; 
+  background-color: #f2f2f2; 
+  cursor: pointer; 
+  text-align: center; 
 }
 
 /* The Lurch Logo  */
