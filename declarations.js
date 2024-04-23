@@ -95,6 +95,7 @@ export class DeclarationType {
      *   readable text
      * @see {@link DeclarationType#documentForm documentForm()}
      * @see {@link DeclarationType#lurchNotationForm lurchNotationForm()}
+     * @see {@link DeclarationType#latexForm latexForm()}
      */
     displayForm ( symbol ) {
         return this.template.replace( '[statement]', '...' ).trim()
@@ -120,12 +121,34 @@ export class DeclarationType {
      *   filled in and the body placeholder removed
      * @see {@link DeclarationType#displayForm displayForm()}
      * @see {@link DeclarationType#lurchNotationForm lurchNotationForm()}
+     * @see {@link DeclarationType#latexForm latexForm()}
      */
     documentForm ( symbol, bodyHTML = '' ) {
         if ( symbol.length > 1 )
             symbol = `\\mathrm{${symbol}}`
         symbol = converter( symbol, 'latex', 'html' )
         return this.template.replace( '[statement]', bodyHTML ).trim()
+                            .replace( '[variable]', symbol )
+                            .replace( '[constant]', symbol )
+    }
+
+    /**
+     * This function is analogous to {@link DeclarationType#documentForm
+     * documentForm()}, but produces LaTeX notation instead.
+     * 
+     * @param {string} symbol - the symbol being declared
+     * @param {string} [bodyLatex] - the LaTeX representation of the body of the
+     *   declaration, if it has a body (optional)
+     * @returns {string} the template in LaTeX, with the symbol placeholder
+     *   filled in and the body placeholder removed
+     * @see {@link DeclarationType#displayForm displayForm()}
+     * @see {@link DeclarationType#lurchNotationForm lurchNotationForm()}
+     * @see {@link DeclarationType#documentForm documentForm()}
+     */
+    latexForm ( symbol, bodyLatex = '' ) {
+        if ( symbol.length > 1 )
+            symbol = `\\mathrm{${symbol}}`
+        return this.template.replace( '[statement]', bodyLatex ).trim()
                             .replace( '[variable]', symbol )
                             .replace( '[constant]', symbol )
     }
@@ -148,6 +171,7 @@ export class DeclarationType {
      *   symbol and optional body
      * @see {@link DeclarationType#displayForm displayForm()}
      * @see {@link DeclarationType#documentForm documentForm()}
+     * @see {@link DeclarationType#latexForm latexForm()}
      */
     lurchNotationForm ( symbol, body ) {
         if ( !/^\w+$/.test( symbol ) ) symbol = JSON.stringify( symbol )

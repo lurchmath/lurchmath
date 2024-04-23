@@ -366,6 +366,25 @@ export class Shell extends Atom {
             + `</${this.subclassName}>`
     }
 
+    /**
+     * When exporting a Lurch document (or a portion thereof) to LaTeX format,
+     * this function determines how a Shell is represented.  This is a simple
+     * default that is likely to be overridden by subclasses.  It just places
+     * the contents of the shell in a LaTeX block quote, unless the class (or
+     * subclass) has defined a static member `latexEnvironment`, in which case
+     * it wraps it in the `\\begin{X}` and `\\end{X}` for that environment
+     * (e.g., `"theorem"`).
+     * 
+     * @param {string} innerLaTeX - the LaTeX representation of the contents of
+     *   the shell, already computed recursively
+     * @returns {string} the LaTeX representation of the shell, with the given
+     *   contents included in it
+     */
+    toLatex ( innerLaTeX ) {
+        const envName = this.constructor.latexEnvironment || 'quote'
+        return `\\begin{${envName}}\n${innerLaTeX}\n\\end{${envName}}`
+    }
+
 }
 
 /**
@@ -482,7 +501,7 @@ export const install = editor => {
         return shellSubclassNames.map( subclassName => {
             const subclass = Atom.subclasses.get( subclassName )
             if ( inBeginnerMode && !subclass.beginnerFriendly ||
-                 inAdvancedMode && !subclass.advancedFriendly) return null
+                 inAdvancedMode && !subclass.advancedFriendly ) return null
             if ( inAdvancedMode ) {
                 return {
                     shortcut : subclassName.toLowerCase(),
@@ -490,7 +509,8 @@ export const install = editor => {
                               `${subclass.advancedName} environment` :
                               `a ${subclassName} environment`,
                     content : subclass.defaultHTML
-            } }   
+                }
+            }   
             return {
                 shortcut : subclassName.toLowerCase(),
                 preview : `${subclassName} environment`,
@@ -542,6 +562,7 @@ export const install = editor => {
 export class Rule extends Shell {
     static subclassName = Atom.registerSubclass( 'rule', Rule )
     static advancedName = 'an axiom, definition, or rule'
+    static latexEnvironment = 'lurchrule'
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'given' )
         shellLC.makeIntoA( 'Rule' )
@@ -555,6 +576,7 @@ export class Rule extends Shell {
 export class Definition extends Rule {
     static subclassName = Atom.registerSubclass( 'definition', Definition )
     static advancedFriendly = false
+    static latexEnvironment = 'definition'
 }    
 
 /**
@@ -564,6 +586,7 @@ export class Definition extends Rule {
 export class Axiom extends Rule {
     static subclassName = Atom.registerSubclass( 'axiom', Axiom )
     static advancedFriendly = false
+    static latexEnvironment = 'axiom'
 }
 
 /**
@@ -575,6 +598,7 @@ export class Theorem extends Shell {
     static subclassName = Atom.registerSubclass( 'theorem', Theorem )
     static advancedName = 'a theorem, lemma, or corollary'
     static beginnerFriendly = true
+    static latexEnvironment = 'theorem'
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'Theorem' )
     }
@@ -588,6 +612,7 @@ export class Lemma extends Theorem {
     static subclassName = Atom.registerSubclass( 'lemma', Lemma )
     static beginnerFriendly = false
     static advancedFriendly = false
+    static latexEnvironment = 'lemma'
 }
 
 /**
@@ -598,6 +623,7 @@ export class Corollary extends Theorem {
     static subclassName = Atom.registerSubclass( 'corollary', Corollary )
     static beginnerFriendly = false
     static advancedFriendly = false
+    static latexEnvironment = 'corollary'
 }
 
 /**
@@ -615,6 +641,7 @@ export class Corollary extends Theorem {
 export class Proof extends Shell {
     static subclassName = Atom.registerSubclass( 'proof', Proof )
     static beginnerFriendly = true
+    static latexEnvironment = 'proof'
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'Proof' )
         if ( this.element.validateThisOnly )
@@ -647,6 +674,7 @@ export class Proof extends Shell {
 export class Subproof extends Shell {
     static subclassName = Atom.registerSubclass( 'subproof', Subproof )
     static beginnerFriendly = true
+    toLatex ( innerLatex ) { return `\n\n${innerLatex}\n\n` }
     getTitle () { return '' }
 }
 
@@ -662,6 +690,9 @@ export class Premise extends Shell {
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'given' )
     }
+    toLatex ( innerLatex ) {
+        return super.toLatex( '(Rule premise) ' + innerLatex )
+    }
 }
 
 /**
@@ -674,6 +705,7 @@ export class Premise extends Shell {
  */
 export class Recall extends Shell {
     static subclassName = Atom.registerSubclass( 'recall', Recall )
+    static latexEnvironment = 'recall'
     finalize ( shellLC ) {
         shellLC.makeIntoA( 'BIH' )
     }
@@ -759,6 +791,10 @@ export class Preview extends Shell {
                 onAction : () => window.open( autoOpenLink( url ), '_blank' )
             } )
         return result
+    }
+
+    toLatex ( innerLatex ) {
+        return 'Preview of dependency contents:\n' + super.toLatex( innerLatex )
     }
 
 }

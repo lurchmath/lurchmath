@@ -20,6 +20,7 @@ import Shells from './shells.js'
 import Validation from './validation.js'
 import AutoCompleter from './auto-completer.js'
 import Embedding from './embed-listener.js'
+import Export from './export.js'
 // import GoogleDrive from './google-drive-ui.js'
 
 import { stylesheet as MathLiveCSS } from './math-live.js'
@@ -160,7 +161,7 @@ window.Lurch = {
         const menuData = Object.assign( {
             file : buildMenu( 'File',
                 'newlurchdocument opendocument savedocument savedocumentas deletesaved',
-                'embeddocument',
+                'embeddocument exportlatex',
                 'print'
             ),
             edit : buildMenu( 'Edit',
@@ -294,6 +295,7 @@ window.Lurch = {
                     Dependencies.install( editor )
                     Validation.install( editor )
                     AutoCompleter.install( editor )
+                    Export.install( editor )
                     if ( !Headers.isEditor() ) {
                         // Install tools we need only if we are the primary app window:
                         // GoogleDrive.install( editor )

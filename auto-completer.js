@@ -59,6 +59,7 @@ const autocompleteFunctions = [ ]
  * 
  * @param {Function} f - the autocompletion function to add, with a signature as
  *   documented above
+ * @function
  */
 export const addAutocompleteFunction = f => autocompleteFunctions.push( f )
 
@@ -68,6 +69,7 @@ export const addAutocompleteFunction = f => autocompleteFunctions.push( f )
  * 
  * @param {tinymce.Editor} editor - the editor into which to install support for
  *   autocompletion
+ * @function
  */
 export const install = editor => {
     // Install the metea-autocompleter, which is extensible using the

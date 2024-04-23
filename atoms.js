@@ -945,6 +945,19 @@ export class Atom {
             child => Atom.unsimplifyDOM( child, editor ) )
     }
 
+    /**
+     * All atoms must be able to represent themselves in LaTeX form, so that the
+     * document (or a portion of it) can be exporeted for use in a LaTeX editor,
+     * such as Overleaf.  The default implementation, defined here in the Atom
+     * class, is to return a string of the form `"(Lurch X)"`, where `X` is the
+     * type of the atom.  For example, `"(Lurch expression)"`.  Subclasses are
+     * likely to override this with something more suitable and useful in a
+     * LaTeX document.
+     * 
+     * @returns {string} default LaTeX representation of the atom
+     */
+    toLatex () { return `(Lurch ${this.getMetadata( 'type' )})` }
+
 }
 
 /**

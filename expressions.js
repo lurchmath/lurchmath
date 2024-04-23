@@ -793,6 +793,39 @@ export class Expression extends Atom {
     }
 
     /**
+     * All atoms must be able to represent themselves in LaTeX form, so that the
+     * document (or a portion of it) can be exporeted for use in a LaTeX editor,
+     * such as Overleaf.  This function overrides the default implementation
+     * with a representation suitable to expression atoms.  It wraps the LaTeX
+     * representation of the expression in dollar signs.
+     * 
+     * @returns {string} LaTeX representation of an expression atom
+     */
+    toLatex () {
+        const withPrefix = ( latex, given ) => {
+            // Don't wrap in dollar signs if it's got an align or something:
+            latex = /\\begin\{/.test( latex ) ? latex : `$${latex}$`
+            return given ? 'Assume ' + latex : latex
+        }
+        if ( this.isInBeginnerMode() ) {
+            const { latex, given } = this.loadBeginnerModeData()
+            return withPrefix( latex, given )
+        } else if ( this.isInIntermediateMode() ) {
+            const { contentType, symbol, latex } = this.loadIntermediateModeData()
+            if ( contentType == 'Statement' )
+                return withPrefix( latex, false )
+            if ( contentType == 'Assumption' )
+                return withPrefix( latex, true )
+            const declType = DeclarationType.fromTemplate( contentType )
+            return declType.latexForm( symbol, latex )
+        } else { // advanced mode
+            const { lurchNotation } = this.loadAdvancedModeData()
+            const latex = converter( lurchNotation, 'lurch', 'latex' )
+            return withPrefix( latex, false )
+        }
+    }
+    
+    /**
      * Items to be included on the TinyMCE context menu if an atom of this class
      * is right-clicked.  For information on the format of the returned data,
      * see the TinyMCE v6 manual on custom context menus.

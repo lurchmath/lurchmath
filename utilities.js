@@ -174,6 +174,7 @@ export const makeAbsoluteURL = path => {
  *   `"'"`, and `'"'` replaced with character references instead
  * @function
  * @see {@link module:Utilities.unescapeHTML unescapeHTML()}
+ * @see {@link module:Utilities.escapeLatex escapeLatex()}
  */
 export const escapeHTML = ( text = '' ) =>
     text.replaceAll( '&', '&amp;' )
@@ -181,6 +182,27 @@ export const escapeHTML = ( text = '' ) =>
         .replaceAll( '>', '&gt;' )
         .replaceAll( '"', '&quot;' )
         .replaceAll( "'", '&#039;' )
+
+/**
+ * Escape a string so that it can be safely inserted into a LaTeX document and
+ * still represent the plain text within the given string (not interpreting any
+ * symbols in the string as LaTeX code).  All backslashes, dollar signs, 
+ * octothorpes, and curly brackets in the string will be replaced with escaped
+ * versions of themselves.  Although this may not be a comprehensive list of
+ * escaping needs for LaTeX, it is what is implemented here.
+ * 
+ * @param {string} text - text to escape for insertion into LaTeX
+ * @returns {string} the same text, but with the characters `"\\"`, `"$"`, `"#"`,
+ *   `"{"`, and `"}"` replaced with backslash-escaped versions of themselves
+ * @function
+ * @see {@link module:Utilities.escapeHTML escapeHTML()}
+ */
+export const escapeLatex = ( text = '' ) =>
+    text.replaceAll( '\\', '\\\\' )
+        .replaceAll( '#', '\\#' )
+        .replaceAll( '$', '\\$' )
+        .replaceAll( '{', '\\{' )
+        .replaceAll( '}', '\\}' )
 
 /**
  * Unescape a string so that was escaped by the `escapeHTML` function.

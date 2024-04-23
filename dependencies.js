@@ -24,7 +24,7 @@
 
 import { Atom, className } from './atoms.js'
 import { openFileInNewWindow } from './load-from-url.js'
-import { simpleHTMLTable, escapeHTML } from './utilities.js'
+import { simpleHTMLTable, escapeHTML, escapeLatex } from './utilities.js'
 import {
     Dialog, ButtonItem, TextInputItem, HTMLItem, CheckBoxItem
 } from './dialog.js'
@@ -169,6 +169,26 @@ export class Dependency extends Atom {
             [ 'Source:', `<tt>${escapeHTML( filename )}</tt> (${escapeHTML( source )})` ],
             [ 'Auto-refresh:', this.getMetadata( 'autoRefresh' ) ? 'yes' : 'no' ]
         ) )
+    }
+
+    /**
+     * All atoms must be able to represent themselves in LaTeX form, so that the
+     * document (or a portion of it) can be exporeted for use in a LaTeX editor,
+     * such as Overleaf.  This function overrides the default implementation
+     * with a representation suitable to dependency atoms.  It contains a single
+     * line of text saying that a dependency is imported at this location,
+     * followed by a bulleted list of the attributes of the dependency.
+     * 
+     * @returns {string} LaTeX representation of a dependency atom
+     */
+    toLatex () {
+        return `Imported dependency document
+        \\begin{enumerate}
+        \\item  Description: ${escapeLatex( this.getMetadata( 'description' ) )}
+        \\item  Source: \\url{${this.getMetadata( 'filename' )}}
+        \\item  Auto-refresh: ${this.getMetadata( 'autoRefresh' ) ? 'yes' : 'no'}
+        \\end{enumerate}
+        `
     }
 
     /**

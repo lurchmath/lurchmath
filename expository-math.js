@@ -26,6 +26,7 @@ import { represent } from './notation.js'
 import { appSettings } from './settings-install.js'
 import { Dialog, TextInputItem, LongTextInputItem } from './dialog.js'
 import { MathItem } from './math-live.js'
+import { escapeLatex } from './utilities.js'
 
 /**
  * An Atom that represents a piece of mathematical notation used only for
@@ -160,6 +161,17 @@ export class ExpositoryMath extends Atom {
     }
 
     /**
+     * All atoms must be able to represent themselves in LaTeX form, so that the
+     * document (or a portion of it) can be exporeted for use in a LaTeX editor,
+     * such as Overleaf.  This function overrides the default implementation
+     * with a representation suitable to expository math atoms, which is just to
+     * enclose their LaTeX content in dollar signs.
+     * 
+     * @returns {string} LaTeX representation of an expository math atom
+     */
+    toLatex () { return `$${this.getMetadata( 'latex' )}$` }
+    
+    /**
      * When embedding a copy of the Lurch app in a larger page, users will want
      * to write simple HTML describing a Lurch document, then have a script
      * create a copy of the Lurch app and put that document into it.  We allow
@@ -169,9 +181,7 @@ export class ExpositoryMath extends Atom {
      * 
      * @returns {string} the representation of the atom as a `lurch` element
      */
-    toEmbed () {
-        return `<latex>${this.getMetadata( 'latex' )}</latex>`
-    }
+    toEmbed () { return `<latex>${this.getMetadata( 'latex' )}</latex>` }
 
 }
 
