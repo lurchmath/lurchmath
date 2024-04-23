@@ -220,7 +220,8 @@ body.shell-style-minimal {
         border: none;
         /* No right padding so shell checkmarks align */
         padding: 0.5rem 0 0.5rem 1rem;
-        margin: 0.5rem 0; 
+        margin: 0.5rem 0;
+        line-height: 1.5; 
     }
 
     /* Minimal view of subproofs (shells with no title) is to be indented on the
@@ -229,6 +230,9 @@ body.shell-style-minimal {
         border: none;
         margin: 0;
         padding: 0 0 0 1.5rem;
+    }
+    div.lurch-atom[data-shell_title=""]:not(.lurch-atom[data-shell_title="Proof:"] *) {
+      padding: 0;
     }
 
     /* themed background color-coding of shells */
@@ -241,22 +245,6 @@ body.shell-style-minimal {
     div.lurch-atom[data-metadata_type='"recall"']:not(.atom-is-selected,:hover) {
         background-color: var(--recallcolor);
     }
-
-    /* Now that we have editing/boxed view, this is no longer needed and we can
-      make much more M^2 documents without it. We can think of this as
-      hiding/showing an attribue of the shells, just like the boxed borders
-      shows their scopes.
-      div.lurch-atom[data-shell_title]::before {
-          content: attr(data-shell_title);
-          color: #aaa;
-          background-color: white;
-          font-weight: bold;
-          position: absolute;
-          top: -9pt;
-          left: 0pt;
-          padding: 0 6pt;
-      } 
-    */
 
     div.lurch-atom[data-shell_title][data-validation_result="valid"]::after {
         content: '✓';
