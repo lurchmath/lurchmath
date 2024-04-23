@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: validation-worker.js</title>
+    <title>Lurch Web User Interface: export.js</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -37,7 +37,7 @@
 <main class="layout-main  layout-content--source">
   <div class="container">
     <p class="page-kind">source</p>
-    <h1 class="page-title">validation-worker.js</h1>
+    <h1 class="page-title">export.js</h1>
     
 
 
@@ -48,167 +48,186 @@
     <article>
         <pre id="source" class="source-page line-numbers"><code class="language-js">
 /**
- * This module runs in a background thread, not the browser's main (UI) thread.
- * It grades documents submitted to it in serialized form, and transmits
- * feedback messages about their contents back to the main thread.  It is not
- * yet at the level of sophistication we eventually plan for, but it can already
- * do a lot.  It imports all the validation tools from
- * {@link https://lurchmath.github.io/lde our deductive engine repository} and
- * uses them to validate documents.
+ * This module installs into the editor a menu item for exporting Lurch document
+ * content as LaTeX, which makes it handy for pasting into a LaTeX editor, such
+ * as Overleaf.
  * 
- * None of the functions in this module are called by any external client, and
- * hence none are documented here.  Rather, this script is loaded into Web
- * Worker instances, and messages are passed to it as documented above, and
- * messages are received back from it as documented in
- * {@link module:Validation the validation module}.
- * 
- * @module ValidationWorker
+ * @module Export
  */
 
-import { Message } from './validation-messages.js'
-import { LDE } from './lde-cdn.js'
-
-const LogicConcept = LDE.LogicConcept
+import { Atom } from './atoms.js'
+import { Shell } from './shells.js'
+import { Dialog, LongTextInputItem, CheckBoxItem } from './dialog.js'
+import { escapeLatex } from './utilities.js'
 
 // Internal use only
-// Sets up an event handler for progress notifications from the LDE, to pass
-// them back to the main thread using the Message.progress() static method.
-// Because progress messages from the LDE come in the form of (p,n,r), where
-// p is a pass number (any positive integer), n is the total amount of work to
-// be done in that pass (any nonnegative integer), and r is the proportion of
-// the work of the pass complete (an integer from 0 to 100 inclusive), we
-// transform (p,n,r) into (1 - 2^(-p+1) + 2^(-p) * r) to get the value to send
-// to the main thread.  This makes pass 1 take up the first half of the progress
-// bar, pass 2 half of what remains, pass 3 half of what remains, and so on.
-LDE.LurchOptions.updateProgress = ( passIndex, _, percentComplete ) => {
-    const proportion = percentComplete / 100
-    const transformed = 1 - Math.pow( 2, -passIndex+1 )
-                          + Math.pow( 2, -passIndex ) * proportion
-    Message.progress( ( transformed * 100 ) | 0 )
-}
-LDE.LurchOptions.updateFreq = 1
+// The preamble that will be prefixed to any LaTeX document created by this
+// module, if the user chooses to wrap the result in a document environment
+const latexPreamble = `\\documentclass{article}
 
-// Listen for messages from the main thread, which should send putdown notation
-// for a document to validate.  When it does, we run our one (temporary
-// placeholder) validation routine, which will send "feedback" and "done"
-// messages, as appropriate.  Any non-putdown messages we receive generate error
-// feedback instead.
-addEventListener( 'message', event => {
-    const message = new Message( event )
-    if ( !message.is( 'document' ) )
-        return Message.error( 'Not a document message' )
-    const encoding = message.get( 'encoding' )
-    const code = message.get( 'code' )
-    try {
-        if ( encoding == 'putdown' ) {
-            const LCs = LogicConcept.fromPutdown( code )
-            if ( LCs.length != 1 )
-                throw new Error( 'Incorrect number of LCs: ' + LCs.length )
-            validateDocument( LCs[0] )
-        } else if ( encoding == 'json' ) {
-            validateDocument( LogicConcept.fromJSON( code ) )
-        } else {
-            throw new Error( `Not a valid document encoding: ${encoding}` )
-        }
-    } catch ( error ) {
-        Message.error( `Error decoding document: ${error.message || error}` )
-        Message.done()
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\usepackage{amsthm}
+\\usepackage{url}
+
+\\newtheorem*{theorem}{Theorem}
+\\newtheorem*{lemma}{Lemma}
+\\newtheorem*{corollary}{Corollary}
+\\newtheorem*{lurchrule}{Rule}
+\\newtheorem*{axiom}{Axiom}
+\\newtheorem*{definition}{Definition}
+\\newtheorem*{recall}{Recall}
+
+\\title{Lurch Document}
+\\author{Lurch User}
+\\date{\\today}
+
+\\begin{document}
+\\maketitle
+`
+
+// The corresponding ending text for the preamble above
+const latexPostamble = `
+\\end{document}`
+
+// Internal use only
+// Convert an HTML node (which can contain an entire document) to LaTeX,
+// recursively
+const htmlNodeToLatex = ( node, editor ) => {
+    // Utility function for recurring on all children and joining their results
+    const recur = () => Array.from( node.childNodes ).map( child =>
+        htmlNodeToLatex( child, editor ) ).join( '' )
+    // If it's an atom or shell, defer to that class's conversion method
+    if ( Atom.isAtomElement( node ) ) {
+        const atom = Atom.from( node, editor )
+        return atom instanceof Shell ? atom.toLatex( recur() ) : atom.toLatex()
     }
-} )
-
-// Find the highest-priority validation result, or undefined if the given LC
-// has no validation result attached to it.  This unites all the different ways
-// we've invented to attach feedback to something, which are kind of a mess that
-// this routine cleans up.  We should clean it up ourselves later, but for now,
-// this routine is our solution.
-const getValidationResults = LC => {
-    const results = [ ]
-    // Scope errors are highest priority
-    const scopeErrors = LDE.Scoping.scopeErrors( LC )
-    if ( scopeErrors &amp;&amp; scopeErrors.redeclared )
-        results.push( {
-            type : 'scoping',
-            result : 'invalid',
-            reason : `Trying to re-declare ${scopeErrors.redeclared.join(", ")}`,
-            redeclared : scopeErrors.redeclared
-        } )
-    if ( scopeErrors &amp;&amp; scopeErrors.undeclared )
-        results.push( {
-            type : 'scoping',
-            result : 'invalid',
-            reason : `Using ${scopeErrors.undeclared.join(", ")} undeclared`,
-            undeclared : scopeErrors.undeclared
-        } )
-    // Find any type of validation feedback that was produced before prop
-    // validation, such as instantiation hint structure
-    const otherFeedback = LC.getAttribute( 'validation results' )
-    Object.keys( otherFeedback || { } ).forEach( type =>
-        results.push( { type, ...otherFeedback[type] } ) )
-    // Final result is the prop validation result, if any
-    const propResult = LDE.Validation.result( LC )
-    if ( propResult )
-        results.push( { type : 'propositional', ...propResult } )
-    return results
+    // If it's a text node, just use its (escaped and cleaned) contents
+    if ( !node.tagName )
+        return escapeLatex( node.textContent.replace( '\u00a0', ' ' ) ) // nbsp
+    // If it's been centered, wrap it in a LaTeX center environment
+    if ( node.style.textAlign == 'center' ) {
+        node.style.textAlign = 'left'
+        const withoutCentering = htmlNodeToLatex( node, editor )
+        return `\n\\begin{center}\n${withoutCentering}\n\\end{center}\n`
+    }
+    // Handle the most common HTML tags that might show up in a Lurch document
+    switch ( node.tagName.toLowerCase() ) {
+        case 'br' : return '\n\\hfill\n'
+        case 'hr' : return '\n\\hfill\n\\hrule\n\\hfill\n'
+        case 'p' : return `\n\n${recur()}\n\n`
+        case 'a' : return `\\href{${node.href}}{${recur()}}`
+        case 'strong' : return `\\textbf{${recur()}}`
+        case 'em' : return `\\textit{${recur()}}`
+        case 'sup' : return `\\textsuperscript{${recur()}}`
+        case 'sub' : return `\\textsubscript{${recur()}}`
+        case 'code' : return `\\texttt{${recur()}}`
+        case 'blockquote' : return `\\begin{quote}\n${recur()}\n\\end{quote}`
+        case 'span' : return node.style.textDecoration == 'underline' ?
+            `\\underline{${recur()}}` : recur()
+        case 'ol' : return `\\begin{enumerate}\n${recur()}\n\\end{enumerate}`
+        case 'ul' : return `\\begin{itemize}\n${recur()}\n\\end{itemize}`
+        case 'li' : return `\\item ${recur()}`
+        case 'h1' : return `\\section*{${recur()}}`
+        case 'h2' : return `\\subsection*{${recur()}}`
+        case 'h3' : return `\\subsubsection*{${recur()}}`
+        case 'h4' :
+        case 'h5' :
+        case 'h6' : return `\\textbf{${recur()}}`
+        default : return recur()
+    }
 }
 
-// Validate using the imported Lurch Deductive Engine (LDE) module
-const validateDocument = LC => {
-    // First run validation, so that the LC contains feedback to send back:
-    // console.log( LC.toPutdown() )
-    try {
-        LDE.validate( LC )
-    } catch ( error ) {
-        // console.log( error.stack )
-        Message.error( `Error running LDE validation: ${error.message}` )
-        return
-    }
-    // Define a post-order tree traversal recursion that will find all the
-    // feedback the validation generated, and send feedback messages about each:
-    const queuedFeedback = { }
-    const postOrderTraversal = descendant => {
-        // We're doing a post-order tree traversal, so do the children first:
-        descendant.children().forEach( postOrderTraversal )
-        // Now that we've done the recursion on children, handle this LC:
-        const results = getValidationResults( descendant )
-        if ( results.length == 0 ) return
-        try {
-            // Find the first ancestor that has an ID
-            let walk
-            for ( walk = descendant ; walk ; walk = walk.parent() )
-                if ( walk.ID() ) break
-            // Create the feedback object we'll be sending
-            const feedbackObject = {
-                id : descendant.ID(),
-                ancestorID : walk ? walk.ID() : undefined,
-                // address : descendant.address( LC ),
-                // putdown : descendant.toPutdown(),
-                results : results
+// Internal use only
+// The LaTeX code that comes out of the above function sometimes has some
+// inelegant content, and this function smooths it out, as described below
+const cleanUpLatex = latex => {
+    // Trim each line and reduce many blank lines to just one
+    latex = latex.replace( /[^\S\r\n]+\n/g, '\n' )
+                 .replace( /\n[^\S\r\n]+/g, '\n' )
+                 .replace( /\n\n\n+/g, '\n\n' )
+    // A centering around an align is redundant
+    latex = latex.replace( /\\begin{center}\n?\n?\\begin{align}/g, '\\begin{align}' )
+                 .replace( /\\end{align}\n?\n?\\end{center}/g, '\\end{align}' )
+    // Done
+    return latex
+}
+
+/**
+ * This function should be called in the editor's setup routine.  It installs
+ * one feature into the editor:
+ * 
+ *  * a menu item for exporting the current document (or just the selection in
+ *    it) as LaTeX, for pasting into a LaTeX editor, such as Overleaf
+ * 
+ * @param {tinymce.Editor} editor - the editor in which to install the feature
+ *   described above
+ * @function
+ */
+export const install = editor => {
+    editor.ui.registry.addMenuItem( 'exportlatex', {
+        icon : 'new-tab',
+        text : 'Export as LaTeX...',
+        tooltip : 'Export document or selection in LaTeX format',
+        onAction : () => {
+            // Compute the LaTeX versions of the whole document and of just the
+            // user's current selection
+            const offScreenDiv = document.createElement( 'div' )
+            offScreenDiv.innerHTML = editor.getContent()
+            const fullLatex = cleanUpLatex(
+                htmlNodeToLatex( offScreenDiv, editor ) )
+            offScreenDiv.innerHTML = editor.selection.getContent()
+            const selectedLatex = cleanUpLatex(
+                htmlNodeToLatex( offScreenDiv, editor ) )
+            // Create a function that can compute the text to copy to the
+            // clipboard, based on the above data, plus options the user will
+            // specify via checkboxes in the dialog
+            const latexToCopy = ( selectedOnly, addWrapper ) => {
+                if ( selectedOnly &amp;&amp; /^\s*$/.exec( selectedLatex ) )
+                    return '(no text selected in document)'
+                return ( addWrapper ? latexPreamble : '' )
+                     + ( selectedOnly ? selectedLatex : fullLatex )
+                     + ( addWrapper ? latexPostamble : '' )
             }
-            // If it has an ID, send feedback about it, but first check to see if
-            // any descendant of it has feedback waiting to be combined with its
-            if ( feedbackObject.id ) {
-                if ( queuedFeedback.hasOwnProperty( feedbackObject.id ) ) {
-                    feedbackObject.results = feedbackObject.results.concat(
-                        queuedFeedback[feedbackObject.id] )
-                    delete queuedFeedback[feedbackObject.id]
-                }
-                Message.feedback( feedbackObject )
-            // Otherwise, we need to queue up its feedback to be added to that
-            // of an ancestor.  We do so like this:
-            } else {
-                queuedFeedback[feedbackObject.ancestorID] =
-                    ( queuedFeedback[feedbackObject.ancestorID] || [ ] ).concat(
-                        feedbackObject.results )
-            }
-        } catch ( error ) {
-            Message.error( `Error generating feedback: ${error.message}` )
+            // Create the dialog
+            const dialog = new Dialog( 'Export as LaTeX', editor )
+            dialog.json.size = 'medium'
+            dialog.addItem( new CheckBoxItem(
+                'selected', 'Convert only the selection' ) )
+            dialog.addItem( new CheckBoxItem(
+                'wrapper', 'Wrap the result in a document environment' ) )
+            dialog.addItem( new LongTextInputItem( 'code',
+                'Use the following code in your LaTeX document' ) )
+            dialog.setInitialData( {
+                selected : false,
+                wrapper : true,
+                code : '' // see below
+            } )
+            dialog.removeButton( 'Cancel' )
+            dialog.setDefaultFocus( 'code' )
+            dialog.show()
+            // Store the essential elements from the dialog in local variables
+            const textarea = dialog.querySelector( 'textarea' )
+            const checkBoxes = dialog.querySelectorAll( 'input[type="checkbox"]' )
+            // Create an event handler that can populate the textarea with the
+            // text to copy, highlight it, and scroll to the top
+            const updateTextarea = () => setTimeout( () => {
+                textarea.value = latexToCopy(
+                    checkBoxes[0].checked, checkBoxes[1].checked )
+                textarea.select()
+                textarea.setAttribute( 'readonly', 'true' )
+                textarea.setAttribute( 'rows', 15 )
+                textarea.scrollTo( 0, 0 )
+            } )
+            // Update the text now, plus whenever the user changes options
+            updateTextarea()
+            checkBoxes.forEach( checkBox =>
+                checkBox.addEventListener( 'change', updateTextarea ) )
         }
-    }
-    // Apply the above recursive function to the LC, then be done:
-    // console.log( LC.toPutdown() )
-    postOrderTraversal( LC )
-    Message.done()
+    } )
 }
+
+export default { install }
 </code></pre>
     </article>
 </section>

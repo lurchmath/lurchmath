@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Lurch Web User Interface: validation-worker.js</title>
+    <title>Lurch Web User Interface: Export</title>
     
       <link type="text/css" rel="stylesheet" href="styles/vendor/prism-default.css">
     
@@ -34,183 +34,241 @@
 </header>
 
 
-<main class="layout-main  layout-content--source">
+<main class="layout-main ">
   <div class="container">
-    <p class="page-kind">source</p>
-    <h1 class="page-title">validation-worker.js</h1>
+    <p class="page-kind">Module</p>
+    <h1 class="page-title">Export</h1>
     
 
 
 
-    
 
 <section>
-    <article>
-        <pre id="source" class="source-page line-numbers"><code class="language-js">
-/**
- * This module runs in a background thread, not the browser's main (UI) thread.
- * It grades documents submitted to it in serialized form, and transmits
- * feedback messages about their contents back to the main thread.  It is not
- * yet at the level of sophistication we eventually plan for, but it can already
- * do a lot.  It imports all the validation tools from
- * {@link https://lurchmath.github.io/lde our deductive engine repository} and
- * uses them to validate documents.
- * 
- * None of the functions in this module are called by any external client, and
- * hence none are documented here.  Rather, this script is loaded into Web
- * Worker instances, and messages are passed to it as documented above, and
- * messages are received back from it as documented in
- * {@link module:Validation the validation module}.
- * 
- * @module ValidationWorker
- */
 
-import { Message } from './validation-messages.js'
-import { LDE } from './lde-cdn.js'
 
-const LogicConcept = LDE.LogicConcept
+<header class="not-class">
 
-// Internal use only
-// Sets up an event handler for progress notifications from the LDE, to pass
-// them back to the main thread using the Message.progress() static method.
-// Because progress messages from the LDE come in the form of (p,n,r), where
-// p is a pass number (any positive integer), n is the total amount of work to
-// be done in that pass (any nonnegative integer), and r is the proportion of
-// the work of the pass complete (an integer from 0 to 100 inclusive), we
-// transform (p,n,r) into (1 - 2^(-p+1) + 2^(-p) * r) to get the value to send
-// to the main thread.  This makes pass 1 take up the first half of the progress
-// bar, pass 2 half of what remains, pass 3 half of what remains, and so on.
-LDE.LurchOptions.updateProgress = ( passIndex, _, percentComplete ) => {
-    const proportion = percentComplete / 100
-    const transformed = 1 - Math.pow( 2, -passIndex+1 )
-                          + Math.pow( 2, -passIndex ) * proportion
-    Message.progress( ( transformed * 100 ) | 0 )
-}
-LDE.LurchOptions.updateFreq = 1
 
-// Listen for messages from the main thread, which should send putdown notation
-// for a document to validate.  When it does, we run our one (temporary
-// placeholder) validation routine, which will send "feedback" and "done"
-// messages, as appropriate.  Any non-putdown messages we receive generate error
-// feedback instead.
-addEventListener( 'message', event => {
-    const message = new Message( event )
-    if ( !message.is( 'document' ) )
-        return Message.error( 'Not a document message' )
-    const encoding = message.get( 'encoding' )
-    const code = message.get( 'code' )
-    try {
-        if ( encoding == 'putdown' ) {
-            const LCs = LogicConcept.fromPutdown( code )
-            if ( LCs.length != 1 )
-                throw new Error( 'Incorrect number of LCs: ' + LCs.length )
-            validateDocument( LCs[0] )
-        } else if ( encoding == 'json' ) {
-            validateDocument( LogicConcept.fromJSON( code ) )
-        } else {
-            throw new Error( `Not a valid document encoding: ${encoding}` )
-        }
-    } catch ( error ) {
-        Message.error( `Error decoding document: ${error.message || error}` )
-        Message.done()
-    }
-} )
+    
+</header>
 
-// Find the highest-priority validation result, or undefined if the given LC
-// has no validation result attached to it.  This unites all the different ways
-// we've invented to attach feedback to something, which are kind of a mess that
-// this routine cleans up.  We should clean it up ourselves later, but for now,
-// this routine is our solution.
-const getValidationResults = LC => {
-    const results = [ ]
-    // Scope errors are highest priority
-    const scopeErrors = LDE.Scoping.scopeErrors( LC )
-    if ( scopeErrors &amp;&amp; scopeErrors.redeclared )
-        results.push( {
-            type : 'scoping',
-            result : 'invalid',
-            reason : `Trying to re-declare ${scopeErrors.redeclared.join(", ")}`,
-            redeclared : scopeErrors.redeclared
-        } )
-    if ( scopeErrors &amp;&amp; scopeErrors.undeclared )
-        results.push( {
-            type : 'scoping',
-            result : 'invalid',
-            reason : `Using ${scopeErrors.undeclared.join(", ")} undeclared`,
-            undeclared : scopeErrors.undeclared
-        } )
-    // Find any type of validation feedback that was produced before prop
-    // validation, such as instantiation hint structure
-    const otherFeedback = LC.getAttribute( 'validation results' )
-    Object.keys( otherFeedback || { } ).forEach( type =>
-        results.push( { type, ...otherFeedback[type] } ) )
-    // Final result is the prop validation result, if any
-    const propResult = LDE.Validation.result( LC )
-    if ( propResult )
-        results.push( { type : 'propositional', ...propResult } )
-    return results
-}
+<article>
+    <div class="container-overview">
 
-// Validate using the imported Lurch Deductive Engine (LDE) module
-const validateDocument = LC => {
-    // First run validation, so that the LC contains feedback to send back:
-    // console.log( LC.toPutdown() )
-    try {
-        LDE.validate( LC )
-    } catch ( error ) {
-        // console.log( error.stack )
-        Message.error( `Error running LDE validation: ${error.message}` )
-        return
-    }
-    // Define a post-order tree traversal recursion that will find all the
-    // feedback the validation generated, and send feedback messages about each:
-    const queuedFeedback = { }
-    const postOrderTraversal = descendant => {
-        // We're doing a post-order tree traversal, so do the children first:
-        descendant.children().forEach( postOrderTraversal )
-        // Now that we've done the recursion on children, handle this LC:
-        const results = getValidationResults( descendant )
-        if ( results.length == 0 ) return
-        try {
-            // Find the first ancestor that has an ID
-            let walk
-            for ( walk = descendant ; walk ; walk = walk.parent() )
-                if ( walk.ID() ) break
-            // Create the feedback object we'll be sending
-            const feedbackObject = {
-                id : descendant.ID(),
-                ancestorID : walk ? walk.ID() : undefined,
-                // address : descendant.address( LC ),
-                // putdown : descendant.toPutdown(),
-                results : results
-            }
-            // If it has an ID, send feedback about it, but first check to see if
-            // any descendant of it has feedback waiting to be combined with its
-            if ( feedbackObject.id ) {
-                if ( queuedFeedback.hasOwnProperty( feedbackObject.id ) ) {
-                    feedbackObject.results = feedbackObject.results.concat(
-                        queuedFeedback[feedbackObject.id] )
-                    delete queuedFeedback[feedbackObject.id]
-                }
-                Message.feedback( feedbackObject )
-            // Otherwise, we need to queue up its feedback to be added to that
-            // of an ancestor.  We do so like this:
-            } else {
-                queuedFeedback[feedbackObject.ancestorID] =
-                    ( queuedFeedback[feedbackObject.ancestorID] || [ ] ).concat(
-                        feedbackObject.results )
-            }
-        } catch ( error ) {
-            Message.error( `Error generating feedback: ${error.message}` )
-        }
-    }
-    // Apply the above recursive function to the LC, then be done:
-    // console.log( LC.toPutdown() )
-    postOrderTraversal( LC )
-    Message.done()
-}
-</code></pre>
+
+
+    
+        
+            <div class="description"><p>This module installs into the editor a menu item for exporting Lurch document
+content as LaTeX, which makes it handy for pasting into a LaTeX editor, such
+as Overleaf.</p></div>
+        
+
+        
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+     
+
+    
+
+    
+
+
+    
+
+    
+        <h3 class="subtitle">Methods</h3>
+
+        
+            
+
+
+    <article class="method">
+
+
+
+
+    
+
+
+    
+
+    <div class="method-type">
+    <span class="method-type-signature is-static">static</span>
+    </div>
+
+    <h4 class="method-name" id=".install">install<span class="signature">(editor)</span><span class="return-type-signature"></span>
+    </h4>
+
+
+
+
+
+<div class="method-description">
+    
+    <p>This function should be called in the editor's setup routine.  It installs
+one feature into the editor:</p>
+<ul>
+<li>a menu item for exporting the current document (or just the selection in
+it) as LaTeX, for pasting into a LaTeX editor, such as Overleaf</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Parameters</h4>
+    
+
+<ul class="method-params">
+    
+
+        <li>
+            
+                <span class="param-name">editor</span>
+            
+
+            
+                
+
+
+    <span class="param-type">
+        <code>tinymce.Editor</code>
+    </span>
+    
+
+            
+
+            
+
+            
+
+            <div class="param-description"><p>the editor in which to install the feature
+described above</p></div>
+            
+        </li>
+
+    
+</ul>
+
+
+
+
+
+<div class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="method-heading">Source</h4>
+    <ul>
+        <li class="method-source">
+            <a href="export.js.html">export.js</a><a href="export.js.html#source.119">, line 119</a>
+        </li>
+    </ul>
+
+
+
     </article>
+
+        
+    
+
+    
+
+    
+</article>
+
 </section>
 
 
