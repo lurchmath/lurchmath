@@ -6,6 +6,7 @@ import {
     TextSettingMetadata, LongTextSettingMetadata
 } from './settings-metadata.js'
 import { Dependency } from './dependencies.js'
+import { Dialog } from './dialog.js'
 
 // Load the app settings if we're in the browser, where we can do that, so that
 // when we later try to use it, it actually contains the user's preferences.
