@@ -234,6 +234,11 @@ export class Shell extends Atom {
                     text : 'Change environment type',
                     onAction : () => this.editShellType( shellSubclassNames )
                 } )
+            result.unshift( {
+                text : 'Remove this environment',
+                onAction : () =>
+                    this.element.replaceWith( ...this.element.childNodes )
+            } )
             // // Later when toLCs() for shells gets an upgrade:
             // result.unshift( {
             //     text : 'View meaning',
