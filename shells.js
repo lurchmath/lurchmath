@@ -239,6 +239,10 @@ export class Shell extends Atom {
             //     text : 'View meaning',
             //     onAction : () => Dialog.meaningOfAtom( this )
             // } )
+            // // To be clear, the problem is that toLCs() for shells just
+            // // returns an empty environment right now, and we need something
+            // // recursive, like the documentLC() function in
+            // // validation-messages.js to make the above action meaningful.
         }
         return result
     }
