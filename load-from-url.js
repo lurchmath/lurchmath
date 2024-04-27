@@ -13,6 +13,7 @@ import { Dialog } from './dialog.js'
 import {
     fileExists, readFile, writeFile, deleteFile
 } from './local-storage-drive.js'
+import { Atom } from './atoms.js'
 
 /**
  * Download a file from the web asynchronously, returning a Promise that
@@ -100,6 +101,13 @@ export const loadFromQueryString = editor => {
             const LD = new LurchDocument( editor )
             LD.setDocument( content )
             LD.setFileID( source )
+            // If there are preview atoms in the document, remove them on load
+            const existingPreviews = Atom.allIn( editor ).filter(
+              atom => atom.getMetadata( 'type' ) == 'preview' )
+            if ( existingPreviews.length > 0 ) {
+              existingPreviews.forEach( preview => preview.element.remove() )
+              editor.selection.setCursorLocation(editor.getBody(),0)
+            }
         } ).catch( () =>
             Dialog.notify( editor, 'error',
                 `Unable to import document from ${source}` )
