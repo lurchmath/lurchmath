@@ -105,7 +105,12 @@ export const appSettings = new Settings(
                 'Convert only the selection to LaTeX',
                 false
             ),
-        ),
+            new BoolSettingMetadata(
+              'export LaTeX shells',
+              'Export shells as LaTeX environments',
+              true
+          ),
+      ),
         new SettingsCategoryMetadata(
             'Application warnings',
             new ShowWarningSettingMetadata(

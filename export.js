@@ -53,7 +53,10 @@ const htmlNodeToLatex = ( node, editor ) => {
     // If it's an atom or shell, defer to that class's conversion method
     if ( Atom.isAtomElement( node ) ) {
         const atom = Atom.from( node, editor )
-        return atom instanceof Shell ? atom.toLatex( recur() ) : atom.toLatex()
+        appSettings.load()
+        const texshells = appSettings.get('export LaTeX shells')
+        return !(atom instanceof Shell) ? atom.toLatex() :
+            texshells ? atom.toLatex( recur() ) : recur()                          
     }
     // If it's a text node, just use its (escaped and cleaned) contents
     if ( !node.tagName )
@@ -66,7 +69,7 @@ const htmlNodeToLatex = ( node, editor ) => {
     }
     // Handle the most common HTML tags that might show up in a Lurch document
     switch ( node.tagName.toLowerCase() ) {
-        case 'br' : return '\n\\hfill\n'
+        case 'br' : return '\n\\hfill\n\n'
         case 'hr' : return '\n\\hfill\n\\hrule\n\\hfill\n'
         case 'p' : return `\n\n${recur()}\n\n`
         case 'a' : return `\\href{${node.href}}{${recur()}}`
