@@ -94,6 +94,19 @@ export const appSettings = new Settings(
             )
         ),
         new SettingsCategoryMetadata(
+            'export to LaTeX',
+            new BoolSettingMetadata(
+                'add LaTeX document wrapper',
+                'Wrap the result in a document environment',
+                true
+            ),
+            new BoolSettingMetadata(
+                'export LaTeX selection only',
+                'Convert only the selection to LaTeX',
+                false
+            ),
+        ),
+        new SettingsCategoryMetadata(
             'Application warnings',
             new ShowWarningSettingMetadata(
                 'warn before extract header',

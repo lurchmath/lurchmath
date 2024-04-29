@@ -11,6 +11,7 @@ import { Atom } from './atoms.js'
 import { Shell } from './shells.js'
 import { Dialog, LongTextInputItem, CheckBoxItem } from './dialog.js'
 import { escapeLatex } from './utilities.js'
+import { appSettings } from './settings-install.js'
 
 // Internal use only
 // The preamble that will be prefixed to any LaTeX document created by this
@@ -150,9 +151,10 @@ export const install = editor => {
                 'wrapper', 'Wrap the result in a document environment' ) )
             dialog.addItem( new LongTextInputItem( 'code',
                 'Use the following code in your LaTeX document' ) )
+            appSettings.load()
             dialog.setInitialData( {
-                selected : false,
-                wrapper : true,
+                selected : appSettings.get('export LaTeX selection only'),
+                wrapper : appSettings.get('add LaTeX document wrapper'),
                 code : '' // see below
             } )
             dialog.removeButton( 'Cancel' )
