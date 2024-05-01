@@ -221,6 +221,13 @@ export class LurchDocument {
         Dependency.refreshAllIn( this.editor.getBody(), true ).catch( error =>
             Dialog.notify( this.editor, 'error',
                 `When auto-refreshing dependencies in document: ${error}` ) )
+        // If there are preview atoms in the document, remove them on load
+        const existingPreviews = Atom.allIn( editor ).filter(
+            atom => atom.getMetadata( 'type' ) == 'preview' )
+        if ( existingPreviews.length > 0 ) {
+            existingPreviews.forEach( preview => preview.element.remove() )
+            editor.selection.setCursorLocation( editor.getBody(), 0 )
+        }
     }
     
     /**

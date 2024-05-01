@@ -20,7 +20,6 @@ import { LurchDocument } from './lurch-document.js'
 import { Dialog, AlertItem, LongTextInputItem } from './dialog.js'
 import { isValidURL, appURL, isEmbedded } from './utilities.js'
 import { downloadFile } from './upload-download.js'
-import { Atom } from './atoms.js'
 
 // Internal use only
 // Prefix for distinguishing which LocalStorage keys are for Lurch files
@@ -191,13 +190,6 @@ export const install = editor => {
                     const LD = new LurchDocument( editor )
                     LD.setDocument( result.content )
                     LD.setFileID( result.filename )
-                    // If there are preview atoms in the document, remove them and be done
-                    const existingPreviews = Atom.allIn( editor ).filter(
-                      atom => atom.getMetadata( 'type' ) == 'preview' )
-                    if ( existingPreviews.length > 0 ) {
-                      existingPreviews.forEach( preview => preview.element.remove() )
-                      editor.selection.setCursorLocation(editor.getBody(),0)
-                    }
                     Dialog.notify( editor, 'success', `Loaded ${result.filename}.` )
                 }
             } )
