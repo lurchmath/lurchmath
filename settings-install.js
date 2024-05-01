@@ -94,7 +94,7 @@ export const appSettings = new Settings(
             )
         ),
         new SettingsCategoryMetadata(
-            'export to LaTeX',
+            'Export to LaTeX',
             new BoolSettingMetadata(
                 'add LaTeX document wrapper',
                 'Wrap the result in a document environment',

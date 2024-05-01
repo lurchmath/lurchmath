@@ -54,9 +54,9 @@ const htmlNodeToLatex = ( node, editor ) => {
     if ( Atom.isAtomElement( node ) ) {
         const atom = Atom.from( node, editor )
         appSettings.load()
-        const texshells = appSettings.get('export LaTeX shells')
-        return !(atom instanceof Shell) ? atom.toLatex() :
-            texshells ? atom.toLatex( recur() ) : recur()                          
+        return !( atom instanceof Shell ) ? atom.toLatex()
+             : appSettings.get( 'export LaTeX shells' ) ? atom.toLatex( recur() )
+             : recur()
     }
     // If it's a text node, just use its (escaped and cleaned) contents
     if ( !node.tagName )
@@ -156,8 +156,8 @@ export const install = editor => {
                 'Use the following code in your LaTeX document' ) )
             appSettings.load()
             dialog.setInitialData( {
-                selected : appSettings.get('export LaTeX selection only'),
-                wrapper : appSettings.get('add LaTeX document wrapper'),
+                selected : appSettings.get( 'export LaTeX selection only' ),
+                wrapper : appSettings.get( 'add LaTeX document wrapper' ),
                 code : '' // see below
             } )
             dialog.removeButton( 'Cancel' )
