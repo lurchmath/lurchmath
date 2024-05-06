@@ -115,7 +115,7 @@ export const loadFromQueryString = editor => {
             new LurchDocument( editor ).setDocument( content )
             // window.history.replaceState( null, null, appURL() )
         } catch ( _ ) {
-            Dialog.notify( edior, 'error', 'Could not load the encoded document.' )
+            Dialog.notify( editor, 'error', 'Could not load the encoded document.' )
         }
     }
 }
