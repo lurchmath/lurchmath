@@ -513,7 +513,7 @@ export class LurchDocument {
      * For each setting mentioned in {@link LurchDocument#bodySettings
      * bodySettings}, this function ensures that there is precisely one CSS
      * class on the body of the document beginning with that setting's key,
-     * and that is the class that ends with that settings value.
+     * and that is the class that ends with that setting's value.
      * 
      * As documented in {@link LurchDocument#bodySettings bodySettings}, spaces
      * are replaced with dashes, so that a setting with key "number of tacos"
