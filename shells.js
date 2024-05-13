@@ -238,6 +238,16 @@ export class Shell extends Atom {
                 text : 'Remove this environment',
                 onAction : () =>
                     this.element.replaceWith( ...this.element.childNodes )
+            } , {
+                text : 'Toggle Subproof Indentations',
+                onAction : () => {
+                    const classes = this.element.classList
+                    if (classes.contains('unindented'))
+                        classes.remove('unindented')
+                    else 
+                        classes.add('unindented')                    
+                    console.log(classes.value)                     
+                }
             } )
             // // Later when toLCs() for shells gets an upgrade:
             // result.unshift( {
