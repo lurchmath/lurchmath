@@ -1,0 +1,71 @@
+/*
+ * This file styles the contents of the TinyMCE editor iframe. Styling for the
+ * main app page (which contains the editor and other things as well) is in
+ * main-app-styles.css.
+ *
+ * This theme depends heavily on the syntax-theme.css theme and only modifies
+ * the appearance of shells in semantic view by replacing the 3d shadowed shell
+ * boxes with simple left borders.
+ *
+ * To use this theme in your Lurch installation add, add this to the `editor`
+ * key in the options object sent to `createapp()` in your local `index.html`
+ * file.
+ *
+ *  `content_css : [ 'document', 'lurchmath/leftborder-theme.css',
+ *  'https://unpkg.com/mathlive/dist/mathlive-static.css' ]`
+ *
+ *
+ *  Selector                                 Targets
+ *  ---------------------------------------------------------------
+ *  span.lurch-atom                          All inline atoms
+ *  [data-metadata_type*="expression"]       Expressions
+ *  [data-metadata_type*="expositorymath"]   Expository expressions
+ *
+ *  div.lurch-atom                           All shells
+ *  [data-metadata_type*="rule"]             Rules
+ *  [data-metadata_type*="theorem"]          Theorems
+ *  [data-metadata_type*="proof"]            Proofs
+ *  [data-metadata_type*="subproof"]         Subproofs
+ *  [data-metadata_type*="premise"]          Premises
+ *  [data-metadata_type*="recall"]           Recalls
+ *  [data-metadata_type*="preview"]          Previews
+ *  [data-metadata_type*="dependency"]       Dependencies
+ *
+ *  .unindented                              Unindented shells .atom-is-selected
+ *  Selected Atoms
+ *
+ *  We also define a 'Problem Box' to be a subproof shell at the top level of
+ *  the document.  It has selector:
+ *
+ *    [data-metadata_type*="subproof"]:not(div.lurch-atom div.lurch-atom) 
+ *
+ * We assume 96px/in and 6rem/in and set 1in margins and 6.5in text width, even
+ * though modern displays often exceed that (so you can use units of a fraction
+ * of a px if needed). So page width is 51 rem. 
+ *
+ * Scale: 1rem = 16px = 12pt = = 1/6in
+ */
+
+/* import the main fonts */
+@import url('syntax-theme.css');
+
+/***********************************************************************/
+/*                           Semantic View                             */
+
+body.shell-style-boxed {
+
+  /* Shell styling */
+
+  /* Add the border and shadow to shells with titles (even subproof) */
+  [data-shell_title] {
+    position: relative;
+    /* borders */
+    border-bottom: 1px solid transparent;
+    border-left: 1px solid var(--left-border-color);
+    border-top: 0.5px solid transparent;
+    border-right: 0.5px solid transparent;
+    border-radius: 6pt;
+    box-shadow: none;
+  }
+
+} /* END of semantic view */

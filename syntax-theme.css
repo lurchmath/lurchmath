@@ -7,7 +7,8 @@
  * semantics of the document in semantic view, so that the text doesn't jiggle
  * when switching between views. 
  *
- * Shell styling can use only the left margin, or a shaded 'card' appearance.
+ * Shell styling uses a shaded 'card' appearance. To replace that with a flatter
+ * left border style use leftborder-theme.css instead.
  *
  * To use this theme in your Lurch installation add, add this to the `editor`
  * key in the options object sent to `createapp()` in your local `index.html`
@@ -33,8 +34,8 @@
  *  [data-metadata_type*="preview"]          Previews
  *  [data-metadata_type*="dependency"]       Dependencies
  *
- *  .unindented                              Unindented shells 
- *  .atom-is-selected                        Selected Atoms
+ *  .unindented                              Unindented shells .atom-is-selected
+ *  Selected Atoms
  *
  *  We also define a 'Problem Box' to be a subproof shell at the top level of
  *  the document.  It has selector:
