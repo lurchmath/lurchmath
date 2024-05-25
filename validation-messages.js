@@ -288,6 +288,8 @@ export class Message {
                 }
                 LCs.forEach( LC => {
                     assignID( LC, head.element )
+                    LC.setAttribute( 'lurchNotation', 
+                        `${head.getMetadata('lurchNotation')}`)
                     context.pushChild( LC )
                 } )
                 return documentLC( array, context )
@@ -431,6 +433,14 @@ export class Message {
                     'Based on what you have above, this cannot be true.' :
                     'You have not yet convinced me of this.',
                 code : `${data.result} inference`
+            }
+          } else if ( data.type == 'algebra' ) {
+            return {
+                type : 'algebra',
+                result : data.result,
+                reason : data.result == 'valid' ? 'Nice algebra!' :
+                    'As far as I can tell, this is not algebraically correct.',
+                code : `algebraically ${data.result}`
             }
         } else if ( data.type == 'error' ) {
             return {
