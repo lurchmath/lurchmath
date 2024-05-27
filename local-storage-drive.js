@@ -18,7 +18,7 @@
 
 import { LurchDocument } from './lurch-document.js'
 import { Dialog, AlertItem, LongTextInputItem } from './dialog.js'
-import { isValidURL, appURL, isEmbedded } from './utilities.js'
+import { isValidURL, appURL } from './utilities.js'
 import { downloadFile } from './upload-download.js'
 
 // Internal use only
@@ -203,7 +203,7 @@ export const install = editor => {
         onAction : () => {
             // change the behavior if only saving to computer 
             const mode = editor.appOptions.fileSaveTabs
-            if (mode.length === 1 && mode[0] === 'To your computer') {
+            if ( mode.length === 1 && mode[0] === 'To your computer' ) {
                 silentFileSave( editor )
             } else {
                 if ( new LurchDocument( editor ).getFileID() )

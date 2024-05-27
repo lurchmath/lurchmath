@@ -8,7 +8,7 @@
  * boxes with simple left borders.
  *
  * To use this theme in your Lurch installation add, add this to the `editor`
- * key in the options object sent to `createapp()` in your local `index.html`
+ * key in the options object sent to `createApp()` in your local `index.html`
  * file.
  *
  *  `content_css : [ 'document', 'lurchmath/leftborder-theme.css',
