@@ -434,7 +434,7 @@ export class Message {
                     'You have not yet convinced me of this.',
                 code : `${data.result} inference`
             }
-          } else if ( data.type == 'algebra' ) {
+        } else if ( data.type == 'algebra' ) {
             return {
                 type : 'algebra',
                 result : data.result,
