@@ -530,15 +530,7 @@ export const install = editor => {
             }
         } ).filter( x => x !== null )
     } )
-    /////////
-    //
-    //  TEMPORARY
-    //
-    //  The following code is here only to help Ken in his Spring 2024 course.
-    //  It will be changed later when styles for shells are upgraded.
-    //
-    /////////
-    editor.ui.registry.addMenuItem( 'temptoggle', {
+    editor.ui.registry.addMenuItem( 'togglemeaning', {
         text : 'Show/Hide meaning',
         tooltip : 'Toggle between meaning and presentation views of the document',
         shortcut : 'alt+0',

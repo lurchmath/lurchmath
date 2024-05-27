@@ -189,7 +189,7 @@ window.Lurch = {
             document : buildMenu( 'Document',
                 'viewdependencyurls',
                 'validate clearvalidation',
-                'docsettings temptoggle'
+                'docsettings togglemeaning'
             ),
             help : buildMenu( 'Help', 'aboutlurch' )
         }, options.menuData )
