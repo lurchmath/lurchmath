@@ -118,8 +118,9 @@ export class LurchDocument {
      */
     setFileID ( id ) {
         this.editor.lastLurchFileID = id
+        // The rest of this code is for showing the filename in the UI
+        if ( id.filename ) id = id.filename
         if ( isValidURL( id ) ) id = id.split( '/' ).pop()
-        // id = id.replace( /\.html$/, '' )
         id = id.replace( /\.lurch$/, '' )
         this.getFilenameElement().textContent = id
     }
