@@ -261,7 +261,7 @@ window.Lurch = {
                 selector : '#editor',
                 content_css : [
                     'document',
-                    `${options.appRoot}/editor-styles.css`,
+                    `${options.appRoot}/syntax-theme.css`,
                     MathLiveCSS
                 ],
                 visual_table_class : 'lurch-borderless-table',
