@@ -184,13 +184,16 @@ export class FileSystem {
      * abstract, and thus have empty implementations in the base class: `open`,
      * `save`, `delete`, `has`, and `list`.  Subclasses may choose to implement
      * some of them, as documented in {@link FileSystem the class itself}.  You
-     * can test whether a specific instance of the class implements a given
-     * feature by calling this function on its name, passed as a string.
+     * can test whether a specific subclass implements a given feature by
+     * calling this function.
      * 
+     * @param {Object} subclass - the subclass to test
      * @param {string} name - the name of the feature, from the list above
-     * @returns {boolean} whether this file system implements the given feature
+     * @returns {boolean} whether the subclass implements the given feature
      */
-    implements ( name ) { return this[name] != FileSystem.prototype[name] }
+    static implements ( subclass, name ) {
+        return subclass.prototype[name] != FileSystem.prototype[name]
+    }
 
     /**
      * This abstract method opens a file from the file system.  It is abstract
