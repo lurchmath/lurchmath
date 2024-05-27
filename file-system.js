@@ -1,6 +1,6 @@
 
 import {
-    Dialog, LongTextInputItem, AlertItem, TextInputItem
+    Dialog, LongTextInputItem, AlertItem, TextInputItem, ListItem
 } from './dialog.js'
 import { LurchDocument } from './lurch-document.js'
 import { appURL } from './utilities.js'
@@ -781,7 +781,7 @@ export const install = editor => {
  * An item that can be added to a {@link Dialog} to allow the user to browse the
  * contents of a {@link FileSystem} and interact with the files therein.
  */
-export class FolderContentsItem {
+export class FolderContentsItem extends ListItem {
 
     /**
      * Construct a new folder contents item for browsing the given file system.
@@ -793,10 +793,9 @@ export class FolderContentsItem {
      *   do not have subfolders)
      */
     constructor ( fileSystem, initialPath = '' ) {
+        super( 'selectedFile' )
         this.fileSystem = fileSystem
         this.path = initialPath
-        this.itemsAreSelectable = false
-        this.selectedItem = null
     }
 
     /**
@@ -816,94 +815,30 @@ export class FolderContentsItem {
      */
     setPath ( newPath ) {
         this.path = newPath
-        const isVisible = this.dialog
-            && this.dialog.querySelector( '#dialog-folder-contents-item' )
-        if ( isVisible ) this.repopulate()
+        if ( this.dialog && this.getMainDiv() ) this.repopulate()
     }
 
-    /**
-     * Switch the mode of this item to permit selecting items (`on` true) or not
-     * permit selecting items (`on` false).  Turning this off removes the
-     * current selection, if there is one.
-     * 
-     * @param {boolean} on - whether items are selectable
-     */
-    setSelectable ( on = true ) {
-        this.itemsAreSelectable = on
-        if ( !on ) this.selectItem( null, null )
-    }
-
-    // internal use only; selects an item
-    selectItem ( fileDiv, fileObject ) {
-        this.dialog.querySelectorAll( '.file-div' ).forEach(
-            div => div.style.backgroundColor = '' )
-        if ( fileDiv ) fileDiv.style.backgroundColor = 'lightblue'
-        this.selectedItem = fileObject
-        this.selectionChanged?.()
-    }
-
-    // internal use only; creates the JSON to represent this object to TinyMCE
-    json () {
-        return [ {
-            type : 'htmlpanel',
-            html : '<div id="dialog-folder-contents-item">Loading...</div>'
-        } ]
-    }
-
-    // internal use only; repopulate the contents of the item with the files
-    // list in the current folder (and clear any old selection)
+    // internal use only; specializes repopulate() to a file system's needs
     repopulate () {
-        this.selectedItem = null
-        const panel = this.dialog.querySelector( '#dialog-folder-contents-item' )
+        this.showText( 'Loading...' )
         this.fileSystem.list( { path : this.path } ).then( files => {
-            panel.innerHTML = files.length > 0 ? '' : 'No files in this folder.'
-            files.forEach( fileObject => {
-                // put a new item into the panel
-                const fileDiv = panel.ownerDocument.createElement( 'div' )
-                panel.appendChild( fileDiv )
-                // give it content
-                fileDiv.innerHTML = fileObject.filename ?
+            if ( files.length == 0 ) {
+                this.showText( 'No files in this folder.' )
+                return
+            }
+            this.showList(
+                files.map( fileObject => fileObject.filename ?
                     `&#x1F4C4; ${fileObject.filename}` :
-                    `&#x1F4C1; ${fileObject.path}`
-                // style it
-                fileDiv.classList.add( 'file-div' )
-                fileDiv.style.border = 'solid 1px #cccccc'
-                fileDiv.style.overflowY = 'scroll'
-                fileDiv.style.cursor = 'default'
-                fileDiv.width = '100%'
-                // Add event handlers to items
-                fileDiv.addEventListener( 'click', () => setTimeout( () => {
-                    if ( !this.dialog.element )
-                        return // dialog has closed since the timeout started
-                    // If items are selectable, update the selection
-                    if ( this.itemsAreSelectable ) {
-                        if ( this.selectedItem == fileObject )
-                            this.selectItem( null, null )
-                        else
-                            this.selectItem( fileDiv, fileObject )
-                    }
-                    // Let users install an onClick() handler
-                    this.onClick?.( fileObject )
-                } ) )
-                fileDiv.addEventListener( 'dblclick', () => {
-                    // Let users install an onDoubleClick() handler
-                    this.onDoubleClick?.( fileObject )
-                } )
-            } )
+                    `&#x1F4C1; ${fileObject.path}` ),
+                files )
         } ).catch( error => {
-            panel.innerHTML = 'Error loading file list.  See console for details.'
+            this.showText( 'Error loading file list.  See console for details.' )
             console.error( 'Error loading file list:', error )
         } )
     }
 
     // internal use only; called when the dialog is shown
     onShow () { this.repopulate() }
-
-    // internal use only; returns a file object if requested by the dialog's
-    // get() function
-    get ( key, _ ) {
-        if ( key == 'selectedFile' ) return this.selectedItem
-    }
 
 }
 

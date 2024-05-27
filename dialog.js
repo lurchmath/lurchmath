@@ -924,3 +924,121 @@ export class DialogRow {
     }
 
 }
+
+/**
+ * An item that can be used in a {@link Dialog} and shows up as a list of
+ * one-line items with HTML contents (each one a DIV with a light border).
+ * Items can be selected, clicked, or double-clicked, and handlers can be added
+ * for each such situation.  The value of the item is the selected item's
+ * value, or undefined if no item is selected.
+ */
+export class ListItem {
+
+    static mainDivId = 'dialog-list-item'
+    static itemDivClass = 'dialog-list-item-one-item'
+
+    /**
+     * Construct a new list item.  Later you can either fill it with items, by
+     * calling {@link ListItem#showList showList()}, or fill it with plain text
+     * (e.g., as a temporary message like "Loading..." or a message like "No
+     * items to show") by calling {@link ListItem#showText showText()}.
+     */
+    constructor ( name ) {
+        this.name = name
+        this.names = [ ]
+        this.values = [ ]
+        this.itemsAreSelectable = false
+        this.selectedItem = null
+    }
+
+    /**
+     * Switch the mode of this item to permit selecting items (`on` true) or not
+     * permit selecting items (`on` false).  Turning this off removes the
+     * current selection, if there is one.
+     * 
+     * @param {boolean} on - whether items are selectable
+     */
+    setSelectable ( on = true ) {
+        this.itemsAreSelectable = on
+        if ( !on ) this.selectItem( null, null )
+    }
+
+    // internal use only; selects an item
+    selectItem ( itemDiv, itemValue ) {
+        this.dialog.querySelectorAll( `.${ListItem.itemDivClass}` ).forEach(
+            div => div.style.backgroundColor = '' )
+        if ( itemDiv ) itemDiv.style.backgroundColor = 'lightblue'
+        this.selectedItem = itemValue
+        this.selectionChanged?.()
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        return [ {
+            type : 'htmlpanel',
+            html : `<div id="${ListItem.mainDivId}"></div>`
+        } ]
+    }
+
+    // internal use only
+    getMainDiv () {
+        return this.dialog.querySelector( `#${ListItem.mainDivId}` )
+    }
+
+    // internal use only; change contents of this DIV to text
+    showText ( text ) {
+        this.selectedItem = null
+        this.getMainDiv().innerHTML = text
+    }
+
+    // internal use only; change contents of this DIV to a list of items
+    showList ( names, values ) {
+        if ( values.length == 0 )
+            values = names
+        if ( names.length != values.length )
+            throw new Error( 'Names and values must be the same length' )
+        this.names = names
+        this.values = values
+        this.selectedItem = null
+        const panel = this.getMainDiv()
+        panel.innerHTML = ''
+        names.forEach( ( name, index ) => {
+            const value = values[index]
+            // put a new item into the panel and give it content
+            const itemDiv = panel.ownerDocument.createElement( 'div' )
+            itemDiv.classList.add( ListItem.itemDivClass )
+            panel.appendChild( itemDiv )
+            itemDiv.innerHTML = name
+            // style it
+            itemDiv.style.border = 'solid 1px #cccccc'
+            itemDiv.style.overflowY = 'scroll'
+            itemDiv.style.cursor = 'default'
+            itemDiv.width = '100%'
+            // Add event handlers to the item
+            itemDiv.addEventListener( 'click', () => setTimeout( () => {
+                if ( !this.dialog.element )
+                    return // dialog has closed since the timeout started
+                // If items are selectable, update the selection
+                if ( this.itemsAreSelectable ) {
+                    if ( this.selectedItem == value )
+                        this.selectItem( null, null )
+                    else
+                        this.selectItem( itemDiv, value )
+                }
+                // Let users install an onClick() handler
+                this.onClick?.( value )
+            } ) )
+            itemDiv.addEventListener( 'dblclick', () => {
+                // Let users install an onDoubleClick() handler
+                this.onDoubleClick?.( value )
+            } )
+        } )
+    }
+
+    // internal use only; returns a file object if requested by the dialog's
+    // get() function
+    get ( key, _ ) {
+        if ( key == this.name ) return this.selectedItem
+    }
+
+}
