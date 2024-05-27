@@ -188,7 +188,7 @@ export class LurchDocument {
      * @see {@link LurchDocument#documentParts documentParts()}
      */
     static isDocumentHTML ( document ) {
-        return LurchDocument.documentParts( document ).hasOwnProperty( 'document' )
+        return LurchDocument.documentParts( document ).document !== undefined
     }
 
     /**
