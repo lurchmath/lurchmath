@@ -229,18 +229,24 @@ export class Shell extends Atom {
         const shellSubclassNames = Shell.subclassNames().filter(
             name => name != 'preview' )
         if ( forThis == this ) {
+            // allow changing the environment iff it's editable and some types
+            // have been registered for us to let the user browse
             if ( this.isEditable() && shellSubclassNames.length > 0 )
                 result.unshift( {
                     text : 'Change environment type',
                     onAction : () => this.editShellType( shellSubclassNames )
                 } )
+            // allow toggling indentation iff we're in a style that can see it
+            if ( lookup( this.editor, 'shell style' ) == 'minimal' )
+                result.unshift( {
+                    text : 'Toggle Subproof Indentations',
+                    onAction : () => this.element.classList.toggle( 'unindented' )
+                } )
+            // allow deleting environments
             result.unshift( {
                 text : 'Remove this environment',
                 onAction : () =>
                     this.element.replaceWith( ...this.element.childNodes )
-            } , {
-                text : 'Toggle Subproof Indentations',
-                onAction : () => this.element.classList.toggle( 'unindented' )
             } )
             // // Later when toLCs() for shells gets an upgrade:
             // result.unshift( {
