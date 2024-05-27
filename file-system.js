@@ -267,13 +267,6 @@ export class FileSystem {
      *     much information must be provided may vary from one file system to
      *     another.  If the user cancels, resolve the promise to null.  If the
      *     user does not cancel, then proceed as in the previous bullet.
-     *  5. Any time a file is successfully saved, before resolving the promise,
-     *     the subclass should call the static method
-     *     {@link FileSystem.documentSaved documentSaved()} in the FileSystem
-     *     class.  This tells the application to delete the last auto-saved
-     *     content, because if it did not do so, then upon the next launch of
-     *     the application, it would tell the user that it has recovered unsaved
-     *     work (which is not true; they just saved it).
      * 
      * @param {Object} fileObject - an object representing the file to save,
      *   as described above, and as documented in {@link FileSystem the
@@ -633,12 +626,21 @@ export const install = editor => {
         tooltip : 'Save document',
         onAction : () => {
             const fileID = new LurchDocument( editor ).getFileID()
-            const filesystem = FileSystem.getSubclass( fileID?.fileSystemName )
-            if ( !filesystem )
+            const subclass = FileSystem.getSubclass( fileID?.fileSystemName )
+            if ( !subclass )
                 fileID.fileSystemName = FileSystem.getSubclassName(
                     FileSystem.getSubclasses()[0] )
-            instance.save( fileID ).then(
-                result => console.log( 'saved:', result ) )
+            const fileSystem = new subclass( editor )
+            fileSystem.save( fileID ).then( result => {
+                if ( !result ) return
+                fileSystem.documentSaved( result )
+                Dialog.notify( editor, 'success', 'File saved.' )
+            } ).catch( error => {
+                Dialog.notify( editor, 'error',
+                    `A filesystem error occurred.
+                    See browser console for details.` )
+                console.error( error )
+            } )
         }
     } )
     editor.ui.registry.addMenuItem( 'embeddocument', {
@@ -671,55 +673,87 @@ export const install = editor => {
     // File > Open, File > Save as, and File > Delete, one for each file system
     // subclass that has been registered.  Of course, custom app setups through
     // createApp() can move these around if they don't like this organization.
-    const simplifiedNames = [ ]
+    const submenuNames = { open : [ ], saveas : [ ], delete : [ ] }
     FileSystem.getSubclasses().forEach( subclass => {
         const name = subclass.subclassName
         const simplifiedName = name.toLowerCase().replace( /[^a-z]/gi, '' )
-        simplifiedNames.push( simplifiedName )
         // File > Open... > Open from X...
-        editor.ui.registry.addMenuItem( 'opendocument' + simplifiedName, {
-            text : `Open from ${name}...`,
-            tooltip : `Open document from ${name}`,
-            shortcut : 'alt+O',
-            onAction : () => ensureWorkIsSaved( editor ).then( saved => {
-                if ( saved ) {
-                    new subclass( editor ).open().then( result => {
-                        if ( result ) {
-                            const LD = new LurchDocument( editor )
-                            LD.setDocument( result.contents )
-                            LD.setFileID( {
-                                fileSystemName : name,
-                                path : result.path,
-                                filename : result.filename,
-                                UID : result.UID
-                            } )
-                            Dialog.notify( editor, 'success',
-                                `Loaded ${result.filename} from ${name}.` )
-                        }
+        if ( FileSystem.implements( subclass, 'open' ) ) {
+            submenuNames.open.push( 'opendocument' + simplifiedName )
+            editor.ui.registry.addMenuItem( 'opendocument' + simplifiedName, {
+                text : `Open from ${name}...`,
+                tooltip : `Open document from ${name}`,
+                shortcut : 'alt+O',
+                onAction : () => ensureWorkIsSaved( editor ).then( saved => {
+                    if ( saved ) {
+                        new subclass( editor ).open().then( result => {
+                            if ( result ) {
+                                const LD = new LurchDocument( editor )
+                                LD.setDocument( result.contents )
+                                LD.setFileID( {
+                                    fileSystemName : name,
+                                    path : result.path,
+                                    filename : result.filename,
+                                    UID : result.UID
+                                } )
+                                Dialog.notify( editor, 'success',
+                                    `Loaded ${result.filename} from ${name}.` )
+                            }
+                        } ).catch( error => {
+                            Dialog.notify( editor, 'error',
+                                `A filesystem error occurred.
+                                See browser console for details.` )
+                            console.error( error )
+                        } )
+                    }
+                } )
+            } )
+        }
+        // File > Save as... > Save to X as...
+        if ( FileSystem.implements( subclass, 'save' ) ) {
+            submenuNames.saveas.push( 'savedocumentas' + simplifiedName )            
+            editor.ui.registry.addMenuItem( 'savedocumentas' + simplifiedName, {
+                text : `Save to ${name} as...`,
+                tooltip : `Save document to ${name} as...`,
+                shortcut : 'alt+shift+S',
+                onAction : () => {
+                    const fileSystem = new subclass( editor )
+                    fileSystem.save( {
+                        contents : new LurchDocument( editor ).getDocument()
+                    } ).then( result => {
+                        if ( !result ) return
+                        fileSystem.documentSaved( result )
+                        // Do not pop up a save notification here because the
+                        // save process may still be ongoing (e.g., browser
+                        // download dialog)
+                    } ).catch( error => {
+                        Dialog.notify( editor, 'error',
+                            `A filesystem error occurred.
+                            See browser console for details.` )
+                        console.error( error )
                     } )
                 }
             } )
-        } )
-        // File > Save as... > Save to X as...
-        editor.ui.registry.addMenuItem( 'savedocumentas' + simplifiedName, {
-            text : `Save to ${name} as...`,
-            tooltip : `Save document to ${name} as...`,
-            shortcut : 'alt+shift+S',
-            onAction : () => {
-                new subclass( editor ).save( {
-                    contents : new LurchDocument( editor ).getDocument()
-                } ).then( result => console.log( 'saved:', result ) )
-            }
-        } )
+        }
         // File > Delete... > Delete from X...
-        editor.ui.registry.addMenuItem( 'deletesaved' + simplifiedName, {
-            text : `Delete from ${name}...`,
-            tooltip : `Delete a document from ${name}`,
-            onAction : () => {
-                new subclass( editor ).delete().then(
-                    result => console.log( 'deleted!', result ) )
-            }
-        } )
+        if ( FileSystem.implements( subclass, 'delete' ) ) {
+            submenuNames.delete.push( 'deletesaved' + simplifiedName )
+            editor.ui.registry.addMenuItem( 'deletesaved' + simplifiedName, {
+                text : `Delete from ${name}...`,
+                tooltip : `Delete a document from ${name}`,
+                onAction : () => {
+                    new subclass( editor ).delete().then( result => {
+                        if ( !result ) return
+                        Dialog.notify( editor, 'success', 'File deleted.' )
+                    } ).catch( error => {
+                        Dialog.notify( editor, 'error',
+                            `A filesystem error occurred.
+                            See browser console for details.` )
+                        console.error( error )
+                    } )
+                }
+            } )
+        }
     } )
     // Now create the top-level File menu items into which you browse to find
     // the ones for each file system.  That is, we now create the File > Open
@@ -727,20 +761,17 @@ export const install = editor => {
     editor.ui.registry.addNestedMenuItem( 'opendocument', {
         text : 'Open...',
         tooltip : 'Open document',
-        getSubmenuItems : () => simplifiedNames.map(
-            simplifiedName => 'opendocument' + simplifiedName ).join( ' ' )
+        getSubmenuItems : () => submenuNames.open.join( ' ' )
     } )
     editor.ui.registry.addNestedMenuItem( 'savedocumentas', {
         text : 'Save as...',
         tooltip : 'Save document as...',
-        getSubmenuItems : () => simplifiedNames.map(
-            simplifiedName => 'savedocumentas' + simplifiedName ).join( ' ' )
+        getSubmenuItems : () => submenuNames.saveas.join( ' ' )
     } )
     editor.ui.registry.addNestedMenuItem( 'deletesaved', {
         text : 'Delete...',
         tooltip : 'Delete a saved document',
-        getSubmenuItems : () => simplifiedNames.map(
-            simplifiedName => 'deletesaved' + simplifiedName ).join( ' ' )
+        getSubmenuItems : () => submenuNames.delete.join( ' ' )
     } )
     // If the auto-save feature is enabled, then wait for the app to finish
     // loading, and then check to see if there is any autosaved data that was
