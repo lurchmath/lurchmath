@@ -15,16 +15,22 @@ import { isValidURL } from './utilities.js'
  * link that would initiate the download, clicks that link, and then discards
  * it.
  * 
+ * If a filename is not provided, it is lifted from the document, and if none is
+ * there, a default one is provided.
+ * 
  * @param {tinymce.editor} editor - the editor whose contents should be
  *   downloaded
+ * @param {string} [filename] - the initial name of the file to include in the
+ *   download dialog (though the user can change this)
  */
-export const downloadFile = editor => {
+export const downloadFile = ( editor, filename ) => {
     const LD = new LurchDocument( editor )
     const content = LD.getDocument()
     const anchor = document.createElement( 'a' )
     anchor.setAttribute( 'href', 'data:text/html;charset=utf-8,'
         + encodeURIComponent( content ) )
-    let filename = LD.getFileID() || 'lurch-document.lurch'
+    if ( !filename )
+        filename = LD.getFileID() || 'lurch-document.lurch'
     if ( filename.startsWith( 'file:///' ) )
         filename = filename.slice( 8 )
     else if ( isValidURL( filename ) )
