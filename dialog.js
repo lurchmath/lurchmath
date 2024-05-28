@@ -932,6 +932,47 @@ export class DialogRow {
 }
 
 /**
+ * An item that can be used in a {@link Dialog} to place a label above one or
+ * more other dialog items.  This corresponds to the "label" type of body
+ * component in a TinyMCE dialog.
+ */
+export class LabeledGroup {
+
+    /**
+     * Construct a labeled group.
+     * 
+     * @param {string} caption - the caption to show above the group
+     * @param {...Object} items - an array of dialog items (e.g.,
+     *   {@link AlertItem} or {@link ButtonItem}) to place into this group
+     */
+    constructor ( caption, ...items ) {
+        this.caption = caption
+        this.items = items
+    }
+
+    // internal use only; creates the JSON to represent this object to TinyMCE
+    json () {
+        return [ {
+            type : 'label',
+            label : this.caption,
+            items : this.items.map( item => item.json() ).flat()
+        } ]
+    }
+
+    // internal use only; pass any notifications on to my children
+    onAction ( ...args ) {
+        this.items.forEach( item => item.onAction?.( ...args ) )
+    }
+    onShow ( ...args ) {
+        this.items.forEach( item => {
+            item.dialog = this.dialog
+            item.onShow?.( ...args )
+        } )
+    }
+
+}
+
+/**
  * An item that can be used in a {@link Dialog} and shows up as a list of
  * one-line items with HTML contents (each one a DIV with a light border).
  * Items can be selected, clicked, or double-clicked, and handlers can be added

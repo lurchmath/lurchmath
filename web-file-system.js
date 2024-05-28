@@ -1,9 +1,72 @@
 
 import { FileSystem } from './file-system.js'
-import { Dialog, TextInputItem, ListItem, HTMLItem } from './dialog.js'
+import {
+    Dialog,
+    TextInputItem, ListItem, HTMLItem, ButtonItem, LabeledGroup, AlertItem
+} from './dialog.js'
 import { loadFromURL } from './load-from-url.js'
 import { LurchDocument } from './lurch-document.js'
 import { isValidURL } from './utilities.js'
+import { appSettings } from './settings-install.js'
+
+// Internal use only; extract all <a> targets and texts from some HTML
+const getLinksFrom = html => {
+    const results = [ ]
+    const findLink = /<[^>]*href\s*=\s*(['"][^'"]*['"])[^>]*>(.*?)<\/a/g
+    let match
+    while ( match = findLink.exec( html ) )
+        results.push( {
+            url : match[1].substring( 1, match[1].length - 1 ),
+            text : match[2].replace( /<[^>]*>/g, '' )
+        } )
+    return results
+}
+
+// Internal use only; combine a URL and a relative path to a new URL
+const makeAbsoluteURL = ( url, path ) => {
+    // If the path given is actually a full URL, then ignore the other URL and
+    // just use the path alone.
+    if ( isValidURL( path ) )
+        return path
+    // If the path is absolute, we need to chop any path in the URL.
+    if ( path.startsWith( '/' ) ) {
+        // If we can find protocol://host/ in the URL, use that.
+        const host = /^([^/]*)(:\/\/)?([^/]+)[/]/.exec( url )
+        if ( host )
+            return host[1] + host[2] + host[3] + path
+        // If we can fine protocol://host in the URL, use that.
+        if ( /^[^/]*:\/\/[^/]+$/.test( url ) )
+            return url + path
+        // Not sure what's going on; make a desperate attempt here.
+        const parts = url.split( '/' )
+        parts.pop()
+        return parts.join( '/' ) + path
+    }
+    // The path is relative, so we need to add it to the end of the URL.
+    // Easiest case: When the URL ends with a /.
+    if ( url.endsWith( '/' ) )
+        return url + path
+    // Next easiest case: If the URL ends with "foo.bar" we assume that's a file
+    // because of the extension, so we replace that with the path.
+    const parts = url.split( '/' )
+    if ( parts[parts.length-1].includes( '.' ) ) {
+        parts[parts.length-1] = path
+        return parts.join( '/' )
+    }
+    // Tricky case: We will guess that a URL ending in what doesn't seem to be
+    // a file (no extension) is probably the URL for a folder, and will thus
+    // just glue the path on with a slash in between.
+    return url + '/' + path
+}
+
+// Internal use only; the key for the following two functions
+const bookmarkKey = 'web-file-system-bookmarks'
+// Internal use only; save bookmarks (a list of strings, URLs) to settings
+const saveBookmarks = bookmarks =>
+    appSettings.saveHiddenSetting( bookmarkKey, JSON.stringify( bookmarks ) )
+// Internal use only; get bookmarks (as a list of strings, URLs) from settings
+const loadBookmarks = () =>
+    JSON.parse( appSettings.loadHiddenSetting( bookmarkKey ) || '[]' )
 
 /**
  * A subclass of {@link FileSystem} that represents browsing and downloading
@@ -29,19 +92,6 @@ export class WebFileSystem extends FileSystem {
     static subclassName = FileSystem.registerSubclass(
         'the web', WebFileSystem )
     
-    // Internal use only; extract all <a> targets and texts from some HTML
-    getLinksFrom ( html ) {
-        const results = [ ]
-        const findLink = /<[^>]*href\s*=\s*(['"][^'"]*['"])[^>]*>([^<]*)<\/a/g
-        let match
-        while ( match = findLink.exec( html ) )
-            results.push( {
-                url : match[1].substring( 1, match[1].length - 1 ),
-                text : match[2].replace( /<[^>]*>/g, '' )
-            } )
-        return results
-    }
-
     /**
      * See the documentation of the {@link FileSystem#open open()} method in the
      * parent class for the definition of how this method must behave.  It
@@ -88,8 +138,29 @@ export class WebFileSystem extends FileSystem {
             return new Promise( ( resolve, reject ) => {
                 const dialog = new Dialog( 'Browsing', this.editor )
                 dialog.addItem( new TextInputItem( 'url', 'Enter URL to open' ) )
-                dialog.addItem( new HTMLItem( `Or select one of the following bookmarks:` ) )
-                dialog.addItem( new HTMLItem( '(Bookmarks not yet implemented.)' ) )
+                const bookmarks = loadBookmarks()
+                if ( bookmarks.length > 0 ) {
+                    const listItem = new ListItem( 'bookmarks' )
+                    listItem.setSelectable( true )
+                    listItem.onShow = () =>
+                        listItem.showList( bookmarks, bookmarks )
+                    const getUrlField = () =>
+                        dialog.querySelector( 'input[type="text"]' )
+                    listItem.selectionChanged = () =>
+                        getUrlField().value = listItem.selectedItem
+                    listItem.onDoubleClick = () => {
+                        if ( !/^\s*$/.test( getUrlField().value ) )
+                            dialog.json.onSubmit()
+                    }
+                    dialog.addItem( new LabeledGroup(
+                        `Or click a bookmark:`, listItem ) )
+                }
+                dialog.addItem( new AlertItem(
+                    'warn',
+                    `Many websites do not permit apps like Lurch to download
+                    files from them.  If you get an error when downloading, it
+                    may be caused by the permissions of the other website.`
+                ) )
                 dialog.show().then( userHitOK => {
                     if ( !userHitOK ) return resolve()
                     resolve( this.open( { filename : dialog.get( 'url' ) } ) )
@@ -109,30 +180,65 @@ export class WebFileSystem extends FileSystem {
                     return
                 }
                 // If it's not, get all of its links and let the user pick one
-                const links = this.getLinksFrom( response )
+                const links = getLinksFrom( response )
                 const dialog = new Dialog( 'Browsing', this.editor )
+                dialog.addItem( new HTMLItem(
+                    `Viewing page: <tt>${fileObject.filename}</tt>` ) )
                 dialog.addItem( new TextInputItem( 'url', 'Enter URL to open' ) )
-                dialog.addItem( new HTMLItem( `Or select one of the following,
-                    loaded from <tt>${fileObject.filename}</tt>:` ) )
-                const listItem = new ListItem( 'selectLink' )
-                listItem.setSelectable( true )
-                dialog.addItem( listItem )
-                listItem.onShow = () => listItem.showList(
-                    links.map( link => `${link.text} (<tt>${link.url}</tt>)` ),
-                    links )
-                listItem.selectionChanged = () =>
-                    dialog.querySelector( 'input[type="text"]' ).value =
-                        listItem.selectedItem.url
+                if ( links.length > 0 ) {
+                    const listItem = new ListItem( 'selectLink' )
+                    listItem.setSelectable( true )
+                    dialog.addItem( new LabeledGroup(
+                        'Or select one of the links just loaded:', listItem ) )
+                    listItem.onShow = () => listItem.showList(
+                        links.map( link => `${link.text} (<tt>${link.url}</tt>)` ),
+                        links )
+                    const getUrlField = () =>
+                        dialog.querySelector( 'input[type="text"]' )
+                    listItem.selectionChanged = () =>
+                        getUrlField().value = listItem.selectedItem.url
+                    listItem.onDoubleClick = () => {
+                        if ( !/^\s*$/.test( getUrlField().value ) )
+                            dialog.json.onSubmit()
+                    }
+                    const bookmarks = loadBookmarks()
+                    if ( bookmarks.includes( fileObject.filename ) ) {
+                        dialog.addItem( new ButtonItem(
+                            'Un-bookmark this page',
+                            () => {
+                                // Remove the bookmark
+                                const index = bookmarks.indexOf(
+                                    fileObject.filename )
+                                bookmarks.splice( index, 1 )
+                                saveBookmarks( bookmarks )
+                                dialog.close()
+                                // Reload the dialog so it's up-to-date
+                                resolve( this.open( fileObject ) )
+                            }
+                        ) )
+                    } else {
+                        dialog.addItem( new ButtonItem(
+                            'Bookmark this page',
+                            () => {
+                                // Add the bookmark
+                                bookmarks.push( fileObject.filename )
+                                saveBookmarks( bookmarks )
+                                dialog.close()
+                                // Reload the dialog so it's up-to-date
+                                resolve( this.open( fileObject ) )
+                            }
+                        ) )
+                    }
+                } else {
+                    dialog.addItem( new HTMLItem(
+                        'No links were found at the requested web site.' ) )
+                }
                 dialog.show().then( userHitOK => {
                     if ( !userHitOK ) return resolve()
-                    let url = dialog.get( 'url' )
-                    if ( !isValidURL( url ) ) {
-                        let path = fileObject.filename.split( '/' )
-                        path.pop()
-                        path = path.join( '/' ) + '/'
-                        url = path + url
-                    }
-                    resolve( this.open( { filename : url } ) )
+                    resolve( this.open( {
+                        filename : makeAbsoluteURL(
+                            fileObject.filename, dialog.get( 'url' ) )
+                    } ) )
                 } ).catch( reject )
             } ).catch( reject )
         } )
