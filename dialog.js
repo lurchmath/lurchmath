@@ -988,7 +988,13 @@ export class ListItem {
 
     // internal use only
     getMainDiv () {
-        return this.dialog.querySelector( `#${ListItem.mainDivId}` )
+        const result = this.dialog.querySelector( `#${ListItem.mainDivId}` )
+        result.style.border = 'solid 1px #006CE7'
+        result.style.padding = '0.5em'
+        result.style.borderRadius = '6px'
+        result.style.maxHeight = '300px'
+        result.style.overflowY = 'scroll'
+        return result
     }
 
     // internal use only; change contents of this DIV to text
@@ -1016,8 +1022,7 @@ export class ListItem {
             panel.appendChild( itemDiv )
             itemDiv.innerHTML = name
             // style it
-            itemDiv.style.border = 'solid 1px #cccccc'
-            itemDiv.style.overflowY = 'scroll'
+            itemDiv.style.padding = '5px 0'
             itemDiv.style.cursor = 'default'
             itemDiv.width = '100%'
             // Add event handlers to the item
