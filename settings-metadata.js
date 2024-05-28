@@ -153,15 +153,6 @@ export class ShowWarningSettingMetadata extends BoolSettingMetadata {
         this.warningText = warningText
     }
 
-    /**
-     * Treats `true` as true and `"true"` as true, but all other values as
-     * false.
-     * 
-     * @param {any} data - the data to convert to boolean
-     * @returns {bool} the same data, now as a boolean
-     */
-    convert ( data ) { return data === true || data === 'true' }
-
 }
 
 /**
