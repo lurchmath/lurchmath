@@ -62,7 +62,7 @@ export class OfflineFileSystem extends FileSystem {
                     filename : filename,
                     contents : content
                 } )
-            } )
+            } ).catch( reject )
         } )
     }
 
