@@ -26,17 +26,17 @@ const allFileNames = () => {
  * Also, UIDs are not used by this file system; rather, filenames are used to
  * identify files.  UIDs are ignored in all methods of this class.
  */
-export class LocalFileSystem extends FileSystem {
+export class BrowserFileSystem extends FileSystem {
 
     static subclassName = FileSystem.registerSubclass(
-        'in-browser storage', LocalFileSystem )
+        'in-browser storage', BrowserFileSystem )
 
     /**
      * See the documentation of the {@link FileSystem#open open()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
-     * browser's `localStorage` object, as defined at {@link LocalFileSystem the
-     * documentation for this class}.
+     * browser's `localStorage` object, as defined at {@link BrowserFileSystem
+     * the documentation for this class}.
      * 
      * Because this is a flat file system, any file object with a nonempty path
      * member will not exist, regardless of its filename, and will therefore
@@ -59,7 +59,7 @@ export class LocalFileSystem extends FileSystem {
         }
         // Case 2: The caller tried to browse to a folder other than the root
         if ( fileObject?.path )
-            throw new Error( 'LocalFileSystem does not support subfolders' )
+            throw new Error( 'BrowserFileSystem does not support subfolders' )
         // Case 3: When the caller provided no parameter, so browse at the root
         return new Promise( ( resolve, reject ) => {
             this.showOpenDialog().then( result => {
@@ -73,8 +73,8 @@ export class LocalFileSystem extends FileSystem {
      * See the documentation of the {@link FileSystem#save save()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
-     * browser's `localStorage` object, as defined at {@link LocalFileSystem the
-     * documentation for this class}.
+     * browser's `localStorage` object, as defined at {@link BrowserFileSystem
+     * the documentation for this class}.
      * 
      * Because this is a flat file system, any file object with a nonempty path
      * member will not exist, regardless of its filename, and will therefore
@@ -93,7 +93,7 @@ export class LocalFileSystem extends FileSystem {
           && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
         if ( fileObject.path )
-            throw new Error( 'LocalFileSystem does not support subfolders' )
+            throw new Error( 'BrowserFileSystem does not support subfolders' )
         if ( !fileObject.hasOwnProperty( 'contents' ) )
             throw new Error( 'No content to save' )
         // Case 2: Filename and contents provided, can save
@@ -118,8 +118,8 @@ export class LocalFileSystem extends FileSystem {
      * See the documentation of the {@link FileSystem#delete delete()} method in
      * the parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
-     * browser's `localStorage` object, as defined at {@link LocalFileSystem the
-     * documentation for this class}.
+     * browser's `localStorage` object, as defined at {@link BrowserFileSystem
+     * the documentation for this class}.
      * 
      * Because this is a flat file system, any file object with a nonempty path
      * member will not exist, regardless of its filename, and will therefore
@@ -143,7 +143,7 @@ export class LocalFileSystem extends FileSystem {
           && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
         if ( fileObject.path )
-            throw new Error( 'LocalFileSystem does not support subfolders' )
+            throw new Error( 'BrowserFileSystem does not support subfolders' )
         // Case 3: Name of file provided, can delete iff it exists
         if ( fileObject.hasOwnProperty?.( 'filename' ) ) {
             if ( !this.has( fileObject ) )
@@ -158,8 +158,8 @@ export class LocalFileSystem extends FileSystem {
      * See the documentation of the {@link FileSystem#has has()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
-     * browser's `localStorage` object, as defined at {@link LocalFileSystem the
-     * documentation for this class}.
+     * browser's `localStorage` object, as defined at {@link BrowserFileSystem
+     * the documentation for this class}.
      * 
      * Because this is a flat file system, any file object with a nonempty path
      * member will not exist, regardless of its filename, and will therefore
@@ -184,8 +184,8 @@ export class LocalFileSystem extends FileSystem {
      * See the documentation of the {@link FileSystem#list list()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
-     * browser's `localStorage` object, as defined at {@link LocalFileSystem the
-     * documentation for this class}.
+     * browser's `localStorage` object, as defined at {@link BrowserFileSystem
+     * the documentation for this class}.
      * 
      * In particular, because this is a flat file system, no parameter should be
      * passed to attempt to list files in a subfolder, since there are no
@@ -199,7 +199,7 @@ export class LocalFileSystem extends FileSystem {
      */
     list ( fileObject ) {
         if ( fileObject?.path )
-            throw new Error( 'LocalFileSystem does not support subfolders' )
+            throw new Error( 'BrowserFileSystem does not support subfolders' )
         return Promise.resolve( allFileNames().map( filename => {
             return {
                 fileSystemName: this.getName(),
