@@ -1,6 +1,6 @@
 
 import {
-    Dialog, LongTextInputItem, AlertItem, TextInputItem, ListItem
+    Dialog, LongTextInputItem, AlertItem, TextInputItem, ListItem, LabeledGroup
 } from './dialog.js'
 import { LurchDocument } from './lurch-document.js'
 import { appURL } from './utilities.js'
@@ -451,7 +451,8 @@ export class FileSystem {
         dialog.setOK( submit )
         const folderContentsItem = new FolderContentsItem( this, initialPath )
         folderContentsItem.setSelectable( true )
-        dialog.addItem( folderContentsItem )
+        dialog.addItem( new LabeledGroup(
+            'Existing files:', folderContentsItem ) )
         // Ensure we can only click the "Open" button if a file is selected
         folderContentsItem.selectionChanged = () =>
             dialog.dialog.setEnabled( 'OK',
@@ -511,7 +512,8 @@ export class FileSystem {
         dialog.setInitialData( { filename : initialFilename } )
         const folderContentsItem = new FolderContentsItem( this, initialPath )
         folderContentsItem.setSelectable( true )
-        dialog.addItem( folderContentsItem )
+        dialog.addItem( new LabeledGroup(
+            'Existing files:', folderContentsItem ) )
         // Convenience functions for computing our return value
         let lastFilename = null
         const currentFilename = () => {

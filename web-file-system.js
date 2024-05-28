@@ -17,7 +17,7 @@ const getLinksFrom = html => {
     while ( match = findLink.exec( html ) )
         results.push( {
             url : match[1].substring( 1, match[1].length - 1 ),
-            text : match[2].replace( /<[^>]*>/g, '' )
+            text : match[2].replace( /<[^>]*>/g, ' ' )
         } )
     return results
 }
@@ -137,6 +137,7 @@ export class WebFileSystem extends FileSystem {
         if ( !fileObject?.filename ) {
             return new Promise( ( resolve, reject ) => {
                 const dialog = new Dialog( 'Browsing', this.editor )
+                dialog.json.size = 'medium'
                 dialog.addItem( new TextInputItem( 'url', 'Enter URL to open' ) )
                 const bookmarks = loadBookmarks()
                 if ( bookmarks.length > 0 ) {
@@ -147,13 +148,13 @@ export class WebFileSystem extends FileSystem {
                     const getUrlField = () =>
                         dialog.querySelector( 'input[type="text"]' )
                     listItem.selectionChanged = () =>
-                        getUrlField().value = listItem.selectedItem
+                        getUrlField().value = listItem.selectedItem || ''
                     listItem.onDoubleClick = () => {
                         if ( !/^\s*$/.test( getUrlField().value ) )
                             dialog.json.onSubmit()
                     }
                     dialog.addItem( new LabeledGroup(
-                        `Or click a bookmark:`, listItem ) )
+                        'Or click a bookmark:', listItem ) )
                 }
                 dialog.addItem( new AlertItem(
                     'warn',
@@ -182,6 +183,7 @@ export class WebFileSystem extends FileSystem {
                 // If it's not, get all of its links and let the user pick one
                 const links = getLinksFrom( response )
                 const dialog = new Dialog( 'Browsing', this.editor )
+                dialog.json.size = 'medium'
                 dialog.addItem( new HTMLItem(
                     `Viewing page: <tt>${fileObject.filename}</tt>` ) )
                 dialog.addItem( new TextInputItem( 'url', 'Enter URL to open' ) )
@@ -196,7 +198,7 @@ export class WebFileSystem extends FileSystem {
                     const getUrlField = () =>
                         dialog.querySelector( 'input[type="text"]' )
                     listItem.selectionChanged = () =>
-                        getUrlField().value = listItem.selectedItem.url
+                        getUrlField().value = listItem.selectedItem?.url || ''
                     listItem.onDoubleClick = () => {
                         if ( !/^\s*$/.test( getUrlField().value ) )
                             dialog.json.onSubmit()
