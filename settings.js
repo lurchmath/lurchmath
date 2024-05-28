@@ -308,5 +308,59 @@ export class Settings extends Map {
             } )
         } )
     }
+
+    /**
+     * A "hidden" setting is one that will not show up in the settings dialog,
+     * but will still be stored in the user's local storage.  This can be used
+     * when some other part of the application wants to store a value that is
+     * determined by user preference, but its purpose and/or type make it not
+     * very sensible to add to the settings dialog.
+     * 
+     * This function can be used to write such hidden settings, and the
+     * corresponding {@link Settings#loadHiddenSetting loadHiddenSetting()} to
+     * read them.
+     * 
+     * Note that this function does police its parameters in one way, that the
+     * key for the setting must not be the key for a non-hidden setting.  Other
+     * than that, it can be anything the caller desires.  That way, it ensures
+     * that the caller does not accidentally overwrite a non-hidden setting with
+     * a hidden setting.
+     * 
+     * @param {string} key - the key under which to store the setting
+     * @param {string} value - the value to store
+     * @see {@link Settings#loadHiddenSetting loadHiddenSetting()}
+     */
+    saveHiddenSetting ( key, value ) {
+        if ( this.has( key ) )
+            throw new Error( 'Non-hidden setting already exists with key: ' + key )
+        localStorage.setItem( `lurch-${key}`, value )
+    }
+
+    /**
+     * A "hidden" setting is one that will not show up in the settings dialog,
+     * but will still be stored in the user's local storage.  This can be used
+     * when some other part of the application wants to store a value that is
+     * determined by user preference, but its purpose and/or type make it not
+     * very sensible to add to the settings dialog.
+     * 
+     * This function can be used to read such hidden settings, and the
+     * corresponding {@link Settings#setHiddenSetting setHiddenSetting()} to
+     * write them.
+     * 
+     * Note that this function does police its parameters in one way, that the
+     * key for the setting must not be the key for a non-hidden setting.  Other
+     * than that, it can be anything the caller desires.  That way, it ensures
+     * that the caller does not accidentally write code that behaves as if a
+     * setting is hidden when it is not.
+     * 
+     * @param {string} key - the key under which the setting was stored
+     * @returns {string} the value retrieved
+     * @see {@link Settings#saveHiddenSetting saveHiddenSetting()}
+     */
+    loadHiddenSetting ( key ) {
+        if ( this.has( key ) )
+            throw new Error( 'Non-hidden setting already exists with key: ' + key )
+        return localStorage.getItem( `lurch-${key}` )
+    }
     
 }
