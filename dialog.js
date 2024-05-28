@@ -675,9 +675,9 @@ export class AlertItem {
             type : 'alertbanner',
             text : this.text,
             level : this.type,
-            icon : this.level == 'success' ? 'selected' :
-                   this.level == 'warn' ? 'warning' :
-                   this.level == 'info' ? 'info' : 'notice'
+            icon : this.type == 'success' ? 'selected' :
+                   this.type == 'warn' ? 'warning' :
+                   this.type == 'info' ? 'info' : 'notice'
         } ]
     }
 
@@ -903,7 +903,7 @@ export class DialogRow {
     /**
      * Construct a dialog row.
      * 
-     * @param  {...Object} items - an array of dialog items (e.g.,
+     * @param {...Object} items - an array of dialog items (e.g.,
      *   {@link AlertItem} or {@link ButtonItem}) to place into this row
      */
     constructor ( ...items ) {
@@ -918,9 +918,15 @@ export class DialogRow {
         } ]
     }
 
-    // internal use only; pass any action notifications on to my children
+    // internal use only; pass any notifications on to my children
     onAction ( ...args ) {
         this.items.forEach( item => item.onAction?.( ...args ) )
+    }
+    onShow ( ...args ) {
+        this.items.forEach( item => {
+            item.dialog = this.dialog
+            item.onShow?.( ...args )
+        } )
     }
 
 }
