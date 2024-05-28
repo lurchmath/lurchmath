@@ -261,7 +261,7 @@ export class Settings extends Map {
         if ( !this.get( settingName ) ) return Promise.resolve()
         // Otherwise return a promise whose resolution is contintgent upon the
         // user's response to the appropriate warning dialog.
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( ( resolve, _ ) => {
             const dialog = editor.windowManager.open( {
                 title : 'Warning',
                 body : {
@@ -298,12 +298,12 @@ export class Settings extends Map {
                 onAction : ( _, details ) => {
                     dialog.close()
                     if ( details.name == 'no' )
-                        return reject()
+                        return resolve( false )
                     if ( details.name == 'yes-and' ) {
                         this.set( settingName, false )
                         this.save()
                     }
-                    resolve()
+                    resolve( true )
                 }
             } )
         } )

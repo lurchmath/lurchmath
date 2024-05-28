@@ -150,13 +150,13 @@ export const install = editor => {
                     'This document\'s header is currently empty.' )
             appSettings.load()
             appSettings.showWarning( 'warn before extract header', editor )
-            .then( () => {
+            .then( userSaidToProceed => {
+                if ( !userSaidToProceed ) return
                 editor.selection.setCursorLocation() // == start
                 editor.insertContent( header )
                 setHeader( editor, '' )
                 editor.undoManager.clear()
             } )
-            .catch( () => { } )
         }
     } )
     editor.ui.registry.addMenuItem( 'embedheader', {
@@ -173,12 +173,12 @@ export const install = editor => {
                     'You do not currently have any content selected.' )
             appSettings.load()
             appSettings.showWarning( 'warn before embed header', editor )
-            .then( () => {
+            .then( userSaidToProceed => {
+                if ( !userSaidToProceed ) return
                 setHeader( editor, getHeaderHTML( editor ) + toEmbed )
                 editor.execCommand( 'delete' )
                 editor.undoManager.clear()
             } )
-            .catch( () => { } )
         }
     } )
     editor.ui.registry.addMenuItem( 'editdependencyurls', {
