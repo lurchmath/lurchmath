@@ -54,10 +54,12 @@ const removeAutoSave = () => window.localStorage.removeItem( autoSaveKey )
  *    storage systems might have unique IDs for files that are not
  *    human-readable, but by contrast this field should be the name the user
  *    gave the file.  This field should be set when a file is read from a file
- *    system, and will be absent if and only if the user created the file in the
- *    application and has not yet saved it.  (Or they saved it to a file system
- *    that does not tell the application the name that the user chose, such as
- *    the user's hard drive through a download operation.)
+ *    system, and will be absent if and only if one of the following is true:
+ *     - the user created the file in the application and has not yet saved it
+ *     - the user saved the file to a file system that does not tell the
+ *       application the name that the user chose, such as the user's hard drive
+ *       through a download operation
+ *     - the file object represents a folder, as documented below
  *  - `UID` - a unique identifier for the file in the file system.  This is not
  *    necessarily a globally unique ID, but is unique within the file system
  *    named in the first attribute, above.  This field should not be present if
@@ -478,8 +480,8 @@ export class FileSystem {
         const result = new Promise( ( resolve, reject ) =>
             dialog.show()
                 .then( clickedOK =>
-                    resolve( clickedOK && dialog.get( 'selectedFile' ) ) )
-                .catch( reject ) )
+                    resolve( clickedOK && folderContentsItem.get( 'selectedFile' ) ) 
+                ).catch( reject ) )
         dialog.dialog.setEnabled( 'OK', false )
         return result
     }
@@ -627,7 +629,9 @@ export const install = editor => {
         text : 'Save',
         tooltip : 'Save document',
         onAction : () => {
-            const fileID = new LurchDocument( editor ).getFileID()
+            const doc = new LurchDocument( editor )
+            const fileID = doc.getFileID()
+            fileID.contents = doc.getDocument()
             const subclass = FileSystem.getSubclass( fileID?.fileSystemName )
             if ( !subclass )
                 fileID.fileSystemName = FileSystem.getSubclassName(
