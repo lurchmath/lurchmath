@@ -62,7 +62,9 @@ export class BrowserFileSystem extends FileSystem {
             throw new Error( 'BrowserFileSystem does not support subfolders' )
         // Case 3: When the caller provided no parameter, so browse at the root
         return new Promise( ( resolve, reject ) => {
-            this.showOpenDialog().then( result => {
+            this.showOpenDialog(
+                '', 'Open file from browser storage'
+            ).then( result => {
                 if ( !result ) return // user canceled - stop
                 resolve( this.open( result ) ) // open the selected file
             } ).catch( reject )
@@ -106,7 +108,9 @@ export class BrowserFileSystem extends FileSystem {
         }
         // Case 3: Contents provided but no filename, so we must prompt the user
         return new Promise( ( resolve, reject ) => {
-            this.showSaveDialog().then( result => {
+            this.showSaveDialog(
+                '', '', 'Save file to browser storage'
+            ).then( result => {
                 if ( !result ) return // user canceled - stop
                 result.contents = fileObject.contents
                 resolve( this.save( result ) ) // save at the selected location
@@ -133,7 +137,9 @@ export class BrowserFileSystem extends FileSystem {
     delete ( fileObject ) {
         // Case 1: No filename provided, so we must prompt the user to choose
         if ( !fileObject ) return new Promise( ( resolve, reject ) => {
-            this.showOpenDialog( '', 'Delete file', 'Delete' ).then( result => {
+            this.showOpenDialog(
+                '', 'Delete file from browser storage', 'Delete'
+            ).then( result => {
                 if ( !result ) return // user canceled - stop
                 resolve( this.delete( result ) ) // delete the selected file
             } ).catch( reject )
