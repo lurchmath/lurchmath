@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Logging in to Dropbox...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <script src="https://unpkg.com/dropbox@10/dist/Dropbox-sdk.min.js"></script> -->
+    <script type="module">
+        import { getClient } from './dropbox-file-system.js'
+        window.addEventListener( 'load', () => getClient().then( client => {
+            client.auth.setCodeVerifier(
+                window.sessionStorage.getItem( 'code_verifier' ) )
+            const params = new URLSearchParams( window.location.search )
+            client.auth.getAccessTokenFromCode(
+                window.location.href.split( '?' )[0],
+                params.get( 'code' ) )
+            .then( response => {
+                const accessToken = response.result.access_token
+                window.opener.parent.postMessage( response.result, '*' )
+                window.self.opener = window.self
+                window.self.close()
+            } )
+        } ) )
+    </script>
+</head>
+<body>
+    <h1>Logging in to Dropbox...</h1>
+</body>
+</html>%
