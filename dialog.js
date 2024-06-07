@@ -618,6 +618,8 @@ export class Dialog {
     static notify ( editor, type, text, timeout ) {
         if ( type == 'success' )
             timeout ||= 2000
+        if ( ![ 'success', 'info', 'warning', 'error' ].includes( type ) )
+            throw new Error( 'Invalid notification type: ' + type )
         editor.notificationManager.open( {
             type : type,
             text : text,
