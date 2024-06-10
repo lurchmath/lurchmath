@@ -27,7 +27,7 @@ const LogicConcept = LDE.LogicConcept
 // them back to the main thread using the Message.progress() static method.
 // Because progress messages from the LDE come in the form of (p,n,r), where
 // p is a pass number (any positive integer), n is the total amount of work to
-// be done in that pass (any nonnegative integer), and r is the proportion of
+// be done in that pass (any nonnegative integer), and r is the percentage of
 // the work of the pass complete (an integer from 0 to 100 inclusive), we
 // transform (p,n,r) into (1 - 2^(-p+1) + 2^(-p) * r) to get the value to send
 // to the main thread.  This makes pass 1 take up the first half of the progress
