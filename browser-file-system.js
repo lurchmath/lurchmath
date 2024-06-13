@@ -152,7 +152,8 @@ export class BrowserFileSystem extends FileSystem {
     has ( fileObject ) {
         if ( !fileObject )
             throw new Error( 'Missing required file object argument' )
-        if ( fileObject.fileSystemName != this.getName() )
+        if ( fileObject.fileSystemName
+          && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
         return Promise.resolve(
             !fileObject.path && allFileNames().includes( fileObject.filename )
