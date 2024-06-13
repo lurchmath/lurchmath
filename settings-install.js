@@ -80,17 +80,30 @@ export const appSettings = new Settings(
         ),
         new SettingsCategoryMetadata(
             'File load/save',
+            // It would be better not to hard-code the names of the file systems
+            // below, but if we try to compute them dynamically, that creates an
+            // import cycle of badness that creates errors at app launch.
+            // Could be fixed in the future?  Not super important.
             new CategorySettingMetadata(
                 'default open dialog tab',
                 'Default source for loading files',
-                [ 'From browser storage', 'From your computer', 'From the web' ],
-                'From browser storage'
+                [
+                    'From your computer',
+                    'From the web',
+                    'From Dropbox',
+                    'From in-browser storage'
+                ],
+                `From your computer`
             ),
             new CategorySettingMetadata(
                 'default save dialog tab',
                 'Default destination for saving files',
-                [ 'To browser storage', 'To your computer' ],
-                'To browser storage'
+                [
+                    'To your computer',
+                    'To Dropbox',
+                    'To in-browser storage'
+                ],
+                `To your computer`
             )
         ),
         new SettingsCategoryMetadata(

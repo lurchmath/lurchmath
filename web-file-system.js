@@ -1,12 +1,11 @@
 
 import { FileSystem } from './file-system.js'
 import {
-    Dialog,
-    TextInputItem, ListItem, HTMLItem, ButtonItem, LabeledGroup, AlertItem
+    Dialog, TextInputItem, ButtonItem, DialogRow, AlertItem
 } from './dialog.js'
 import { loadFromURL } from './load-from-url.js'
 import { LurchDocument } from './lurch-document.js'
-import { isValidURL } from './utilities.js'
+import { isValidURL, makeAbsoluteURL } from './utilities.js'
 import { appSettings } from './settings-install.js'
 
 // Internal use only; extract all <a> targets and texts from some HTML
@@ -23,7 +22,9 @@ const getLinksFrom = html => {
 }
 
 // Internal use only; combine a URL and a relative path to a new URL
-const makeAbsoluteURL = ( url, path ) => {
+// Note that this is different from `makeAbsoluteURL` imported from utilities.js
+// because this one does not assume the app URL is the base.
+const joinUrlAndPath = ( url, path ) => {
     // If the path given is actually a full URL, then ignore the other URL and
     // just use the path alone.
     if ( isValidURL( path ) )
@@ -91,159 +92,258 @@ export class WebFileSystem extends FileSystem {
 
     static subclassName = FileSystem.registerSubclass(
         'the web', WebFileSystem )
-    
+
     /**
-     * See the documentation of the {@link FileSystem#open open()} method in the
-     * parent class for the definition of how this method must behave.  It
-     * implements the requirements specified there for a file system that
-     * represents browsing and downloading files from the web.  It does so as
-     * follows.
+     * Implement this abstract method from the base class, in this case so that
+     * it downloads files from a given URL on the web.  As long as the given
+     * file object's `filename` property is not `undefined`, this method will
+     * try to use it as a valid URL and fetch the file at that URL.  If the
+     * filename is a full URL, it will be used as-is, but if it is a relative
+     * file path, it will be made absolute by considering the folder in which
+     * sits the page that launched the app.
      * 
-     *  - If the given `fileObject` has a `filename` property, we treat it as an
-     *    URL and load data from it.
-     *     - If we fail to load data from it, reject with an error.
-     *     - If we get a Lurch document as response (as decided by {@link
-     *       LurchDocument.isDocumentHTML isDocumentHTML()}), we update the file
-     *       object to have those contents and resolve to it.
-     *     - If we get anything else, treat it as HTML and extract all links
-     *       from it (of the form `<a href="target">text</a>`).  If the list of
-     *       such links is empty, reject with an error.
-     *     - If it is nonempty, display it to the user for browsing as if this
-     *       URL were a folder full of files.  Selecting one recurs on this same
-     *       function with that new URL as the `fileObject`'s filename.
-     *     - While the user is browsing a virtual folder of that type, show them
-     *       a button that lets them bookmark that folder.  If they are browsing
-     *       a bookmarked folder, show them a button to un-bookmark it.
-     *  - If the given `fileObject` has a `path` property, throw an error.
-     *  - If the user does not provide a `fileObject` parameter, or provides one
-     *    with an empty filename, show them a text input into which they can
-     *    type an URL, and if they do so, recur on this function with that URL
-     *    as the `fileObject`'s filename.
-     *  - While showing them a text input, below it also show them a list of all
-     *    bookmarks, as links they can click to fill the URL bar with the
-     *    bookmark and click OK to navigate to it.  Double-clicking takes this
-     *    action immediately.
+     * It is an error to call this method with a file object that specifies a
+     * path.  The caller should put the entire URL into the filename field
+     * instead.
      * 
      * @param {Object} fileObject - as documented in the {@link FileSystem}
      *   class
-     * @returns {Promise} as documented in {@link FileSystem#open the abstract
-     *   method of the parent class}
+     * @returns {Promise} a promise that resolves to the file object that was
+     *   passed in, with its `contents` property set to the contents of the
+     *   downloaded file, or rejects with an error if the download fails
+     * 
+     * @see {@link module:Utilities.isValidURL isValidURL()}
+     * @see {@link module:Utilities.appURL appURL()}
+     * @see {@link module:Utilities.makeAbsoluteURL makeAbsoluteURL()}
      */
-    open ( fileObject ) {
-        // Case 1: They specified an invalid file object by specifying a path
-        if ( fileObject?.path )
+    read ( fileObject ) {
+        if ( !fileObject?.filename )
+            return Promise.reject( new Error( 'No filename given' ) )
+        if ( fileObject.path )
             throw new Error( 'WebFileSystem does not support paths' )
-        // Case 2: Empty filename, so show a dialog asking for a URL
-        if ( !fileObject?.filename ) {
-            return new Promise( ( resolve, reject ) => {
-                const dialog = new Dialog( 'Browsing', this.editor )
-                dialog.json.size = 'medium'
-                dialog.addItem( new TextInputItem( 'url', 'Enter URL to open' ) )
-                const bookmarks = loadBookmarks()
-                if ( bookmarks.length > 0 ) {
-                    const listItem = new ListItem( 'bookmarks' )
-                    listItem.setSelectable( true )
-                    listItem.onShow = () =>
-                        listItem.showList( bookmarks, bookmarks )
-                    const getUrlField = () =>
-                        dialog.querySelector( 'input[type="text"]' )
-                    listItem.selectionChanged = () =>
-                        getUrlField().value = listItem.selectedItem || ''
-                    listItem.onDoubleClick = () => {
-                        if ( !/^\s*$/.test( getUrlField().value ) )
-                            dialog.json.onSubmit()
-                    }
-                    dialog.addItem( new LabeledGroup(
-                        'Or click a bookmark:', listItem ) )
-                }
-                dialog.addItem( new AlertItem(
-                    'warn',
-                    `Many websites do not permit apps like Lurch to download
-                    files from them.  If you get an error when downloading, it
-                    may be caused by the permissions of the other website.`
-                ) )
-                dialog.show().then( userHitOK => {
-                    if ( !userHitOK ) return resolve()
-                    resolve( this.open( { filename : dialog.get( 'url' ) } ) )
-                } ).catch( reject )
-            } )
-        }
-        // Case 3: Filename given, so load its contents and see what they are
-        return new Promise( ( resolve, reject ) => {
-            loadFromURL( fileObject.filename ).then( response => {
-                // If it's a Lurch document, we are done
-                if ( LurchDocument.isDocumentHTML( response ) ) {
-                    resolve( {
-                        fileSystemName : this.getName(),
-                        filename : fileObject.filename,
-                        contents : response
-                    } )
-                    return
-                }
-                // If it's not, get all of its links and let the user pick one
-                const links = getLinksFrom( response )
-                const dialog = new Dialog( 'Browsing', this.editor )
-                dialog.json.size = 'medium'
-                dialog.addItem( new HTMLItem(
-                    `Viewing page: <tt>${fileObject.filename}</tt>` ) )
-                dialog.addItem( new TextInputItem( 'url', 'Enter URL to open' ) )
-                if ( links.length > 0 ) {
-                    const listItem = new ListItem( 'selectLink' )
-                    listItem.setSelectable( true )
-                    dialog.addItem( new LabeledGroup(
-                        'Or select one of the links just loaded:', listItem ) )
-                    listItem.onShow = () => listItem.showList(
-                        links.map( link => `${link.text} (<tt>${link.url}</tt>)` ),
-                        links )
-                    const getUrlField = () =>
-                        dialog.querySelector( 'input[type="text"]' )
-                    listItem.selectionChanged = () =>
-                        getUrlField().value = listItem.selectedItem?.url || ''
-                    listItem.onDoubleClick = () => {
-                        if ( !/^\s*$/.test( getUrlField().value ) )
-                            dialog.json.onSubmit()
-                    }
-                    const bookmarks = loadBookmarks()
-                    if ( bookmarks.includes( fileObject.filename ) ) {
-                        dialog.addItem( new ButtonItem(
-                            'Un-bookmark this page',
-                            () => {
-                                // Remove the bookmark
-                                const index = bookmarks.indexOf(
-                                    fileObject.filename )
-                                bookmarks.splice( index, 1 )
-                                saveBookmarks( bookmarks )
-                                dialog.close()
-                                // Reload the dialog so it's up-to-date
-                                resolve( this.open( fileObject ) )
-                            }
-                        ) )
-                    } else {
-                        dialog.addItem( new ButtonItem(
-                            'Bookmark this page',
-                            () => {
-                                // Add the bookmark
-                                bookmarks.push( fileObject.filename )
-                                saveBookmarks( bookmarks )
-                                dialog.close()
-                                // Reload the dialog so it's up-to-date
-                                resolve( this.open( fileObject ) )
-                            }
-                        ) )
-                    }
-                } else {
-                    dialog.addItem( new HTMLItem(
-                        'No links were found at the requested web site.' ) )
-                }
-                dialog.show().then( userHitOK => {
-                    if ( !userHitOK ) return resolve()
-                    resolve( this.open( {
-                        filename : makeAbsoluteURL(
-                            fileObject.filename, dialog.get( 'url' ) )
-                    } ) )
-                } ).catch( reject )
-            } ).catch( reject )
+        if ( fileObject.fileSystemName
+          && fileObject.fileSystemName != this.getName() )
+            throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
+        if ( !isValidURL( fileObject.filename ) )
+            fileObject.filename = makeAbsoluteURL( fileObject.filename )
+        return loadFromURL( fileObject.filename ).then( contents => {
+            fileObject.contents = contents
+            return fileObject
         } )
     }
+
+    /**
+     * Override the base class implementation to fit the needs of this class.
+     * The parent class requires the file system to be able to list its files,
+     * but a web-based file system cannot do so, because of course there are an
+     * enormous number of web pages and this app cannot know them all.  So
+     * instead, it provides a slightly different interpretation of the idea of
+     * "listing" files.
+     * 
+     * If browsing the "root" of the web file system, the resulting list of
+     * links is the set of bookmarks the user has saved.  If browsing a
+     * different path, that path must be a URL from which a webpage will be
+     * downloaded, and all links in that page treated as the contents of a
+     * virtual "folder" at that path.
+     * 
+     * @param {Object} fileObject - as documented in the {@link FileSystem}, but
+     *   with its path being either empty or a valid URL, as described above
+     * @returns {Promise} a promise that resolves to an array of file objects,
+     *   as documented in {@link FileSystem#list the documentation for this
+     *   method in the parent class}
+     */
+    list ( fileObject ) {
+        // If wrong filesystem, stop there
+        if ( fileObject?.fileSystemName
+          && fileObject.fileSystemName != this.getName() )
+            throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
+        // Otherwise, just use the fileObject's path, or default to '' if empty:
+        const pathToList = fileObject?.path || ''
+        // The "root" of this virtual file system is the set of bookmarks
+        if ( pathToList == '' )
+            return Promise.resolve( loadBookmarks().map( url => { return {
+                isBookmark : true,
+                path : url
+            } } ) )
+        // Any other path is treated as "folder" in the sense that it is
+        // downloaded and then all links (<a href="...">...</a>) in it are
+        // treated as its contents
+        const pageToItems = page => {
+            return getLinksFrom( page ).map( link => { return {
+                fileSystemName : this.getName(),
+                path : link.url,
+                icon : '',
+                displayName : `${link.text} (${link.url})`
+            } } )
+        }
+        // They may have pre-loaded the page for us; if so, we're done
+        if ( fileObject.contents )
+            return Promise.resolve( pageToItems( fileObject.contents ) )
+        // Otherwise, download it, then proceed
+        return this.read( {
+            filename : fileObject.path
+        } ).then( newFileObject => pageToItems( newFileObject.contents ) )
+    }
+
+    /**
+     * Override the base class implementation to fit the needs of this class.
+     * The parent class requires the file system to be able to list its files,
+     * but a web-based file system cannot do so, because of course there are an
+     * enormous number of web pages and this app cannot know them all.
+     * Therefore, this file system needs a different UI than the one the parent
+     * class provides.
+     * 
+     * Here, we provide three ways for a user to transfer a file from the web
+     * into this app.  This function returns a collection of dialog items that 
+     * provide such functionality, as follows.
+     * 
+     *  - One dialog item is a text box into which the user can type the URL of
+     *    a file on the web.  A note appears beneath this blank pointing out
+     *    that many websites on the Internet do not allow for cross-site file
+     *    transfer, so beware that this has limited applicability.
+     *  - If the user enters a file into that blank and chooses to fetch it, the
+     *    app will do so, and if it finds that the result is a Lurch document,
+     *    it will be opened in the app.  However, if it finds that the result is
+     *    not a Lurch document, it will be treated as a collection of links to
+     *    be shown to the user like a folder for browsing.  The user can click
+     *    any such link to follow it and browse the resulting "folder," etc.
+     *    This allows instructors to set up nested collections of Lurch
+     *    documents, organized into folders, on a website, just by writing tiny
+     *    web pages with links in them (or allowing the web server to
+     *    auto-generate the folder lists as pages, which many servers do).
+     *  - The second dialog item, below the first, is a list of bookmarks.  When
+     *    a user is browsing any "folder" in the sense defined above, they can
+     *    mark it as a bookmark to add it to this list.  Each bookmark will also
+     *    have an "unbookmark this" button when visiting it.  This is so that a
+     *    student user can visit the webpage for a course's Lurch documents,
+     *    bookmark it, and never need to enter the URL again.  The instructor
+     *    may even update the content throughout the semester, and the user will
+     *    always have it bookmarked.
+     * 
+     * If the user chooses a document, when this function calls the
+     * `selectFile()` method in the dialog, it will pass a file object with its
+     * file contents loaded, and the caller will not need to fetch the data
+     * itself.
+     * 
+     * @returns {Object[]} an array of dialog items representing the UI
+     *   described above
+     */
+    fileChooserItems ( fileObject ) {
+        // This is the same as its parent class, with one event handler changed,
+        // and two new buttons added, so we fetch the same UI that the parent
+        // class provides, then modify it.
+        const parent = super.fileChooserItems( fileObject )
+        const chooser = parent[0]
+        const urlInput = new TextInputItem( 'url', undefined,
+            'http://example.com/my-file.lurch' )
+        const bookmarkButton = new ButtonItem( 'Add bookmark' )
+        const unbookmarkButton = new ButtonItem( 'Remove bookmark' )
+        const goButton = new ButtonItem( 'Go' )
+        parent.unshift( new AlertItem( 'warn',
+            `Not every website permits downloading its files into web apps.
+            If you try to download a file and it fails, it may be due to the
+            permissions of the website hosting the file.` ) )
+        parent.unshift( new DialogRow( urlInput, goButton ) )
+        parent.push( bookmarkButton )
+        parent.push( unbookmarkButton )
+        // Utility functions for dealing with the UI items defined above:
+        const urlBlank = () =>
+            urlInput.dialog.querySelector( 'input[type="text"]' )
+        const chooserTarget = () =>
+            joinUrlAndPath( chooser.path, chooser.get( chooser.name )?.path || '' )
+        const selectFile = contents => {
+            chooser.dialog.selectFile( {
+                fileSystemName : this.getName(),
+                filename : urlBlank().value,
+                contents : contents
+            } )
+        }
+        const showCorrectButtons = () => {
+            const url = urlBlank().value
+            const isBookmarked = url && loadBookmarks().includes( url )
+            unbookmarkButton.getElement().style.display =
+                isBookmarked ? 'inline' : 'none'
+            bookmarkButton.getElement().style.display =
+                url && !isBookmarked ? 'inline' : 'none'
+        }
+        const bookmarksChanged = () => {
+            if ( chooser.path == '' ) chooser.repopulate()
+            showCorrectButtons()
+        }
+        const goToUrl = () => {
+            const url = urlBlank().value
+            // If the user wants to go back to the bookmarks list, okay
+            if ( url == '' ) {
+                chooser.path = ''
+                chooser.repopulate()
+                return
+            }
+            // If it is not a valid URL, stop here
+            if ( !isValidURL( url ) ) {
+                Dialog.failure( this.editor,
+                    `Not a valid web address: ${url}`,
+                    'Invalid URL' )
+                return
+            }
+            // We can't know how to proceed until we download the URL
+            loadFromURL( url ).then( contents => {
+                // If it was a Lurch document, mark it as a file and submit
+                if ( LurchDocument.isDocumentHTML( contents ) ) {
+                    selectFile( contents )
+                    chooser.dialog.json.onSubmit()
+                    return
+                }
+                // If it was not, let list() treat it as a folder
+                chooser.path = url
+                chooser.repopulate()
+            } ).catch( error => {
+                Dialog.failure( this.editor,
+                    `Failed to download file from ${url}`,
+                    'Could not download file' )
+                console.error( error )
+            } )
+        }
+        // Install that on the chooser's double-click and the go button's click
+        chooser.onDoubleClick = goToUrl
+        goButton.action = goToUrl
+        // And here are the actions for the two buttons we added:
+        unbookmarkButton.action = () => {
+            saveBookmarks( loadBookmarks().filter( url => url != urlBlank().value ) )
+            bookmarksChanged()
+        }
+        bookmarkButton.action = () => {
+            saveBookmarks( [ ...loadBookmarks(), urlBlank().value ] )
+            bookmarksChanged()
+        }
+        // Now make the buttons hide/show as needed:
+        urlInput.onShow = () => {
+            urlBlank().addEventListener( 'input', showCorrectButtons )
+            urlBlank().parentNode.style.width = '100%' // also make it look nice
+        }
+        const originalSelectionChanged = chooser.onSelectionChanged
+        chooser.onSelectionChanged = () => {
+            originalSelectionChanged.apply( chooser )
+            if ( chooser.selectedItem ) {
+                const urlBlank = urlInput.dialog.querySelector( 'input[type="text"]' )
+                urlBlank.value = chooserTarget()
+            }
+        }
+        // And ensure the buttons sit in the footer of the dialog
+        bookmarkButton.onShow = () => {
+            const okButton = chooser.dialog.querySelector( 'button[title="OK"]' )
+            okButton.parentNode.insertBefore( bookmarkButton.getElement(), okButton )
+            okButton.parentNode.insertBefore( unbookmarkButton.getElement(), okButton )
+            showCorrectButtons()
+        }
+        // Now return the parent class's UI, with those modifications:
+        return parent
+    }
+
+    /**
+     * Overriding the default implementation of {@link FileSystem#fileSaverItems
+     * fileSaverItems()} to return an empty list, indicating that this subclass
+     * does not provide a way to save files.
+     */
+    fileSaverItems ( _fileObject ) { return [ ] }
 
 }

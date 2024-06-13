@@ -1,9 +1,11 @@
 
 import {
-    Dialog, LongTextInputItem, AlertItem, TextInputItem, ListItem, LabeledGroup
+    Dialog,
+    LongTextInputItem, AlertItem, TextInputItem, ListItem, LabeledGroup, HTMLItem
 } from './dialog.js'
 import { LurchDocument } from './lurch-document.js'
 import { appURL } from './utilities.js'
+import { appSettings } from './settings-install.js'
 
 // Internal use only
 // Tools for auto-saving the user's work as they edit, and for loading that work
@@ -19,6 +21,10 @@ const autoSaveExists = () => {
     return false
 }
 const removeAutoSave = () => window.localStorage.removeItem( autoSaveKey )
+
+// Internal use only
+// How to simplify any subclass name to an identifier
+const simplifyName = name => name.replace( /[^a-z]/gi, '' )
 
 /**
  * A FileSystem is a place where files can be saved and/or loaded.  This is
@@ -183,64 +189,90 @@ export class FileSystem {
 
     /**
      * The following member functions of the {@link FileSystem} class are
-     * abstract, and thus have empty implementations in the base class: `open`,
-     * `save`, `delete`, `has`, and `list`.  Subclasses may choose to implement
+     * abstract, and thus have empty implementations in the base class: `read`,
+     * `write`, `delete`, `has`, and `list`.  Subclasses may choose to implement
      * some of them, as documented in {@link FileSystem the class itself}.  You
      * can test whether a specific subclass implements a given feature by
-     * calling this function.
+     * calling this function.  You can test whether a specific instance
+     * implements a given feature by calling {@link FileSystem#implements
+     * implements()}.
      * 
      * @param {Object} subclass - the subclass to test
      * @param {string} name - the name of the feature, from the list above
      * @returns {boolean} whether the subclass implements the given feature
+     * @see {@link FileSystem#implements implements()}
      */
-    static implements ( subclass, name ) {
+    static subclassImplements ( subclass, name ) {
         return subclass.prototype[name] != FileSystem.prototype[name]
     }
 
     /**
-     * This abstract method opens a file from the file system.  It is abstract
+     * The following member functions of the {@link FileSystem} class are
+     * abstract, and thus have empty implementations in the base class: `read`,
+     * `write`, `delete`, `has`, and `list`.  Subclasses may choose to implement
+     * some of them, as documented in {@link FileSystem the class itself}.  You
+     * can test whether a specific instance implements a given feature by
+     * calling this function.  You can test whether a specific subclass
+     * implements a given feature by calling {@link
+     * FileSystem.subclassImplements subclassImplements()}.
+     * 
+     * @param {string} name - the name of the feature, from the list above
+     * @returns {boolean} whether the instance implements the given feature
+     * @see {@link FileSystem.subclassImplements subclassImplements()}
+     */
+    implements ( name ) {
+        return this[name] != FileSystem.prototype[name]
+    }
+
+    /**
+     * The following member functions of the {@link FileSystem} class are
+     * abstract, and thus have empty implementations in the base class: `read`,
+     * `write`, `delete`, `has`, and `list`.  Subclasses may choose to implement
+     * some of them, as documented in {@link FileSystem the class itself}.  You
+     * can get the full list of subclasses that implement a given feature by
+     * calling this function.
+     * 
+     * @param {string} name - the name of the feature, from the list above
+     * @returns {Array} the list of subclasses that implement the given feature
+     * @see {@link FileSystem.subclassImplements subclassImplements()}
+     * @see {@link FileSystem#implements implements()}
+     */
+    static subclassesImplementing ( name ) {
+        return FileSystem.getSubclasses().filter( subclass =>
+            FileSystem.subclassImplements( subclass, name ) )
+    }
+
+    /**
+     * This abstract method reads a file from the file system.  It is abstract
      * in the sense that the base implementation returns a promise that
      * immediately rejects with an error that the method is unimplemented.
-     * Subclasses that provide the ability to open files must override this base
+     * Subclasses that provide the ability to read files must override this base
      * implementation.  Any implementation in a subclass should satisfy the
      * following criteria.
      * 
      *  1. If the user passes a file object parameter (as documented in {@link
      *     FileSystem the FileSystem class}) with enough information in it to
      *     identify a file, then this method should return a promise that
-     *     resolves to that file as soon as it can be loaded.  Specifically, it
-     *     should not prompt the user for their involvement, and the object to
-     *     which the promise resolves should be the same object as the one
-     *     passed in, but with its `contents` member set to the contents of the
-     *     file.
-     *  2. If the user omits the parameter, then this method should prompt the
-     *     user to choose a file from the list supplied by the file system.  If
-     *     the user cancels, the promise should resolve to null.  If the user
-     *     chooses a file, then the promise should resolve to the file object
-     *     that was chosen, with its contents filled in after it has been
-     *     loaded.
-     *  3. If the user supplies this parameter, but it has no filename nor UID,
-     *     but has a path field, then the same behavior should take place as in
-     *     case 2, above, but the dialog that lets the user browse for the file
-     *     should begin in the folder whose path is given in the file object.
-     *  4. If the user sends an invalid file object, or some error takes place
-     *     during the loading process, then the promise should reject.
+     *     resolves to that file as soon as it can be loaded.  Specifically, the
+     *     object to which the promise resolves should be the same object as the
+     *     one passed in, but with its `contents` member set to the contents of
+     *     the file, as a string.  Furthermore, the file object should have its
+     *     file system name set to the name of the subclass in question.
+     *  2. If the user omits the parameter, or omits its filename or UID, or
+     *     provides an invalid file object in any other way, then this method
+     *     should reject with an error, because the user did not specify which
+     *     file to read.
      * 
-     * In any of the successful cases above, set the file system name to this
-     * file system's name, marking this resource as the origin of the file.
-     * Any subclass that implements this method should also implement the
-     * {@link FileSystem#has has()} and {@link FileSystem#list list()} methods.
-     * 
-     * @param {Object} [fileObject] - an object representing the file to open,
+     * @param {Object} [fileObject] - an object representing the file to read,
      *   as described above
      * @returns {Promise} a promise that resolves or rejects as described in the
      *   criteria above
      * @see {@link FileSystem#has has()}
      * @see {@link FileSystem#list list()}
      */
-    open ( fileObject ) {
+    read ( _fileObject ) {
         return new Promise( ( _, reject ) => {
-            reject( new Error( '"open" unimplemented in FileSystem class' ) )
+            reject( new Error( '"read" unimplemented in FileSystem class' ) )
         } )
     }
 
@@ -252,31 +284,26 @@ export class FileSystem {
      * Any implementation in a subclass should satisfy the following criteria.
      * 
      *  1. If the file object's `fileSystemName` does not match the name of this
-     *     instance, throw an error, because the caller is asking us to save in
+     *     instance, throw an error, because the caller is asking us to write in
      *     a place to which we have no access.  However, if the `fileSystemName`
      *     was omitted, then on a successful save, update it to the name of this
      *     subclass.
      *  2. If the file object's `contents` member is undefined, throw an error,
-     *     because we have no content to save.
-     *  3. If the file object contains sufficient information in its `filename`,
-     *     `UID`, and `path` members to let this file system know where to save
-     *     the content, then save the given contents into the file system and
-     *     resolve to a (possibly updated) file object on success, or reject if
-     *     an error occurred when attempting to save.
-     *  4. If the file object does not provide sufficient information in its
+     *     because we have no content to write.
+     *  3. If the file object contains insufficient information in its
      *     `filename`, `UID`, and `path` members to let this file system know
-     *     where to save the content, prompt the user for it in a dialog.  How
-     *     much information must be provided may vary from one file system to
-     *     another.  If the user cancels, resolve the promise to null.  If the
-     *     user does not cancel, then proceed as in the previous bullet.
+     *     where to write the content, throw an error.
+     *  4. Save the given contents into the file system and resolve to a
+     *     (possibly updated) file object on success, or reject if an error
+     *     occurred when attempting to write.
      * 
-     * @param {Object} fileObject - an object representing the file to save,
+     * @param {Object} fileObject - an object representing the file to write,
      *   as described above, and as documented in {@link FileSystem the
      *   FileSystem class})
      */
-    save ( fileObject ) {
+    write ( _fileObject ) {
         return new Promise( ( _, reject ) => {
-            reject( new Error( '"save" unimplemented in FileSystem class' ) )
+            reject( new Error( '"write" unimplemented in FileSystem class' ) )
         } )
     }
 
@@ -291,22 +318,16 @@ export class FileSystem {
      *  1. If the file object's `fileSystemName` does not match the name of this
      *     instance, throw an error, because the caller is asking us to delete
      *     a file in a different file system.  However, if the `fileSystemName`
-     *     was omitted, the on a successful deletion, update it to the name of
+     *     was omitted, then on a successful deletion, update it to the name of
      *     this subclass.
      *  2. If the client passes a file object as parameter, and it contains
-     *     sufficient information in its `path`, `filename`, and `UID` members
-     *     to uniquely determine a file, then delete the file from the file
-     *     system and resolve to a (possibly updated) file object on success, or
-     *     reject if an error occurred when attempting to delete.
-     *  3. If the client passes a file object as parameter, and it contains
-     *     sufficient information to uniquely determine a file, but that file
-     *     does not actually exist, reject with an error.
-     *  4. If the client passes a file object as parameter, and it does not
-     *     contain sufficient information in its `path`, `filename`, and `UID`
-     *     members to uniquely determine a file, then show the user a dialog in
-     *     which the user can select the file to delete.  If the user cancels,
-     *     resolve the promise to null.  If the user does not cancel, then
-     *     proceed as in item 2.
+     *     insufficient information in its `path`, `filename`, and `UID` members
+     *     to uniquely determine a file, throw an error.  Also, if it is
+     *     possible in the file system in question to detect at this point
+     *     whether the file exists, and it does not, throw an error.
+     *  3. Otherwise, delete the file from the file system and resolve to a
+     *     (possibly updated) file object on success, or reject if an error
+     *     occurred when attempting to delete.
      * 
      * @param {Object} fileObject - an object representing the file to delete,
      *   as described above, and as documented in {@link FileSystem the
@@ -314,7 +335,7 @@ export class FileSystem {
      * @returns {Promise} a promise that resolves or rejects as described in the
      *   criteria above
     */
-    delete ( fileObject ) {
+    delete ( _fileObject ) {
         return new Promise( ( _, reject ) => {
             reject( new Error( '"delete" unimplemented in FileSystem class' ) )
         } )
@@ -326,7 +347,7 @@ export class FileSystem {
      * abstract in the sense that the base implementation returns a promise that
      * immediately rejects with an error that the method is unimplemented.
      * Subclasses that provide the ability to read files (by implementing the
-     * {@link FileSystem#open open()} method) should also provide this method by
+     * {@link FileSystem#read read()} method) should also provide this method by
      * overriding this base implementation.  Any implementation in a subclass
      * should satisfy the following criteria.
      * 
@@ -345,9 +366,9 @@ export class FileSystem {
      *   FileSystem class})
      * @returns {Promise} a promise that resolves or rejects as described in the
      *   criteria above
-     * @see {@link FileSystem#open open()}
+     * @see {@link FileSystem#read read()}
      */
-    has ( fileObject ) {
+    has ( _fileObject ) {
         return new Promise( ( _, reject ) => {
             reject( new Error( '"has" unimplemented in FileSystem class' ) )
         } )
@@ -359,7 +380,7 @@ export class FileSystem {
      * sense that the base implementation returns a promise that immediately
      * rejects with an error that the method is unimplemented.  Subclasses that
      * provide the ability to read files (by implementing the {@link
-     * FileSystem#open open()} method) should also provide this method by
+     * FileSystem#read read()} method) should also provide this method by
      * overriding this base implementation.  Any implementation in a subclass
      * should satisfy the following criteria.
      * 
@@ -382,17 +403,186 @@ export class FileSystem {
      *   assumed instead
      * @returns {Promise} a promise that resolves or rejects as described in the
      *   criteria above
-     * @see {@link FileSystem#open open()}
+     * @see {@link FileSystem#read read()}
      */
-    list ( fileObject ) {
+    list ( _fileObject ) {
         return new Promise( ( _, reject ) => {
             reject( new Error( '"list" unimplemented in FileSystem class' ) )
         } )
     }
 
     /**
+     * When the user wants to select a file from this file system, this method
+     * returns a list of dialog items allowing the user to choose a file.  For
+     * example, if the list of files is known, the UI might be a representation
+     * of that list, allowing the user to click one.  Or if the file system is
+     * the web, from which one downloads URLs, the UI might be a text box into
+     * which one can type a URL.
+     * 
+     * The base class implementation is to return a single file chooser item (in
+     * an array by itself) if the file system implements the {@link
+     * FileSystem#list list()} method, and undefined otherwise.
+     * 
+     * Anyone reimplementing this function must ensure that, whenever the user
+     * interacts with the dialog items to choose a file, or change which file
+     * has been chosen, the event handlers in one or more of the items returned
+     * by this function must notify the dialog of what has changed by calling
+     * `dialog.selectFile(fileObject)`.  The parameter should either be a file
+     * object as documented at the top of {@link FileSystem this class}, or it
+     * should be omitted to indicate that no (valid) file is currently selected.
+     * This same function should be called during one of the items' `onShow()`
+     * handlers as well, to initialize which file is selected when the tab
+     * containing these dialog items first appears.  Failure to follow this
+     * convention will result in undefined behavior.
+     * 
+     * If the UI this function returns is only for selecting a file, but not
+     * loading its contents, the file object set with `dialog.selectFile()` may
+     * contain just the `name` and/or `UID` fields, and need not contain the
+     * `contents` field.  It can be loaded later with a call to {@link
+     * FileSystem#read read()}.  If the UI this function returns is for loading
+     * a file (e.g., drag-and-drop a file from the user's computer to upload it)
+     * then the file object is free to include the contents as well, especially
+     * since they cannot be read directly from JavaScript in that example case.
+     * 
+     * If the client wants the UI to browse to a specific location in the file
+     * system, it can pass a file object with the `path` field set to the
+     * location at which browsing should begin.
+     * 
+     * @returns {Object[]?} a list of dialog items representing this file system
+     *   in a dialog, if the user's intent is to select a file from it
+     */
+    fileChooserItems ( fileObject ) {
+        if ( !this.implements( 'list' ) ) return
+        const name = simplifyName( this.getName() ) + 'FileList'
+        const chooser = new FolderContentsItem(
+            this, fileObject?.path || '', name )
+        chooser.setSelectable()
+        const originalOnShow = chooser.onShow
+        chooser.onShow = () => {
+            chooser.dialog.selectFile() // none yet
+            originalOnShow.apply( chooser )
+        }
+        chooser.onSelectionChanged = () =>
+            chooser.dialog.selectFile( chooser.get( name ) )
+        chooser.onDoubleClick = () => {
+            const target = chooser.get( name )
+            // double-clicked a file means it's time to submit the dialog
+            if ( target.filename ) {
+                chooser.dialog.json.onSubmit()
+                return
+            }
+            // double-clicked a folder means it's time to navigate into it
+            chooser.path = target.path
+            chooser.repopulate()
+        }
+        return [ chooser ]
+    }
+
+    /**
+     * When the user wants to save a file to this file system, this method
+     * returns a list of dialog items allowing the user to choose the location
+     * for the save.  For example, the UI might be a list of existing files,
+     * together with a text blank into which you can type the filename of the
+     * new file to save (or fill that box by clicking the name of an existing
+     * file to save over it) just like many existing File-Save dialogs.
+     * 
+     * The base class implementation is to return two dialog items that behave
+     * as in the example above, one text box and one file chooser item (in an
+     * array of length two) if the file system implements the {@link
+     * FileSystem#list list()} method, and just the text box alone if not.
+     * 
+     * Anyone reimplementing this function must ensure that, whenever the user
+     * interacts with the dialog items to choose a save destination, the event
+     * handlers in one or more of the items returned by this function must
+     * notify the dialog of what has changed by calling
+     * `dialog.setLocation(fileObject)`.  The parameter should either be a file
+     * object as documented at the top of {@link FileSystem this class}, or it
+     * should be omitted to indicate that no (valid) destination is currently
+     * specified.  This same function should be called during one of the items'
+     * `onShow()` handlers as well, to initialize which destination is specified
+     * when the tab containing these dialog items first appears.  (In many
+     * cases, no file will be chosen initially, and you can call
+     * `dialog.setLocation()` with no argument.)  Failure to follow this
+     * convention will result in undefined behavior.
+     * 
+     * Calls to `dialog.setLocation()` never need to pass a file object with a
+     * `contents` field, since the contents can be filled in afterwards by the
+     * caller, and before a call to {@link FileSystem#write write()}.
+     * 
+     * If the client wants the UI to start out referring to a specific location
+     * in the file system, such as the last folder or file where the user saved
+     * something, it can pass a file object with the `filename` and/or `path`
+     * fields set to the file or folder at which browsing should begin.
+     * 
+     * @returns {Object[]?} a list of dialog items representing this file system
+     *   in a dialog, if the user's intent is to save a file into it
+     */
+    fileSaverItems ( fileObject ) {
+        const name = simplifyName( this.getName() )
+        // The default implementation always puts in a filename blank
+        const result = [ ]
+        const blankName = `saveFilename`
+        const filenameBlank = new TextInputItem( blankName, 'Filename' )
+        const getFilenameElement = () =>
+            filenameBlank.dialog.querySelector( 'input[type="text"]' )
+        result.push( filenameBlank )
+        // If the file system implements the list method, add a file chooser as
+        // well, which can alter the contents of the filename blank
+        let chooser = null
+        if ( this.implements( 'list' ) ) {
+            const chooserName = `${name}FileList`
+            chooser = new FolderContentsItem(
+                this, fileObject?.path || '', chooserName )
+            chooser.setSelectable()
+            // If they click a file (not a folder), put its name into the
+            // filename blank
+            chooser.onSelectionChanged = () => {
+                const target = chooser.get( chooserName )
+                if ( target.filename ) {
+                    getFilenameElement().value = target.filename
+                    getFilenameElement().dispatchEvent( new Event( 'input' ) )
+                }
+            }
+            chooser.onDoubleClick = () => {
+                const target = chooser.get( chooserName )
+                // double-clicked a file means it's time to submit the dialog
+                if ( target.filename ) {
+                    chooser.dialog.json.onSubmit()
+                    return
+                }
+                // double-clicked a folder means it's time to navigate into it
+                chooser.path = target.path
+                chooser.repopulate()
+            }
+            result.push( chooser )
+        }
+        // And we need the dialog to be taller, so we need an artificial spacer
+        result.push( new HTMLItem( '<div style="height: 100px;"></div>' ) )
+        // Do some setup when the dialog is first shown
+        filenameBlank.onShow = () => {
+            // If the user passed a fileObject, then the initial value of the
+            // text box should be filled with its filename, and the dialog
+            // should be notified of that.  Otherwise, tell the dialog that no
+            // save destination is selected.
+            getFilenameElement().value = fileObject?.filename ||
+                filenameBlank.dialog.get( 'saveFilename' ) || ''
+            filenameBlank.dialog.setLocation( fileObject )
+            // Whenever the contents of the filename blank change, notify the
+            // dialog
+            getFilenameElement().addEventListener( 'input', () => {
+                filenameBlank.dialog.setLocation( {
+                    fileSystemName : this.getName(),
+                    filename : getFilenameElement().value,
+                    path : chooser?.path || fileObject?.path || ''
+                } )
+            } )
+        }
+        return result
+    }
+
+    /**
      * This static member should be called by any subclass that implements the
-     * {@link FileSystem#save save()} method, whenever a save is successful,
+     * {@link FileSystem#write write()} method, whenever a save is successful,
      * because there are two responses that the system must give to any
      * successful file save.
      * 
@@ -404,20 +594,20 @@ export class FileSystem {
      *  2. Store the file object representing the file just saved, so that it
      *     can be stored in the {@link LurchDocument} for the editor.  If the
      *     user later invokes a "save" menu item, its event handler can use the
-     *     stored file object as the parameter to the {@link FileSystem#save
-     *     save()} method.
+     *     stored file object as the parameter to the {@link FileSystem#write
+     *     write()} method.
      * 
      * The file object passed to this function should have enough uniquely
      * identifying information in its `filename`, `UID`, and `path` members to
-     * satisfy the requirements of the {@link FileSystem#save save()} method for
-     * the same file system subclass.  If its `contents` member has data in it,
-     * that data will be ignored, so that it is not unnecessarily copied.  No
-     * `fileSystemName` needs to be provided; each subclass will use its own.
+     * satisfy the requirements of the {@link FileSystem#write write()} method
+     * for the same file system subclass.  If its `contents` member has data in
+     * it, that data will be ignored, so that it is not unnecessarily copied.
+     * No `fileSystemName` needs to be provided; each subclass will use its own.
      * 
      * @param {Object} fileObject - the file object representing the file that
      *   was just saved (and whose format is documented in the {@link
      *   FileSystem} class)
-     * @see {@link FileSystem#save save()}
+     * @see {@link FileSystem#write write()}
      */
     documentSaved ( fileObject ) {
         removeAutoSave()
@@ -430,149 +620,228 @@ export class FileSystem {
     }
 
     /**
-     * Show a "File Open" dialog to browse this file system and return a promise
-     * that resolves to the selected file (or null if the user cancels).  The
-     * dialog is used for choosing a file, but it doesn't have to be with the
-     * purpose of opening the file; for example, you could use it to choose a
-     * file to delete, if you provide appropriate values for the second and
-     * third parameters.
+     * Open a File > Open dialog over the given editor, with tabs for each
+     * available file system, and allow the user to browse them for a file to
+     * open.  If the user chooses a file and asks to open it, attempt to do so,
+     * and as long as it succeeds, replace the editor's current contents with
+     * that new document.  If anything goes wrong, show a notification to the
+     * user stating what went wrong.  If it succeeds, show a brief success
+     * notification after the file loads.
      * 
-     * @param {String} [initialPath] - initial path at which to start browsing,
-     *   defaults to the file system root
-     * @param {String} [title] - title for the dialog, defaults to "Open file"
-     * @param {String} [submit] - the name of the submit button, defaults to
-     *   "Open"
-     * @returns {Promise} a promise that resolves to the selected file object if
-     *   the user chooses a file to open, resolves to null if the user cancels,
-     *   and rejects if an error occurs
+     * @param {tinymce.Editor} editor - the editor in which to open the file
+     * @see {@link FileSystem.saveFileAs saveFileAs()}
+     * @see {@link FileSystem.deleteFile deleteFile()}
      */
-    showOpenDialog ( initialPath = '', title = 'Open file', submit = 'Open' ) {
-        // Create a dialog and put a FolderContentsItem in it
-        const dialog = new Dialog( title, this.editor )
+    static openFile ( editor ) {
+        const dialog = new Dialog( 'Open file', editor )
         dialog.json.size = 'medium'
-        dialog.setOK( submit )
-        const folderContentsItem = new FolderContentsItem( this, initialPath )
-        folderContentsItem.setSelectable( true )
-        dialog.addItem( new LabeledGroup(
-            'Existing files:', folderContentsItem ) )
-        // Ensure we can only click the "Open" button if a file is selected
-        folderContentsItem.selectionChanged = () =>
-            dialog.dialog.setEnabled( 'OK',
-                !!folderContentsItem.get( 'selectedFile' ) )
-        // Make double-click do the same thing as click-and-then-hit-Open
-        folderContentsItem.onDoubleClick = () => {
-            if ( folderContentsItem.get( 'selectedFile' ) )
-                dialog.json.onSubmit()
+        let currentFile = null
+        dialog.selectFile = fileObject => 
+            dialog.dialog.setEnabled( 'OK', !!( currentFile = fileObject ) )
+        const tabs = (
+            editor.appOptions.fileOpenTabs || FileSystem.getSubclasses()
+        ).map( subclass => {
+            return {
+                name : `From ${FileSystem.getSubclassName( subclass )}`,
+                items : new subclass( editor ).fileChooserItems()
+            }
+        } ).filter( tab => tab.items.length > 0 )
+        if ( tabs.length == 0 ) {
+            Dialog.failure( editor, 'No file systems available',
+                'Cannot browse for a file to open' )
+            return
         }
-        // Don't submit the dialog if Open was clicked when a folder was
-        // selected; instead, navigate inside of it
-        const standardSubmitRoutine = dialog.json.onSubmit
-        dialog.json.onSubmit = () => {
-            const selected = folderContentsItem.get( 'selectedFile' )
-            if ( !selected )
-                throw new Error( 'Submit should not be active without a selection' )
-            if ( selected.filename ) // they are opening a file
-                standardSubmitRoutine()
-            else // they are opening a folder
-                folderContentsItem.setPath( selected.path )
-        }
-        // Show the dialog and give the caller access to its promise (sort of)
-        const result = new Promise( ( resolve, reject ) =>
-            dialog.show()
-                .then( clickedOK =>
-                    resolve( clickedOK && folderContentsItem.get( 'selectedFile' ) ) 
-                ).catch( reject ) )
-        dialog.dialog.setEnabled( 'OK', false )
-        return result
+        dialog.setTabs( ...tabs.map( tab => tab.name ) )
+        tabs.forEach( tab =>
+            tab.items.forEach( item =>
+                dialog.addItem( item, tab.name ) ) )
+        dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return
+            // At this point, if all file systems obeyed the rules about
+            // calling selectFile() at the appropriate times, then we
+            // should have !!currentFile.  Do a sanity check:
+            if ( !currentFile ) {
+                Dialog.notify( editor, 'error', `No file selected.` )
+                return
+            }
+            // Utility function for populating the editor, used below:
+            const openInEditor = fileObject => {
+                const LD = new LurchDocument( editor )
+                LD.setDocument( fileObject.contents )
+                delete currentFile.contents
+                LD.setFileID( currentFile )
+                Dialog.notify( editor, 'success',
+                    `Loaded ${currentFile.filename}.` )
+            }
+            // If the UI gave us the full file contents, use them:
+            if ( currentFile.hasOwnProperty( 'contents' ) ) {
+                openInEditor( currentFile )
+                return
+            }
+            // Otherwise, ask the FileSystem for them first:
+            const subclass = FileSystem.getSubclass(
+                currentFile.fileSystemName )
+            new subclass( editor ).read( currentFile ).then( result => {
+                openInEditor( result )
+            } ).catch( error => {
+                console.error( error )
+                Dialog.notify( editor, 'error',
+                    `Could not load ${currentFile.filename}.` )
+            } )
+        } )
+        setTimeout( () => {
+            const defaultTab = appSettings.get( 'default open dialog tab' )
+            if ( tabNamesFromSettings.includes( defaultTab ) )
+                dialog.showTab( defaultTab )
+        } )
     }
     
     /**
-     * Show a "File Save" dialog to browse this file system and return a promise
-     * that resolves to a file object that refers to the user's chosen save
-     * location (or null if the user canceled).
+     * Open a File > Save As dialog over the given editor, with tabs for each
+     * available file system, and allow the user to browse them for a location
+     * into which to save their current file.  If the user chooses a location
+     * and asks to save into it, attempt to do so, and pop up a notification
+     * indicating success or failure.  Upon success, update the file information
+     * stored in the current editor about where the document has been saved,
+     * and notify the document that it is not dirty, using
+     * {@link FileSystem#documentSaved documentSaved()}.
      * 
-     * @param {String} [initialPath] - initial path at which to start browsing,
-     *   defaults to the file system root
-     * @param {String} [initialFilename] - initial filename used in the dialog,
-     *   defaults to the empty string
-     * @param {String} [title] - title for the dialog, defaults to "Save file"
-     * @param {String} [submit] - the name of the submit button, defaults to
-     *   "Save"
-     * @returns {Promise} a promise that resolves to the a file object if the
-     *   user chooses a location to save, resolves to null if the user cancels,
-     *   and rejects if an error occurs
+     * @param {tinymce.Editor} editor - the editor whose file is to be saved
+     * @see {@link FileSystem.openFile openFile()}
+     * @see {@link FileSystem.deleteFile deleteFile()}
      */
-    showSaveDialog (
-        initialPath = '', initialFilename = '',
-        title = 'Save file', submit = 'Save'
-    ) {
-        // Create a dialog and put a FolderContentsItem in it, plus a text input
-        const dialog = new Dialog( title, this.editor )
+    static saveFileAs ( editor ) {
+        const dialog = new Dialog( 'Save file', editor )
         dialog.json.size = 'medium'
-        dialog.setOK( submit )
-        dialog.addItem( new TextInputItem( 'filename', 'Filename' ) )
-        dialog.setInitialData( { filename : initialFilename } )
-        const folderContentsItem = new FolderContentsItem( this, initialPath )
-        folderContentsItem.setSelectable( true )
-        dialog.addItem( new LabeledGroup(
-            'Existing files:', folderContentsItem ) )
-        // Convenience functions for computing our return value
-        let lastFilename = null
-        const currentFilename = () => {
-            if ( !dialog.element ) return lastFilename // dialog has closed
-            return lastFilename =
-                dialog.querySelector( 'input[type="text"]' ).value
+        let saveLocation = null
+        dialog.setLocation = fileObject => {
+            saveLocation = fileObject
+            dialog.dialog.setEnabled( 'OK', !!saveLocation?.filename )
         }
-        const fileObjectResult = () => { return {
-            fileSystemName : this.getName(),
-            path : folderContentsItem.getPath(),
-            filename : currentFilename()
-        } }
-        // Don't submit the dialog if Save was clicked when a folder was
-        // selected; instead, navigate inside of it
-        const standardSubmitRoutine = dialog.json.onSubmit
-        dialog.json.onSubmit = () => {
-            // If they are trying to open a folder, navigate inside it
-            const selected = folderContentsItem.get( 'selectedFile' )
-            if ( selected && !selected.filename ) {
-                folderContentsItem.setPath( selected.path )
+        const tabs = (
+            editor.appOptions.fileSaveTabs || FileSystem.getSubclasses()
+        ).map( subclass => {
+            return {
+                name : `To ${FileSystem.getSubclassName( subclass )}`,
+                items : new subclass( editor ).fileSaverItems()
+            }
+        } ).filter( tab => tab.items.length > 0 )
+        if ( tabs.length == 0 ) {
+            Dialog.failure( editor, 'No file systems available',
+                'Cannot browse for a location to save' )
+            return
+        }
+        dialog.setTabs( ...tabs.map( tab => tab.name ) )
+        tabs.forEach( tab =>
+            tab.items.forEach( item =>
+                dialog.addItem( item, tab.name ) ) )
+        dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return
+            // At this point, if all file systems obeyed the rules about
+            // calling setLocation() at the appropriate times, then we
+            // should have !!saveLocation.  Do a sanity check:
+            if ( !saveLocation ) {
+                Dialog.notify( editor, 'error', `No filename specified.` )
                 return
             }
-            // If the file already exists, ensure the user wants to overwrite it
-            this.has( fileObjectResult() ).then( exists => {
-                if ( exists ) {
-                    Dialog.areYouSure( this.editor, 'Overwrite existing file?' )
-                        .then( yesImSure => {
-                            if ( yesImSure ) standardSubmitRoutine()
-                        } )
-                    return
-                }
-                // The file does not already exist, so go ahead and save there
-                standardSubmitRoutine()
+            // Ask the FileSystem to save the editor's current contents:
+            const subclass = FileSystem.getSubclass(
+                saveLocation.fileSystemName )
+            const LD = new LurchDocument( editor )
+            saveLocation.contents = LD.getDocument()
+            const fileSystem = new subclass( editor )
+            fileSystem.write( saveLocation ).then( () => {
+                delete saveLocation.contents
+                LD.setFileID( saveLocation )
+                fileSystem.documentSaved( saveLocation )
+                Dialog.notify( editor, 'success',
+                    `Saved ${saveLocation.filename}.` )
+            } ).catch( error => {
+                console.error( error )
+                Dialog.notify( editor, 'error',
+                    `Could not save ${saveLocation.filename}.` )
             } )
+        } )
+        setTimeout( () => {
+            const defaultTab = appSettings.get( 'default save dialog tab' )
+            if ( tabNamesFromSettings.includes( defaultTab ) )
+                dialog.showTab( defaultTab )
+        } )
+    }
+    
+    /**
+     * Open a Delete File dialog, with tabs for each file system that supports
+     * the deletion of files, and allow the user to browse them for a file to
+     * delete.  If the user chooses a file and asks to delete it, attempt to do
+     * so, and pop up a notification indicating success or failure.
+     * 
+     * @param {tinymce.Editor} editor - the editor over which the dialog will be
+     *   shown (but the editor's contents to not play into this deletion
+     *   operation)
+     * @see {@link FileSystem.openFile openFile()}
+     * @see {@link FileSystem.saveFileAs saveFileAs()}
+     */
+    static deleteFile ( editor ) {
+        const dialog = new Dialog( 'Delete file', editor )
+        dialog.json.size = 'medium'
+        dialog.setOK( 'Delete' )
+        let currentFile = null
+        dialog.selectFile = fileObject => 
+            dialog.dialog.setEnabled( 'OK', !!( currentFile = fileObject ) )
+        const tabs = (
+            editor.appOptions.fileDeleteTabs || FileSystem.getSubclasses()
+        ).map( subclass => {
+            const fileSystem = new subclass( editor )
+            return {
+                name : `In ${FileSystem.getSubclassName( subclass )}`,
+                items : fileSystem.implements( 'list' )
+                    && fileSystem.implements( 'delete' ) ? [
+                        ...fileSystem.fileChooserItems(),
+                        // and an artificial spacer:
+                        new HTMLItem( '<div style="height: 100px;"></div>' )
+                    ] : [ ]
+            }
+        } ).filter( tab => tab.items.length > 0 )
+        if ( tabs.length == 0 ) {
+            Dialog.failure( editor, 'No file systems available',
+                'Cannot browse for a file to delete' )
+            return
         }
-        // Show the dialog and give the caller access to its promise (sort of)
-        const result = new Promise( ( resolve, reject ) =>
-            dialog.show()
-                .then( clickedOK => resolve( clickedOK && fileObjectResult() ) )
-                .catch( reject ) )
-        dialog.dialog.setEnabled( 'OK', false )
-        // Ensure we can only click the "Save" button if a filename is present
-        const filenameInput = dialog.querySelector( 'input[type="text"]' )
-        const filenameNonEmpty = () => /\S/.test( filenameInput.value )
-        filenameInput.addEventListener( 'input', () =>
-            dialog.dialog.setEnabled( 'OK', filenameNonEmpty() ) )
-        // Make selecting an item change the contents of the filename input
-        folderContentsItem.selectionChanged = () => {
-            const selectedItem = folderContentsItem.get( 'selectedFile' )
-            if ( selectedItem ) filenameInput.value = selectedItem.filename
-            dialog.dialog.setEnabled( 'OK', filenameNonEmpty() )
-        }
-        // Make double-click do the same thing as click-and-then-hit-Open
-        folderContentsItem.onDoubleClick = () => {
-            if ( filenameNonEmpty() ) dialog.json.onSubmit()
-        }
-        return result
+        dialog.setTabs( ...tabs.map( tab => tab.name ) )
+        tabs.forEach( tab =>
+            tab.items.forEach( item =>
+                dialog.addItem( item, tab.name ) ) )
+        dialog.show().then( userHitOK => {
+            if ( !userHitOK ) return
+            // At this point, if all file systems obeyed the rules about
+            // calling selectFile() at the appropriate times, then we
+            // should have !!currentFile.  Do a sanity check:
+            if ( !currentFile ) {
+                Dialog.notify( editor, 'error', `No file selected.` )
+                return
+            }
+            // Ask the FileSystem to delete the file, only if the user is sure:
+            Dialog.areYouSure( editor,
+                `Are you sure you want to delete ${currentFile.filename}?`
+            ).then( userSaidYes => {
+                if ( !userSaidYes ) return
+                const subclass = FileSystem.getSubclass(
+                    currentFile.fileSystemName )
+                new subclass( editor ).delete( currentFile ).then( () => {
+                    Dialog.notify( editor, 'success',
+                        `Deleted ${currentFile.filename}.` )
+                } ).catch( error => {
+                    console.error( error )
+                    Dialog.notify( editor, 'error',
+                        `Could not delete ${currentFile.filename}.` )
+                } )
+            } )
+        } )
+        setTimeout( () => {
+            const defaultTab = appSettings.get( 'default open dialog tab' )
+            if ( tabNamesFromSettings.includes( defaultTab ) )
+                dialog.showTab( defaultTab )
+        } )
     }
     
 }
@@ -594,11 +863,11 @@ const ensureWorkIsSaved = editor => new Promise( ( resolve, reject ) => {
  * 
  *  - File menu items:
  *     - New
- *     - Open (a submenu of choices, one for each file system)
- *     - Save (tries to use the last file system, or reverts to save as...)
- *     - Save as... (a submenu of choices, one for each file system)
- *     - Delete (a submenu of choices, one for each file system)
- *     - Embed...
+ *     - Open
+ *     - Save
+ *     - Save as
+ *     - Delete a document
+ *     - Embed
  *  - An auto-save timer that stores a copy of the current document every few
  *    seconds when it is dirty (if the app options enable this feature)
  *  - A popup dialog that appears on app launch if and only if there is an
@@ -612,10 +881,8 @@ const ensureWorkIsSaved = editor => new Promise( ( resolve, reject ) => {
 export const install = editor => {
     if ( FileSystem.getSubclasses().length === 0 )
         throw new Error( 'Cannot install file menu items with no file systems' )
-    // First, three file menu items are independent of which file systems are
-    // loaded or in use: File > New (since it doesn't save/load anything),
-    // File > Save (since it tries to use wherever you last saved), and
-    // File > Embed (since it also does not load/save anything).
+    // First, add all file menu items in the order given above (though the code
+    // below does not determine the order they appear on the menu).
     editor.ui.registry.addMenuItem( 'newlurchdocument', {
         text : 'New',
         icon : 'new-document',
@@ -625,19 +892,31 @@ export const install = editor => {
             if ( saved ) new LurchDocument( editor ).newDocument()
         } )
     } )
+    editor.ui.registry.addMenuItem( 'opendocument', {
+        text : 'Open',
+        tooltip : 'Open file',
+        shortcut : 'alt+O',
+        onAction : () => ensureWorkIsSaved( editor ).then( saved => {
+            if ( saved ) FileSystem.openFile( editor )
+        } )
+    } )
     editor.ui.registry.addMenuItem( 'savedocument', {
         text : 'Save',
         tooltip : 'Save document',
         onAction : () => {
+            // Get all the document's information
             const doc = new LurchDocument( editor )
             const fileID = doc.getFileID()
             fileID.contents = doc.getDocument()
+            // If we have no record of where it was last saved, we have to give
+            // up on a silent save and rever to a "save as" operation (which
+            // prompts the user)
             const subclass = FileSystem.getSubclass( fileID?.fileSystemName )
             if ( !subclass )
-                fileID.fileSystemName = FileSystem.getSubclassName(
-                    FileSystem.getSubclasses()[0] )
+                return FileSystem.saveFileAs( editor )
+            // We have enough information to do a silent save, so try that.
             const fileSystem = new subclass( editor )
-            fileSystem.save( fileID ).then( result => {
+            fileSystem.write( fileID ).then( result => {
                 if ( !result ) return
                 fileSystem.documentSaved( result )
                 Dialog.notify( editor, 'success', 'File saved.' )
@@ -649,15 +928,28 @@ export const install = editor => {
             } )
         }
     } )
+    editor.ui.registry.addMenuItem( 'savedocumentas', {
+        text : 'Save as',
+        tooltip : 'Save file as',
+        shortcut : 'alt+shift+S',
+        onAction : () => FileSystem.saveFileAs( editor )
+    } )
+    editor.ui.registry.addMenuItem( 'deletesaved', {
+        text : 'Delete a document',
+        tooltip : 'Delete a saved document',
+        onAction : () => FileSystem.deleteFile( editor )
+    } )
     editor.ui.registry.addMenuItem( 'embeddocument', {
         text : 'Embed...',
         tooltip : 'Embed document in a web page',
         onAction : () => {
+            // Create an iframe that will give us the code the user needs
             const html = new LurchDocument( editor ).getDocument()
             const iframe = document.createElement( 'iframe' )
             iframe.src = `${appURL()}?data=${encodeURIComponent( btoa( html ) )}`
             iframe.style.width = '800px'
             iframe.style.height = '400px'
+            // Create a dialog in which to show the user the results
             const dialog = new Dialog( 'Embedding code', editor )
             dialog.json.size = 'medium'
             // We must put the styles in the element itself, to override
@@ -668,116 +960,14 @@ export const install = editor => {
             dialog.removeButton( 'Cancel' )
             dialog.setDefaultFocus( 'code' )
             dialog.show()
+            // After showing the dialog, set its text area to read-only, sized
+            // appropriately, scrolled to the top, and with everything selected
             const textarea = dialog.querySelector( 'textarea' )
             textarea.select()
             textarea.setAttribute( 'readonly', 'true' )
             textarea.setAttribute( 'rows', 15 )
             textarea.scrollTo( 0, 0 )
         }
-    } )
-    // Now create all the menu items that will (by default) go in the submenus
-    // File > Open, File > Save as, and File > Delete, one for each file system
-    // subclass that has been registered.  Of course, custom app setups through
-    // createApp() can move these around if they don't like this organization.
-    const submenuNames = { open : [ ], saveas : [ ], delete : [ ] }
-    FileSystem.getSubclasses().forEach( subclass => {
-        const name = subclass.subclassName
-        const simplifiedName = name.toLowerCase().replace( /[^a-z]/gi, '' )
-        // File > Open... > Open from X...
-        if ( FileSystem.implements( subclass, 'open' ) ) {
-            submenuNames.open.push( 'opendocument' + simplifiedName )
-            editor.ui.registry.addMenuItem( 'opendocument' + simplifiedName, {
-                text : `Open from ${name}...`,
-                tooltip : `Open document from ${name}`,
-                shortcut : 'alt+O',
-                onAction : () => ensureWorkIsSaved( editor ).then( saved => {
-                    if ( saved ) {
-                        new subclass( editor ).open().then( result => {
-                            if ( result ) {
-                                const LD = new LurchDocument( editor )
-                                LD.setDocument( result.contents )
-                                LD.setFileID( {
-                                    fileSystemName : name,
-                                    path : result.path,
-                                    filename : result.filename,
-                                    UID : result.UID
-                                } )
-                                Dialog.notify( editor, 'success',
-                                    `Loaded ${result.filename} from ${name}.` )
-                            }
-                        } ).catch( error => {
-                            Dialog.notify( editor, 'error',
-                                `A filesystem error occurred.
-                                See browser console for details.` )
-                            console.error( error )
-                        } )
-                    }
-                } )
-            } )
-        }
-        // File > Save as... > Save to X as...
-        if ( FileSystem.implements( subclass, 'save' ) ) {
-            submenuNames.saveas.push( 'savedocumentas' + simplifiedName )            
-            editor.ui.registry.addMenuItem( 'savedocumentas' + simplifiedName, {
-                text : `Save to ${name} as...`,
-                tooltip : `Save document to ${name} as...`,
-                shortcut : 'alt+shift+S',
-                onAction : () => {
-                    const fileSystem = new subclass( editor )
-                    fileSystem.save( {
-                        contents : new LurchDocument( editor ).getDocument()
-                    } ).then( result => {
-                        if ( !result ) return
-                        fileSystem.documentSaved( result )
-                        // Do not pop up a save notification here because the
-                        // save process may still be ongoing (e.g., browser
-                        // download dialog)
-                    } ).catch( error => {
-                        Dialog.notify( editor, 'error',
-                            `A filesystem error occurred.
-                            See browser console for details.` )
-                        console.error( error )
-                    } )
-                }
-            } )
-        }
-        // File > Delete... > Delete from X...
-        if ( FileSystem.implements( subclass, 'delete' ) ) {
-            submenuNames.delete.push( 'deletesaved' + simplifiedName )
-            editor.ui.registry.addMenuItem( 'deletesaved' + simplifiedName, {
-                text : `Delete from ${name}...`,
-                tooltip : `Delete a document from ${name}`,
-                onAction : () => {
-                    new subclass( editor ).delete().then( result => {
-                        if ( !result ) return
-                        Dialog.notify( editor, 'success', 'File deleted.' )
-                    } ).catch( error => {
-                        Dialog.notify( editor, 'error',
-                            `A filesystem error occurred.
-                            See browser console for details.` )
-                        console.error( error )
-                    } )
-                }
-            } )
-        }
-    } )
-    // Now create the top-level File menu items into which you browse to find
-    // the ones for each file system.  That is, we now create the File > Open
-    // item, which contains submenu items, and File > Save as..., etc.
-    editor.ui.registry.addNestedMenuItem( 'opendocument', {
-        text : 'Open...',
-        tooltip : 'Open document',
-        getSubmenuItems : () => submenuNames.open.join( ' ' )
-    } )
-    editor.ui.registry.addNestedMenuItem( 'savedocumentas', {
-        text : 'Save as...',
-        tooltip : 'Save document as...',
-        getSubmenuItems : () => submenuNames.saveas.join( ' ' )
-    } )
-    editor.ui.registry.addNestedMenuItem( 'deletesaved', {
-        text : 'Delete...',
-        tooltip : 'Delete a saved document',
-        getSubmenuItems : () => submenuNames.delete.join( ' ' )
     } )
     // If the auto-save feature is enabled, then wait for the app to finish
     // loading, and then check to see if there is any autosaved data that was
@@ -831,11 +1021,15 @@ export class FolderContentsItem extends ListItem {
      * @param {String} [initialPath] - the path to start in (defaults to the
      *   file system root, which works for every file system, even those that
      *   do not have subfolders)
+     * @param {String} [name] - the name to give this item, defaults to
+     *   `"selectedFile"`
      */
-    constructor ( fileSystem, initialPath = '' ) {
-        super( 'selectedFile' )
+    constructor ( fileSystem, initialPath = '', name = 'selectedFile' ) {
+        super( name )
         this.fileSystem = fileSystem
         this.path = initialPath
+        // this.minHeight = '400px'
+        // this.maxHeight = '600px'
     }
 
     /**
@@ -867,10 +1061,16 @@ export class FolderContentsItem extends ListItem {
                 return
             }
             this.showList(
-                files.map( fileObject => fileObject.filename ?
-                    `&#x1F4C4; ${fileObject.filename}` :
-                    `&#x1F4C1; ${fileObject.path}` ),
-                files )
+                files.map( fileObject => {
+                    const icon =
+                        ( typeof fileObject.icon == 'string' ) ? fileObject.icon :
+                        fileObject.isBookmark ? '&#x1F516;' :
+                        fileObject.filename ? '&#x1F4C4;' : '&#x1F4C1;'
+                    const text = fileObject.displayName
+                              || fileObject.filename
+                              || fileObject.path
+                    return `${icon} ${text}`
+                } ), files )
         } ).catch( error => {
             this.showText( 'Error loading file list.  See console for details.' )
             console.error( 'Error loading file list:', error )

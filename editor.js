@@ -4,12 +4,21 @@
  * can use that to install the Lurch app into their page at a chosen location.
  */
 
+// Import the FileSystem module, and then several other modules that are
+// imported only because importing them registers them as subclasses of
+// FileSystem, even though we don't use them directly here.
+import FileSystem from './file-system.js'
+import { BrowserFileSystem } from './browser-file-system.js'
+import { OfflineFileSystem } from './offline-file-system.js'
+import { WebFileSystem } from './web-file-system.js'
+import { DropboxFileSystem } from './dropbox-file-system.js'
+// import GoogleDrive from './google-drive-ui.js'
+
 import { loadScript, makeAbsoluteURL, isEmbedded } from './utilities.js'
 import { loadFromQueryString } from './load-from-url.js'
 import { appSettings } from './settings-install.js'
 import { LurchDocument } from './lurch-document.js'
 import Settings from './settings-install.js'
-import LocalStorageDrive from './local-storage-drive.js'
 import Headers from './header-editor.js'
 import DocSettings from './document-settings.js'
 import Atoms from './atoms.js'
@@ -21,7 +30,6 @@ import Validation from './validation.js'
 import AutoCompleter from './auto-completer.js'
 import Embedding from './embed-listener.js'
 import Export from './export.js'
-// import GoogleDrive from './google-drive-ui.js'
 
 import { stylesheet as MathLiveCSS } from './math-live.js'
 
@@ -80,15 +88,14 @@ window.Lurch = {
      *    save).
      *  - `options.fileOpenTabs` can be used to reorder or subset the list of
      *    tabs in the File > Open dialog box, which defaults to
-     *    `[ 'From browser storage', 'From your computer', 'From the web' ]`.
-     *    If you remove `'From browser storage'` from the list, you may also
-     *    want to edit the file menu's contents so that it does not contain the
-     *    "Delete" option.
+     *    `[ 'From in-browser storage', 'From your computer', 'From the web',
+     *    'From Dropbox' ]`.
      *  - `options.fileSaveTabs` can be used to reorder or subset the list of
      *    tabs in the File > Save dialog box, which defaults to
-     *    `[ 'To browser storage', 'To your computer' ]`.  Again, if you remove
-     *    `'To browser storage'` from the list, you may also want to edit the
-     *    file menu's contents so that it does not contain the "Delete" option.
+     *    `[ 'To in-browser storage', 'To your computer', 'To Dropbox' ]`.
+     *  - `options.fileDeleteTabs` can be used to reorder or subset the list of
+     *    tabs in the File > Delete dialog box, which defaults to
+     *    `[ 'In in-browser storage', 'In Dropbox' ]`.
      *  - `options.helpPages` can be an array of objects of the form
      *    `{ title : '...', url : '...' }`.  These will be displayed in the help
      *    menu (which is omitted if no such pages are provided) in the order
@@ -299,7 +306,7 @@ window.Lurch = {
                     if ( !Headers.isEditor() ) {
                         // Install tools we need only if we are the primary app window:
                         // GoogleDrive.install( editor )
-                        LocalStorageDrive.install( editor )
+                        FileSystem.install( editor )
                         Headers.install( editor )
                         DocSettings.install( editor )
                         Embedding.install( editor )

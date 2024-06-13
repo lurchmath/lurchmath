@@ -149,7 +149,7 @@ export class DropboxFileSystem extends FileSystem {
         'Dropbox', DropboxFileSystem )
 
     /**
-     * See the documentation of the {@link FileSystem#open open()} method in the
+     * See the documentation of the {@link FileSystem#read read()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a file system based on
      * the user's Dropbox, as defined at {@link DropboxFileSystem
@@ -161,92 +161,71 @@ export class DropboxFileSystem extends FileSystem {
      * 
      * @param {Object} fileObject - as documented in the {@link FileSystem}
      *   class
-     * @returns {Promise} as documented in {@link FileSystem#open the abstract
+     * @returns {Promise} as documented in {@link FileSystem#read the abstract
      *   method of the parent class}
      */
-    open ( fileObject ) {
-        // Case 1: Wrong filesystem
-        if ( fileObject?.fileSystemName
+    read ( fileObject ) {
+        // error cases
+        if ( !fileObject?.filename )
+            return Promise.reject( new Error( 'Missing filename' ) )
+        if ( fileObject.fileSystemName
           && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
-        // Case 2: When the caller asked to open a specific file
-        // (which may or may not be valid--we will find out by trying to open it)
-        if ( fileObject?.filename ) {
-            return new Promise( ( resolve, reject ) => {
-                const absolute = makeAbsolutePath(
-                    fileObject.path || '', fileObject.filename )
-                ensureAccess().then( client => {
-                    client.filesDownload( { path : absolute } ).then( response => {
-                        response.result.fileBlob.text().then( result => {
-                            fileObject.contents = result
-                            fileObject.fileSystemName = this.getName()
-                            resolve( fileObject )
-                        } ).catch( reject )
+        // correct case
+        return new Promise( ( resolve, reject ) => {
+            const absolute = makeAbsolutePath(
+                fileObject.path || '', fileObject.filename )
+            ensureAccess().then( client => {
+                client.filesDownload( { path : absolute } ).then( response => {
+                    response.result.fileBlob.text().then( result => {
+                        fileObject.contents = result
+                        fileObject.fileSystemName = this.getName()
+                        resolve( fileObject )
                     } ).catch( reject )
                 } ).catch( reject )
-            } )
-        }
-        // Case 3: Interpret every other possibility as a folder (maybe specified
-        // in the fileObject.path, or maybe not, which defaults to the root)
-        return new Promise( ( resolve, reject ) => {
-            this.showOpenDialog(
-                fileObject?.path || '', 'Open file from Dropbox'
-            ).then( result => {
-                if ( !result ) return // user canceled - stop
-                resolve( this.open( result ) ) // open the selected file
             } ).catch( reject )
         } )
     }
 
     /**
-     * See the documentation of the {@link FileSystem#save save()} method in the
-     * parent class for the definition of how this method must behave.  This
-     * implements the requirements specified there for a file system representing
-     * the user's Dropbox, as defined at {@link DropboxFileSystem the
-     * documentation for this class}.
+     * See the documentation of the {@link FileSystem#write write()} method in
+     * the parent class for the definition of how this method must behave.  This
+     * implements the requirements specified there for a file system
+     * representing the user's Dropbox, as defined at {@link DropboxFileSystem
+     * the documentation for this class}.
      * 
      * @param {Object} fileObject - as documented in the {@link FileSystem}
      *   class
-     * @returns {Promise} as documented in {@link FileSystem#save the abstract
+     * @returns {Promise} as documented in {@link FileSystem#write the abstract
      *   method of the parent class}
      */
-    save ( fileObject ) {
+    write ( fileObject ) {
         // Case 1: Invalid input of various types
         if ( !fileObject )
             throw new Error( 'File object required for saving' )
         if ( fileObject.fileSystemName
           && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
+        if ( !fileObject.hasOwnProperty( 'filename' ) )
+            throw new Error( 'No filename provided' )
         if ( !fileObject.hasOwnProperty( 'contents' ) )
-            throw new Error( 'No content to save' )
+            throw new Error( 'No content to write' )
         // Case 2: Filename and contents provided, can save
-        if ( fileObject.hasOwnProperty( 'filename' ) ) {
-            const absolute = makeAbsolutePath(
-                fileObject.path || '/', fileObject.filename )
-            return new Promise( ( resolve, reject ) => {
-                ensureAccess().then( client => {
-                    const toUpload = {
-                        path : absolute,
-                        mode : 'overwrite',
-                        contents : fileObject.contents
-                    }
-                    client.filesUpload( toUpload ).then( () => {
-                        fileObject.fileSystemName = this.getName()
-                        this.documentSaved( fileObject )
-                        resolve( fileObject )
-                    } ).catch( reject )
-                } )
-            } )
-        }
-        // Case 3: Contents provided but no filename, so we must prompt the user
+        const absolute = makeAbsolutePath(
+            fileObject.path || '/', fileObject.filename )
         return new Promise( ( resolve, reject ) => {
-            this.showSaveDialog(
-                '', '', 'Save file to Dropbox'
-            ).then( result => {
-                if ( !result ) return // user canceled - stop
-                result.contents = fileObject.contents
-                resolve( this.save( result ) ) // save at the selected location
-            } ).catch( reject )
+            ensureAccess().then( client => {
+                const toUpload = {
+                    path : absolute,
+                    mode : 'overwrite',
+                    contents : fileObject.contents
+                }
+                client.filesUpload( toUpload ).then( () => {
+                    fileObject.fileSystemName = this.getName()
+                    this.documentSaved( fileObject )
+                    resolve( fileObject )
+                } ).catch( reject )
+            } )
         } )
     }
 
@@ -263,31 +242,22 @@ export class DropboxFileSystem extends FileSystem {
      *   method of the parent class}
      */
     delete ( fileObject ) {
-        // Case 1: No filename provided, so we must prompt the user to choose
-        if ( !fileObject ) return new Promise( ( resolve, reject ) => {
-            this.showOpenDialog(
-                '', 'Delete file from Dropbox', 'Delete' )
-            .then( result => {
-                if ( !result ) return // user canceled - stop
-                resolve( this.delete( result ) ) // delete the selected file
-            } ).catch( reject )
-        } )
-        // Case 2: Wrong file system
+        // Case 1: Invalid input of various types
+        if ( !fileObject?.filename )
+            throw new Error( 'No filename provided' )
         if ( fileObject.fileSystemName
           && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
-        // Case 3: Name of file provided, try to delete it
-        if ( fileObject.hasOwnProperty?.( 'filename' ) ) {
-            const absolute = makeAbsolutePath(
-                fileObject.path || '', fileObject.filename )
-            return new Promise( ( resolve, reject ) => {
-                ensureAccess().then( client => {
-                    client.filesDelete( { path : absolute } ).then( () => {
-                        resolve( fileObject )
-                    } ).catch( reject )
+        // Case 2: Name of file provided, try to delete it
+        const absolute = makeAbsolutePath(
+            fileObject.path || '', fileObject.filename )
+        return new Promise( ( resolve, reject ) => {
+            ensureAccess().then( client => {
+                client.filesDelete( { path : absolute } ).then( () => {
+                    resolve( fileObject )
                 } ).catch( reject )
-            } )
-        }
+            } ).catch( reject )
+        } )
     }
 
     /**
@@ -332,7 +302,7 @@ export class DropboxFileSystem extends FileSystem {
         } )
     }
 
-   /**
+    /**
      * See the documentation of the {@link FileSystem#list list()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a file system based on

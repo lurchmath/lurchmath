@@ -32,7 +32,7 @@ export class BrowserFileSystem extends FileSystem {
         'in-browser storage', BrowserFileSystem )
 
     /**
-     * See the documentation of the {@link FileSystem#open open()} method in the
+     * See the documentation of the {@link FileSystem#read read()} method in the
      * parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
      * browser's `localStorage` object, as defined at {@link BrowserFileSystem
@@ -44,36 +44,28 @@ export class BrowserFileSystem extends FileSystem {
      * 
      * @param {Object} fileObject - as documented in the {@link FileSystem}
      *   class
-     * @returns {Promise} as documented in {@link FileSystem#open the abstract
+     * @returns {Promise} as documented in {@link FileSystem#read the abstract
      *   method of the parent class}
      */
-    open ( fileObject ) {
-        // Case 1: When the caller asked to open a specific file
-        if ( fileObject?.filename ) {
-            if ( !this.has( fileObject ) )
-                return Promise.reject( new Error( 'File does not exist' ) )
-            fileObject.contents = window.localStorage.getItem(
-                prefix + fileObject.filename )
-            fileObject.fileSystemName = this.getName()
-            return Promise.resolve( fileObject )
-        }
-        // Case 2: The caller tried to browse to a folder other than the root
-        if ( fileObject?.path )
-            throw new Error( 'BrowserFileSystem does not support subfolders' )
-        // Case 3: When the caller provided no parameter, so browse at the root
-        return new Promise( ( resolve, reject ) => {
-            this.showOpenDialog(
-                '', 'Open file from browser storage'
-            ).then( result => {
-                if ( !result ) return // user canceled - stop
-                resolve( this.open( result ) ) // open the selected file
-            } ).catch( reject )
-        } )
+    read ( fileObject ) {
+        // error cases
+        if ( !fileObject?.filename )
+            return Promise.reject( new Error( 'Missing filename' ) )
+        if ( fileObject.fileSystemName
+          && fileObject.fileSystemName != this.getName() )
+            throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
+        if ( !this.has( fileObject ) )
+            return Promise.reject( new Error( 'File does not exist' ) )
+        // correct case
+        fileObject.contents = window.localStorage.getItem(
+            prefix + fileObject.filename )
+        fileObject.fileSystemName = this.getName()
+        return Promise.resolve( fileObject )
     }
 
     /**
-     * See the documentation of the {@link FileSystem#save save()} method in the
-     * parent class for the definition of how this method must behave.  It
+     * See the documentation of the {@link FileSystem#write write()} method in
+     * the parent class for the definition of how this method must behave.  It
      * implements the requirements specified there for a flat file system in the
      * browser's `localStorage` object, as defined at {@link BrowserFileSystem
      * the documentation for this class}.
@@ -84,10 +76,10 @@ export class BrowserFileSystem extends FileSystem {
      * 
      * @param {Object} fileObject - as documented in the {@link FileSystem}
      *   class
-     * @returns {Promise} as documented in {@link FileSystem#save the abstract
+     * @returns {Promise} as documented in {@link FileSystem#write the abstract
      *   method of the parent class}
      */
-    save ( fileObject ) {
+    write ( fileObject ) {
         // Case 1: Invalid input of various types
         if ( !fileObject )
             throw new Error( 'File object required for saving' )
@@ -96,26 +88,16 @@ export class BrowserFileSystem extends FileSystem {
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
         if ( fileObject.path )
             throw new Error( 'BrowserFileSystem does not support subfolders' )
+        if ( !fileObject.hasOwnProperty( 'filename' ) )
+            throw new Error( 'No filename provided' )
         if ( !fileObject.hasOwnProperty( 'contents' ) )
-            throw new Error( 'No content to save' )
-        // Case 2: Filename and contents provided, can save
-        if ( fileObject.hasOwnProperty( 'filename' ) ) {
-            fileObject.fileSystemName = this.getName()
-            window.localStorage.setItem( prefix + fileObject.filename,
-                fileObject.contents )
-            this.documentSaved( fileObject )
-            return Promise.resolve( fileObject )
-        }
-        // Case 3: Contents provided but no filename, so we must prompt the user
-        return new Promise( ( resolve, reject ) => {
-            this.showSaveDialog(
-                '', '', 'Save file to browser storage'
-            ).then( result => {
-                if ( !result ) return // user canceled - stop
-                result.contents = fileObject.contents
-                resolve( this.save( result ) ) // save at the selected location
-            } ).catch( reject )
-        } )
+            throw new Error( 'No content to write' )
+        // Case 2: Everything we need was provided, can save
+        fileObject.fileSystemName = this.getName()
+        window.localStorage.setItem( prefix + fileObject.filename,
+            fileObject.contents )
+        this.documentSaved( fileObject )
+        return Promise.resolve( fileObject )
     }
 
     /**
@@ -135,29 +117,20 @@ export class BrowserFileSystem extends FileSystem {
      *   method of the parent class}
      */
     delete ( fileObject ) {
-        // Case 1: No filename provided, so we must prompt the user to choose
-        if ( !fileObject ) return new Promise( ( resolve, reject ) => {
-            this.showOpenDialog(
-                '', 'Delete file from browser storage', 'Delete'
-            ).then( result => {
-                if ( !result ) return // user canceled - stop
-                resolve( this.delete( result ) ) // delete the selected file
-            } ).catch( reject )
-        } )
-        // Case 2: Invalid input of various types
+        // Case 1: Invalid input of various types
+        if ( !fileObject?.filename )
+            throw new Error( 'No filename provided' )
+        if ( !this.has( fileObject ) )
+            throw new Error( 'File does not exist' )
         if ( fileObject.fileSystemName
           && fileObject.fileSystemName != this.getName() )
             throw new Error( `Wrong file system: ${fileObject.fileSystemName}` )
         if ( fileObject.path )
             throw new Error( 'BrowserFileSystem does not support subfolders' )
-        // Case 3: Name of file provided, can delete iff it exists
-        if ( fileObject.hasOwnProperty?.( 'filename' ) ) {
-            if ( !this.has( fileObject ) )
-                return Promise.reject( new Error( 'File does not exist' ) )
-            fileObject.fileSystemName = this.getName()
-            window.localStorage.removeItem( prefix + fileObject.filename )
-            return Promise.resolve( fileObject )
-        }
+        // Case 3: Name of file provided, so we can delete
+        fileObject.fileSystemName = this.getName()
+        window.localStorage.removeItem( prefix + fileObject.filename )
+        return Promise.resolve( fileObject )
     }
 
     /**

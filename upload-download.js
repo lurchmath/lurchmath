@@ -46,6 +46,10 @@ export const downloadFile = ( editor, filename ) => {
  * file.  It creates HTML content with two DIVs, one that permits dragging and
  * dropping of files onto the dialog to upload them, and the other of which
  * contains a button you can click to choose a file.
+ * 
+ * Whenever the user chooses a file, the file's information are stored in the
+ * `uploadedName` and `uploadedContent` properties of the object, and if the
+ * instance implements the `.onFileChanged()` method, that method is called.
  */
 export class UploadItem {
 
@@ -102,6 +106,7 @@ export class UploadItem {
         return file.text().then( content => {
             this.uploadedName = file.name
             this.uploadedContent = content
+            this.onFileChanged?.()
         } )
     }
 

@@ -819,6 +819,16 @@ export class ButtonItem {
         if ( details.name == this.name ) this.action( dialog )
     }
 
+    /**
+     * Find the element in the DOM representing this button.  This works only if
+     * the dialog containing the button has been shown on screen, not before.
+     * 
+     * @return {HTMLElement} the DOM element with tag "BUTTON"
+     */
+    getElement () {
+        return this.dialog.querySelector( `button[title="${this.text}"]` )
+    }
+
 }
 
 /**
@@ -980,6 +990,20 @@ export class LabeledGroup {
  * Items can be selected, clicked, or double-clicked, and handlers can be added
  * for each such situation.  The value of the item is the selected item's
  * value, or undefined if no item is selected.
+ * 
+ * It supports several event handlers that users can implement by defining
+ * functions with the following names on the instance they create:
+ * 
+ *  - `onClick(value)` - called when the item is clicked, with the item's value
+ *    as the one parameter
+ *  - `onDoubleClick(value)` - called when the item is double-clicked, with the
+ *    item's value as the one parameter
+ *  - `onSelectionChanged()` - called when the selection changes, no parameters
+ *    passed
+ *  - `onTextShown()` - called after repopulating the list with plain text,
+ *    because a client called {@link ListItem#showText showText()}
+ *  - `onListShown()` - called after repopulating the list with items, because
+ *    a client called {@link ListItem#showList showList()}
  */
 export class ListItem {
 
@@ -998,6 +1022,8 @@ export class ListItem {
         this.values = [ ]
         this.itemsAreSelectable = false
         this.selectedItem = null
+        this.minHeight = '100px'
+        this.maxHeight = '200px'
     }
 
     /**
@@ -1018,32 +1044,33 @@ export class ListItem {
             div => div.style.backgroundColor = '' )
         if ( itemDiv ) itemDiv.style.backgroundColor = 'lightblue'
         this.selectedItem = itemValue
-        this.selectionChanged?.()
+        this.onSelectionChanged?.()
     }
 
     // internal use only; creates the JSON to represent this object to TinyMCE
     json () {
         return [ {
             type : 'htmlpanel',
-            html : `<div id="${ListItem.mainDivId}"></div>`
+            html : `<div id="${ListItem.mainDivId}"
+                style="border: solid 1px #006CE7;
+                padding: 0.5em;
+                border-radius: 6px;
+                min-height: ${this.minHeight};
+                max-height: ${this.maxHeight};
+                overflow-y: scroll;"></div>`
         } ]
     }
 
     // internal use only
     getMainDiv () {
-        const result = this.dialog.querySelector( `#${ListItem.mainDivId}` )
-        result.style.border = 'solid 1px #006CE7'
-        result.style.padding = '0.5em'
-        result.style.borderRadius = '6px'
-        result.style.maxHeight = '300px'
-        result.style.overflowY = 'scroll'
-        return result
+        return this.dialog.querySelector( `#${ListItem.mainDivId}` )
     }
 
     // internal use only; change contents of this DIV to text
     showText ( text ) {
         this.selectedItem = null
         this.getMainDiv().innerHTML = text
+        this.onTextShown?.()
     }
 
     // internal use only; change contents of this DIV to a list of items
@@ -1070,8 +1097,15 @@ export class ListItem {
             itemDiv.width = '100%'
             // Add event handlers to the item
             itemDiv.addEventListener( 'click', () => setTimeout( () => {
+                // don't let the second half of a double-click count also count
+                // as an individual click
+                if ( this.justDoubleClicked ) {
+                    this.justDoubleClicked = false
+                    return
+                }
+                // If the dialog has closed since the click, do nothing
                 if ( !this.dialog.element )
-                    return // dialog has closed since the timeout started
+                    return
                 // If items are selectable, update the selection
                 if ( this.itemsAreSelectable ) {
                     if ( this.selectedItem == value )
@@ -1085,8 +1119,11 @@ export class ListItem {
             itemDiv.addEventListener( 'dblclick', () => {
                 // Let users install an onDoubleClick() handler
                 this.onDoubleClick?.( value )
+                // Prevent the double-click from also triggering a click
+                this.justDoubleClicked = true
             } )
         } )
+        this.onListShown?.()
     }
 
     // internal use only; returns a file object if requested by the dialog's
