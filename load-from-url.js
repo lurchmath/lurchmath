@@ -10,9 +10,24 @@
 import { LurchDocument } from './lurch-document.js'
 import { appURL, isValidURL, makeAbsoluteURL } from './utilities.js'
 import { Dialog } from './dialog.js'
-import {
-    fileExists, readFile, writeFile, deleteFile
-} from './local-storage-drive.js'
+
+// Internal use only
+// A few routines for making a tiny, mock filesystem inside localStorage
+// Note that this functions very much like what's implemented in the
+// BrowserFileSystem class, except those are async, and these are synchronous.
+const prefix = 'lurch-temp-file-'
+const allFileNames = () => {
+    let result = [ ]
+    for ( let i = 0 ; i < window.localStorage.length ; i++ )
+        if ( window.localStorage.key( i ).startsWith( prefix ) )
+            result.push( window.localStorage.key( i ).substring( prefix.length ) )
+    return result
+}
+const fileExists = name => allFileNames().includes( name )
+const readFile = name => window.localStorage.getItem( prefix + name )
+const writeFile = ( name, content ) =>
+    window.localStorage.setItem( prefix + name, content )
+const deleteFile = name => window.localStorage.removeItem( prefix + name )
 
 /**
  * Download a file from the web asynchronously, returning a Promise that
